@@ -4,12 +4,12 @@ services:
   otel-lgtm:
     image: grafana/otel-lgtm:latest
     ports:
-      - "3000:3000"   # Grafana
-      - "9090:9090"   # Prometheus
-      - "3100:3100"   # Loki
-      - "3200:3200"   # Tempo
-      - "4317:4317"   # OTel gRPC
-      - "4318:4318"   # OTel HTTP
+      - "3000:3000"
+      - "9090:9090"
+      - "3100:3100"
+      - "3200:3200"
+      - "4317:4317"
+      - "4318:4318"
     volumes:
       - ./otel-lgtm/config:/etc/otel-lgtm
     environment:
@@ -81,6 +81,78 @@ services:
       interval: 15s
       timeout: 5s
       retries: 3
+
+  generator:
+    build:
+      context: .
+      dockerfile: plugins/generator/Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+
+  agent-monitor:
+    build:
+      context: .
+      dockerfile: plugins/agent_monitor/Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
+      OLLAMA_BASE_URL: http://ollama:11434
+
+  rca-engine:
+    build:
+      context: .
+      dockerfile: plugins/rca_engine/Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+
+  chatbot:
+    build:
+      context: .
+      dockerfile: plugins/chatbot/Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      REDIS_URL: redis://redis:6379/0
+
+  alert-noc:
+    build:
+      context: .
+      dockerfile: plugins/alert_noc/Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://redis:6379/0
+
+  ui:
+    build:
+      context: ./ui
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
 
 volumes:
   postgres_data:
