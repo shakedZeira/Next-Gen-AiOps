@@ -82,7 +82,12 @@ This project uses **subagent-driven development** to maximize parallelism and ke
    Commit 9f0aa10: feat: CMDB service with CI, relationship, topology queries
    Commit 651b9df: feat: OTel ingestion config and CMDB seed data
 
-🔄 Part 2 (Tasks 7-11): IN PROGRESS — Dispatching 5 parallel subagents
+✅ Part 2 (Tasks 7-11): COMPLETE
+   Commit 51baa66: feat: synthetic generator service with OTel emission
+   Commit 87dd4f5: feat: agent monitor service with LLM token/cost/latency tracking
+   Commit fe9440a: feat: RCA engine with anomaly detection, correlation, LLM explanation
+   Commit 0a2dd8e: feat: chatbot service with LangGraph agent and human approval flow
+   Commit d1ca15d: feat: alert/NOC service with CRUD, acknowledge, resolve, grouping
 ⏳ Part 3 (Tasks 12-20): PENDING
 ```
 
@@ -96,11 +101,11 @@ Group 2 (parallel):   Task 4 ──┐                         ✅
                                Task 6 ──┘                 ✅
 Group 3 (parallel):   Task 5 ──────────────────────────► ✅
                                                          │
-Group 4 (parallel):   Task 7  ──┐                       🔄
-                               Task 8  ──┐               🔄
-                               Task 9  ──┤               🔄
-                               Task 10 ──┤               🔄
-                               Task 11 ──┘               🔄
+Group 4 (parallel):   Task 7  ──┐                       ✅
+                               Task 8  ──┐               ✅
+                               Task 9  ──┤               ✅
+                               Task 10 ──┤               ✅
+                               Task 11 ──┘               ✅
                                                          │
 Group 5 (sequential): Task 12 ──────────────────────────►│
 Group 6 (sequential): Task 13 ──────────────────────────►│
