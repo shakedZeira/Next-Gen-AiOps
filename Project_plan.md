@@ -61,31 +61,46 @@ A comprehensive demo platform showcasing Next-Gen AiOps monitoring capabilities:
 
 The plan is split into **3 parts** with **20 tasks**, organized for **parallel subagent execution**:
 
-| Part | File | Tasks | Description |
-|------|------|-------|-------------|
-| Part 1 | `2026-08-18-nextgen-aiops-part1-core.md` | 1-6 | Core Platform: scaffold, shared lib, DB, API, Auth, CMDB |
-| Part 2 | `2026-08-18-nextgen-aiops-part2-plugins.md` | 7-11 | Plugin Services: Generator, Agent Monitor, RCA, ChatBot, Alerts |
-| Part 3 | `2026-08-18-nextgen-aiops-part3-ui.md` | 12-20 | UI: React setup, pages, nginx, Docker Compose, CI |
+| Part | File | Tasks | Description | Status |
+|------|------|-------|-------------|--------|
+| Part 1 | `2026-08-18-nextgen-aiops-part1-core.md` | 1-6 | Core Platform: scaffold, shared lib, DB, API, Auth, CMDB | ✅ COMPLETE |
+| Part 2 | `2026-08-18-nextgen-aiops-part2-plugins.md` | 7-11 | Plugin Services: Generator, Agent Monitor, RCA, ChatBot, Alerts | 🔄 IN PROGRESS |
+| Part 3 | `2026-08-18-nextgen-aiops-part3-ui.md` | 12-20 | UI: React setup, pages, nginx, Docker Compose, CI | ⏳ PENDING |
 
 ## Subagent Execution Strategy
 
 This project uses **subagent-driven development** to maximize parallelism and keep context windows small. Each task is dispatched to a fresh subagent with isolated context.
 
+### Progress
+
+```
+✅ Part 1 (Tasks 1-6): COMPLETE
+   Commit a8efe56: chore: project scaffold with Docker Compose
+   Commit 7972cf7: feat: add shared library with models, config, database, otel
+   Commit 0384d5f: feat: PostgreSQL schema with CI, relationship, service tables
+   Commit a4998e9: feat: core platform with API gateway, auth, JWT, RBAC
+   Commit 9f0aa10: feat: CMDB service with CI, relationship, topology queries
+   Commit 651b9df: feat: OTel ingestion config and CMDB seed data
+
+🔄 Part 2 (Tasks 7-11): IN PROGRESS — Dispatching 5 parallel subagents
+⏳ Part 3 (Tasks 12-20): PENDING
+```
+
 ### Parallel Execution Groups
 
 ```
-Group 0 (sequential):  Task 1 ──────────────────────────►
-Group 1 (parallel):   Task 2 ──┐                         │
-                               Task 3 ──┘                 │
-Group 2 (parallel):   Task 4 ──┐                         │
-                               Task 6 ──┘                 │
-Group 3 (parallel):   Task 5 ──────────────────────────►│
+Group 0 (sequential):  Task 1 ──────────────────────────► ✅
+Group 1 (parallel):   Task 2 ──┐                         ✅
+                               Task 3 ──┘                 ✅
+Group 2 (parallel):   Task 4 ──┐                         ✅
+                               Task 6 ──┘                 ✅
+Group 3 (parallel):   Task 5 ──────────────────────────► ✅
                                                          │
-Group 4 (parallel):   Task 7  ──┐                       │
-                               Task 8  ──┐               │
-                               Task 9  ──┤               │
-                               Task 10 ──┤               │
-                               Task 11 ──┘               │
+Group 4 (parallel):   Task 7  ──┐                       🔄
+                               Task 8  ──┐               🔄
+                               Task 9  ──┤               🔄
+                               Task 10 ──┤               🔄
+                               Task 11 ──┘               🔄
                                                          │
 Group 5 (sequential): Task 12 ──────────────────────────►│
 Group 6 (sequential): Task 13 ──────────────────────────►│
