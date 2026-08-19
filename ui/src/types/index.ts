@@ -10,6 +10,7 @@ export interface Alert {
   service: string;
   severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
   description: string;
+  team: string;
   status: 'active' | 'acknowledged' | 'resolved' | 'escalated';
   created_at: string;
   acknowledged_at?: string;
@@ -30,12 +31,21 @@ export interface CI {
   type: string;
   provider?: string;
   environment?: string;
+  team?: string;
   labels: Record<string, string>;
 }
 
 export interface Topology {
-  nodes: Array<{ id: string; name: string; type: string }>;
+  nodes: Array<{ id: string; name: string; type: string; team?: string }>;
   edges: Array<{ source: string; target: string; type: string }>;
+}
+
+export interface Service {
+  id: string;
+  name: string;
+  owner_team?: string;
+  sla_tier: string;
+  operational_status: string;
 }
 
 export interface AgentStats {

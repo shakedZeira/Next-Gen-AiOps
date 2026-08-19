@@ -6,7 +6,7 @@ interface Props {
   onResolve: (id: string) => void;
 }
 
-const severityColors = {
+const severityColors: Record<string, string> = {
   critical: 'bg-red-100 text-red-800',
   high: 'bg-orange-100 text-orange-800',
   medium: 'bg-yellow-100 text-yellow-800',
@@ -14,11 +14,22 @@ const severityColors = {
   info: 'bg-gray-100 text-gray-800',
 };
 
-const statusColors = {
+const statusColors: Record<string, string> = {
   active: 'bg-red-50 border-red-200',
   acknowledged: 'bg-yellow-50 border-yellow-200',
   resolved: 'bg-green-50 border-green-200',
   escalated: 'bg-purple-50 border-purple-200',
+};
+
+const teamColors: Record<string, string> = {
+  frontend: 'bg-blue-100 text-blue-800',
+  backend: 'bg-cyan-100 text-cyan-800',
+  payments: 'bg-yellow-100 text-yellow-800',
+  data: 'bg-green-100 text-green-800',
+  platform: 'bg-purple-100 text-purple-800',
+  security: 'bg-red-100 text-red-800',
+  sre: 'bg-indigo-100 text-indigo-800',
+  unassigned: 'bg-gray-100 text-gray-600',
 };
 
 export default function AlertTable({ alerts, onAcknowledge, onResolve }: Props) {
@@ -30,21 +41,27 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve }: Props) 
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Severity</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alert</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
             <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-200">
-          {alerts.map(alert => (
-            <tr key={alert.id} className={`border-l-4 ${statusColors[alert.status]}`}>
+          {alerts.map((alert) => (
+            <tr key={alert.id} className={`border-l-4 ${statusColors[alert.status] || ''}`}>
               <td className="px-4 py-3">
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${severityColors[alert.severity]}`}>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium ${severityColors[alert.severity] || ''}`}>
                   {alert.severity}
                 </span>
               </td>
               <td className="px-4 py-3 text-sm font-medium text-gray-900">{alert.name}</td>
               <td className="px-4 py-3 text-sm text-gray-600">{alert.service}</td>
+              <td className="px-4 py-3">
+                <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${teamColors[alert.team || 'unassigned'] || teamColors.unassigned}`}>
+                  {alert.team || 'unassigned'}
+                </span>
+              </td>
               <td className="px-4 py-3 text-sm text-gray-600">{alert.status}</td>
               <td className="px-4 py-3 text-sm text-gray-500">{new Date(alert.created_at).toLocaleTimeString()}</td>
               <td className="px-4 py-3 text-right space-x-2">

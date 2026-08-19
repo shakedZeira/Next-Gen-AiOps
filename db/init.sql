@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS ci (
     type VARCHAR(100) NOT NULL,
     provider VARCHAR(50),
     environment VARCHAR(50),
+    team VARCHAR(100),
     labels JSONB DEFAULT '{}',
     properties JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -44,6 +45,7 @@ CREATE INDEX idx_ci_type ON ci(type);
 CREATE INDEX idx_ci_provider ON ci(provider);
 CREATE INDEX idx_ci_environment ON ci(environment);
 CREATE INDEX idx_ci_labels ON ci USING GIN(labels);
+CREATE INDEX idx_ci_team ON ci(team);
 CREATE INDEX idx_relationship_source ON relationship(source_id);
 CREATE INDEX idx_relationship_target ON relationship(target_id);
 CREATE INDEX idx_relationship_type ON relationship(type);

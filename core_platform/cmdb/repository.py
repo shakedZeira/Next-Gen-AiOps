@@ -39,6 +39,10 @@ class CMDBRepository:
         await self.session.refresh(svc)
         return svc
 
+    async def list_services(self) -> list[Service]:
+        result = await self.session.execute(select(Service))
+        return list(result.scalars().all())
+
     async def add_ci_to_service(self, service_id: uuid.UUID, ci_id: uuid.UUID, role: str) -> None:
         sc = ServiceCI(service_id=service_id, ci_id=ci_id, role=role)
         self.session.add(sc)
@@ -64,3 +68,18 @@ class CMDBRepository:
             {"service_id": str(service_id)},
         )
         return [dict(row) for row in result]
+
+    async def get_global_topology(self) -> dict:
+        ci_result = await self.session.execute(select(CI))
+        cis = ci_result.scalars().all()
+        nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned"} for c in cis]
+
+        rel_result = await self.session.execute(select(Relationship))
+        rels = rel_result.scalars().all()
+        edges = [{"source": str(r.source_id), "target": str(r.target_id), "type": r.type} for r in rels]
+
+        return {"nodes": nodes, "edges": edges}
+
+    async def get_ci_by_name(self, name: str) -> CI | None:
+        result = await self.session.execute(select(CI).where(CI.name == name))
+        return result.scalar_one_or_none()

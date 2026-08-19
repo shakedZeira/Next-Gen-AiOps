@@ -7,7 +7,7 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(title="Alert NOC", lifespan=lifespan)
-app.include_router(router, prefix="/api/v1/alerts")
+app.include_router(router, prefix="/api/v1")
 
 @app.get("/health")
 async def health():

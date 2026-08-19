@@ -23,14 +23,14 @@ async def create_ci(data: CICreate, session=Depends(get_session), _user=Depends(
 async def get_ci(ci_id: UUID, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
     ci = await repo.get_ci(ci_id)
-    return CIResponse(id=ci.id, name=ci.name, type=ci.type, provider=ci.provider, environment=ci.environment, labels=ci.labels, properties=ci.properties)
+    return CIResponse(id=ci.id, name=ci.name, type=ci.type, provider=ci.provider, environment=ci.environment, team=ci.team, labels=ci.labels, properties=ci.properties)
 
 
 @router.get("/ci", response_model=list[CIResponse])
 async def list_cis(skip: int = 0, limit: int = 100, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
     cis = await repo.list_cis(skip, limit)
-    return [CIResponse(id=c.id, name=c.name, type=c.type, provider=c.provider, environment=c.environment, labels=c.labels, properties=c.properties) for c in cis]
+    return [CIResponse(id=c.id, name=c.name, type=c.type, provider=c.provider, environment=c.environment, team=c.team, labels=c.labels, properties=c.properties) for c in cis]
 
 
 @router.post("/relationship", response_model=RelationshipResponse)
@@ -38,6 +38,13 @@ async def create_relationship(data: RelationshipCreate, session=Depends(get_sess
     repo = CMDBRepository(session)
     rel = await repo.create_relationship(data.model_dump())
     return RelationshipResponse(id=rel.id, **data.model_dump())
+
+
+@router.get("/service", response_model=list[ServiceResponse])
+async def list_services(session=Depends(get_session), _user=Depends(get_current_user)):
+    repo = CMDBRepository(session)
+    svcs = await repo.list_services()
+    return [ServiceResponse(id=s.id, name=s.name, owner_team=s.owner_team, sla_tier=s.sla_tier, operational_status=s.operational_status) for s in svcs]
 
 
 @router.post("/service", response_model=ServiceResponse)
@@ -52,6 +59,13 @@ async def add_ci_to_service(service_id: UUID, data: ServiceCIRequest, session=De
     repo = CMDBRepository(session)
     await repo.add_ci_to_service(service_id, data.ci_id, data.role)
     return {"status": "ok"}
+
+
+@router.get("/topology/all", response_model=TopologyResponse)
+async def get_global_topology(session=Depends(get_session), _user=Depends(get_current_user)):
+    repo = CMDBRepository(session)
+    topo = await repo.get_global_topology()
+    return TopologyResponse(nodes=topo["nodes"], edges=topo["edges"])
 
 
 @router.get("/topology/{service_id}")

@@ -25,7 +25,7 @@ class AlertStore:
             return AlertResponse.model_validate_json(data)
         return None
 
-    async def list_alerts(self, status: str | None = None) -> list[AlertResponse]:
+    async def list_alerts(self, status: str | None = None, team: str | None = None) -> list[AlertResponse]:
         if status:
             ids = await self.redis.smembers(f"alerts:{status}")
         else:
@@ -34,6 +34,8 @@ class AlertStore:
         for alert_id in ids:
             alert = await self.get_alert(alert_id.decode() if isinstance(alert_id, bytes) else alert_id)
             if alert:
+                if team and alert.team != team:
+                    continue
                 alerts.append(alert)
         return sorted(alerts, key=lambda a: a.created_at, reverse=True)
 

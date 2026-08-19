@@ -7,6 +7,7 @@ class CICreate(BaseModel):
     type: str
     provider: str | None = None
     environment: str | None = None
+    team: str | None = None
     labels: dict = {}
     properties: dict = {}
 

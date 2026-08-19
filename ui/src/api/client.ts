@@ -26,36 +26,38 @@ api.interceptors.response.use(
 
 export default api;
 
-// Auth API
 export const authAPI = {
   login: (email: string, password: string) => api.post('/auth/login', { email, password }),
   me: () => api.get('/auth/me'),
 };
 
-// CMDB API
 export const cmdbAPI = {
   listCI: () => api.get('/cmdb/ci'),
   getCI: (id: string) => api.get(`/cmdb/ci/${id}`),
   createCI: (data: any) => api.post('/cmdb/ci', data),
+  listServices: () => api.get('/cmdb/service'),
   getTopology: (serviceId: string) => api.get(`/cmdb/topology/${serviceId}`),
+  getGlobalTopology: () => api.get('/cmdb/topology/all'),
   getImpact: (ciId: string) => api.get(`/cmdb/impact/${ciId}`),
 };
 
-// Alerts API
 export const alertsAPI = {
-  list: (status?: string) => api.get('/alerts', { params: { status } }),
+  list: (status?: string, team?: string) => {
+    const params: Record<string, string> = {};
+    if (status && status !== 'all') params.status = status;
+    if (team && team !== 'all') params.team = team;
+    return api.get('/alerts', { params });
+  },
   groups: () => api.get('/alerts/groups'),
   acknowledge: (id: string, user: string) => api.post(`/alerts/${id}/acknowledge`, { acknowledged_by: user }),
   resolve: (id: string) => api.post(`/alerts/${id}/resolve`),
 };
 
-// Agent Monitor API
 export const agentMonitorAPI = {
   stats: () => api.get('/agent-monitor/stats'),
   modelHealth: () => api.get('/agent-monitor/health/models'),
 };
 
-// ChatBot API
 export const chatbotAPI = {
   chat: (message: string, threadId?: string) => api.post('/chatbot/chat', { message, thread_id: threadId }),
   pendingApprovals: () => api.get('/chatbot/approvals/pending'),
@@ -63,7 +65,6 @@ export const chatbotAPI = {
   reject: (id: string, user: string) => api.post(`/chatbot/approvals/${id}`, { approved: false, decided_by: user }),
 };
 
-// RCA API
 export const rcaAPI = {
   analyze: (data: any) => api.post('/rca/analyze', data),
 };

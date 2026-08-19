@@ -12,8 +12,8 @@ async def create_alert(data: AlertCreate):
 
 
 @router.get("/alerts", response_model=list[dict])
-async def list_alerts(status: str | None = None):
-    alerts = await alert_store.list_alerts(status)
+async def list_alerts(status: str | None = None, team: str | None = None):
+    alerts = await alert_store.list_alerts(status, team)
     return [a.model_dump() for a in alerts]
 
 

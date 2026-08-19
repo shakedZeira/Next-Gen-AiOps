@@ -23,6 +23,7 @@ class AlertCreate(BaseModel):
     service: str
     severity: AlertSeverity
     description: str
+    team: str = "unassigned"
     runbook_url: str | None = None
     labels: dict = {}
 
