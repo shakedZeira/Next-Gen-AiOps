@@ -142,6 +142,23 @@ services:
         condition: service_healthy
     environment:
       REDIS_URL: redis://redis:6379/0
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8005/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  infra-simulator:
+    build:
+      context: .
+      dockerfile: plugins/infra_simulator/Dockerfile
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      alert-noc:
+        condition: service_healthy
+    environment:
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
 
   ui:
     build:

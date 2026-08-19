@@ -50,3 +50,49 @@ CREATE INDEX idx_relationship_source ON relationship(source_id);
 CREATE INDEX idx_relationship_target ON relationship(target_id);
 CREATE INDEX idx_relationship_type ON relationship(type);
 CREATE INDEX idx_service_status ON service(operational_status);
+
+-- Recursive CTE functions for topology queries
+CREATE OR REPLACE FUNCTION get_upstream_dependencies(target_ci UUID)
+RETURNS TABLE(ci_id UUID, ci_name VARCHAR, ci_type VARCHAR, depth INT)
+AS $$
+    WITH RECURSIVE deps AS (
+        SELECT r.source_id AS ci_id, 1 AS depth
+        FROM relationship r WHERE r.target_id = target_ci
+        UNION ALL
+        SELECT r.source_id, d.depth + 1
+        FROM relationship r
+        JOIN deps d ON r.target_id = d.ci_id
+        WHERE d.depth < 10
+    )
+    SELECT d.ci_id, c.name, c.type, d.depth
+    FROM deps d JOIN ci c ON c.id = d.ci_id;
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION get_downstream_impact(source_ci UUID)
+RETURNS TABLE(ci_id UUID, ci_name VARCHAR, ci_type VARCHAR, depth INT)
+AS $$
+    WITH RECURSIVE impact AS (
+        SELECT r.target_id AS ci_id, 1 AS depth
+        FROM relationship r WHERE r.source_id = source_ci
+        UNION ALL
+        SELECT r.target_id, i.depth + 1
+        FROM relationship r
+        JOIN impact i ON r.source_id = i.ci_id
+        WHERE i.depth < 10
+    )
+    SELECT i.ci_id, c.name, c.type, i.depth
+    FROM impact i JOIN ci c ON c.id = i.ci_id;
+$$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION get_service_topology(svc UUID)
+RETURNS TABLE(
+    ci_id UUID, ci_name VARCHAR, ci_type VARCHAR,
+    rel_source UUID, rel_target UUID, rel_type VARCHAR
+)
+AS $$
+    SELECT c.id, c.name, c.type, r.source_id, r.target_id, r.type
+    FROM service_ci sc
+    JOIN ci c ON c.id = sc.ci_id
+    LEFT JOIN relationship r ON (r.source_id = c.id OR r.target_id = c.id)
+    WHERE sc.service_id = svc;
+$$ LANGUAGE sql;

@@ -17,6 +17,11 @@ const NODE_COLORS: Record<string, string> = {
   cache: '#f59e0b',
   message_queue: '#a855f7',
   storage: '#ec4899',
+  switch: '#14b8a6',
+  router: '#f97316',
+  physical_server: '#64748b',
+  container: '#06b6d4',
+  pod: '#8b5cf6',
 };
 
 const EDGE_HEALTH: Record<string, { color: string; width: number }> = {
@@ -115,6 +120,26 @@ export default function TopologyGraph({ topology, selectedService, height = 'h-[
         {
           selector: 'node[type="storage"]',
           style: { shape: 'tag' as any, width: 50, height: 50 },
+        },
+        {
+          selector: 'node[type="switch"]',
+          style: { shape: 'octagon' as any, width: 50, height: 50 },
+        },
+        {
+          selector: 'node[type="router"]',
+          style: { shape: 'tag' as any, width: 55, height: 55 },
+        },
+        {
+          selector: 'node[type="physical_server"]',
+          style: { shape: 'rectangle' as any, width: 55, height: 45 },
+        },
+        {
+          selector: 'node[type="container"]',
+          style: { shape: 'round-rectangle' as any, width: 48, height: 48 },
+        },
+        {
+          selector: 'node[type="pod"]',
+          style: { shape: 'ellipse' as any, width: 48, height: 48 },
         },
         {
           selector: 'node:after',
