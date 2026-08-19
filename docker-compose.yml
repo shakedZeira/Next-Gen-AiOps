@@ -10,15 +10,14 @@ services:
       - "3200:3200"
       - "4317:4317"
       - "4318:4318"
-    volumes:
-      - ./otel-lgtm/config:/etc/otel-lgtm
     environment:
       - ENABLE_LOGS_ALL=true
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/3000'"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 180s
 
   postgres:
     image: postgres:16
@@ -77,10 +76,10 @@ services:
       REDIS_URL: redis://redis:6379/0
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
       interval: 15s
       timeout: 5s
-      retries: 3
+      retries: 5
 
   generator:
     build:

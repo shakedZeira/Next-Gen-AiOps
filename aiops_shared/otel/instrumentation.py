@@ -1,6 +1,7 @@
 from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, OTLPSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, SERVICE_VERSION, Resource
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
@@ -18,4 +19,4 @@ def init_tracer(service_name: str) -> TracerProvider:
 
 
 def instrument_fastapi(app, service_name: str) -> None:
-    FastAPIInstrumentor.instrument_app(app, service_name=service_name)
+    FastAPIInstrumentor.instrument_app(app)

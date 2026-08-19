@@ -3,8 +3,10 @@ import time
 from opentelemetry import trace, metrics
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor, OTLPSpanExporter
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader, OTLPMetricExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from opentelemetry.semconv.trace import SpanAttributes
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor

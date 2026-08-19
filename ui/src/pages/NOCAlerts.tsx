@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import AlertTable from '../components/AlertTable';
-import { alertsAPI } from '../api/client';
 import { Alert } from '../types';
 
 const DEMO_ALERTS: Alert[] = [

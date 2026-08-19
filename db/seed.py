@@ -47,7 +47,7 @@ def seed():
 
         for ci in SEED_DATA["cis"]:
             conn.execute(text(
-                "INSERT INTO ci (id, name, type, provider, environment, labels) VALUES (:id, :name, :type, :provider, :environment, :labels::jsonb)"
+                "INSERT INTO ci (id, name, type, provider, environment, labels) VALUES (:id, :name, :type, :provider, :environment, CAST(:labels AS jsonb))"
             ), {**ci, "labels": json.dumps(ci.get("labels", {}))})
 
         cis = SEED_DATA["cis"]
