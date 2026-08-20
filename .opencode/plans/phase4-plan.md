@@ -5,157 +5,104 @@ Phase 4 covers 5 workstreams: Geo Map enhancements, Docs page, SRE-driven improv
 
 ---
 
-## Item 1: Inter-Site Flow Animation on Geo Map
+## Item 1: Inter-Site Flow Animation on Geo Map ✅ COMPLETED
 
 **Goal:** Add animated traffic flow lines between sites showing data flow direction, volume, and health.
 
 ### Design
-- Use Leaflet `L.polyline` with CSS animation via `L.divIcon` or canvas overlay
-- Flow direction: animated dash offset using CSS `@keyframes`
+- Use Leaflet `L.polyline` with quadratic bezier arc curves between sites
+- Flow direction: animated dash offset using CSS `@keyframes` on SVG stroke
 - Flow color: green (healthy), yellow (degraded), red (critical) based on connection status
-- Flow thickness: represents bandwidth/utilization (thin=low, thick=high)
-- Tooltip on hover shows: source → target, type, bandwidth, latency, status
+- Flow thickness: represents utilization (thin=low, thick=high)
+- Tooltip on hover shows: source → target, type, bandwidth, latency, utilization, status, packets/errors
 
-### Files to Modify
-- `ui/src/components/GeoMap.tsx` — Add animated flow overlay
-- `core_platform/routers/cmdb.py` — Add `GET /topology/inter-site/flows` with traffic data
-- `ui/src/types/index.ts` — Add `SiteFlow` interface
+### Files Modified
+- `ui/src/components/GeoMap.tsx` — Animated curved flow polylines with `getArcPoints()` helper
+- `ui/src/index.css` — CSS `@keyframes flowDash` animation for stroke-dashoffset
+- `core_platform/routers/cmdb.py` — `GET /topology/inter-site/flows` with 5 real traffic flows
+- `ui/src/types/index.ts` — `SiteFlow` interface
 
-### Implementation Steps
-1. Add backend endpoint `GET /api/v1/cmdb/topology/inter-site/flows` returning:
-   ```json
-   [{
-     "source_site": "global-hq",
-     "target_site": "regional-dc-1",
-     "connection_type": "mpls",
-     "bandwidth_mbps": 10000,
-     "utilization_pct": 67,
-     "latency_ms": 12,
-     "status": "healthy",
-     "bytes_per_sec": 670000000
-   }]
-   ```
-2. Create animated polyline rendering using Leaflet canvas with CSS animations
-3. Add flow legend (color = health, thickness = utilization)
-4. Add toggle to show/hide flows on the geo map
-5. Add flow data to popups on connection lines
-
-### CSS Animation Approach
-```css
-.flow-line {
-  stroke-dasharray: 12 8;
-  animation: flowDash 1s linear infinite;
-}
-@keyframes flowDash {
-  to { stroke-dashoffset: -20; }
-}
-```
+### What Changed (Aug 20)
+- Replaced broken SVG divIcon marker approach (static 200px horizontal line at midpoint) with proper Leaflet polylines drawn between actual site coordinates
+- Added `getArcPoints()` function that computes quadratic bezier curve points with perpendicular offset proportional to distance
+- Animated dash overlay layer with CSS `stroke-dashoffset` animation via `requestAnimationFrame`
+- Removed orphaned `SiteGeoMap.tsx` component
+- Fixed DCRoom import from `core_platform.models.cmdb` to `aiops_shared.models.dc`
 
 ---
 
-## Item 2: Zoomed-In Site Geo Map
+## Item 2: Zoomed-In Site Geo Map with Topology ✅ COMPLETED
 
-**Goal:** When clicking a site on the global geo map, show a zoomed-in map of that site with building/room/rack markers.
+**Goal:** Click site on global geo map → fly to site, show Cytoscape topology graph inside the circle on the map.
 
 ### Design
-- New `SiteGeoMap` component that shows a single site at street-level zoom
-- Markers for: DC rooms (building icons), racks (server icons), key CIs (device icons)
-- Clicking a room marker navigates to DC Explorer with that room pre-selected
-- Clicking a CI marker shows a mini detail popup
-- Uses the existing DC room/rack/equipment API data
+- Click "Zoom In" on site popup → `map.flyTo()` to zoom 14
+- Draw 800m-radius dashed blue circle on the site
+- Fetch site topology + overview data
+- Render Cytoscape topology graph inside a circular-clipped div, pixel-positioned using `latLngToContainerPoint()`
+- Fade-in animation (0.8s opacity transition) after flyTo completes
+- Position syncs on `zoomend`/`moveend` events
+- Compact info bar with device/room/rack counts, teams
+- "← Global" button to zoom back out
 
-### Files to Create/Modify
-- `ui/src/components/SiteGeoMap.tsx` — **NEW** zoomed-in site map
-- `ui/src/components/GeoMap.tsx` — Add click handler to site markers
-- `ui/src/pages/CMDBExplorer.tsx` — Add site geo map modal/panel
-- `core_platform/routers/cmdb.py` — Add `GET /cmdb/sites/{site_name}/map-data` returning room/CI coordinates
-- `ui/src/types/index.ts` — Add `SiteMapPin` interface
+### Files Modified
+- `ui/src/components/GeoMap.tsx` — `focusOnSite()`, `resetToGlobal()`, `calcOverlayPos()`, overlay rendering
+- `ui/src/pages/CMDBExplorer.tsx` — Removed `onSiteClick` and `onNavigateToTopology` props
+- `ui/src/api/client.ts` — `getSiteTopology()`, `getSiteOverview()` methods
+- `core_platform/routers/cmdb.py` — `/sites/{name}/overview`, `/sites/{name}/map-data` endpoints
 
-### Implementation Steps
-1. Add backend endpoint `GET /api/v1/cmdb/sites/{site_name}/map-data` returning:
-   ```json
-   {
-     "center": {"lat": 40.7128, "lng": -74.0060},
-     "zoom": 15,
-     "pins": [
-       {"id": "room-uuid", "name": "DC1-Main", "type": "room", "lat": 40.713, "lng": -74.005, "details": {"tier": 3, "racks": 10}},
-       {"id": "ci-uuid", "name": "Core-SW-1", "type": "switch", "lat": 40.7132, "lng": -74.0055, "site": "global-hq"}
-     ]
-   }
-   ```
-   Since we don't have real GPS coordinates for rooms/CIs within a site, generate synthetic coordinates as offsets from the site center (e.g., rooms at ±0.001 degrees).
-
-2. Create `SiteGeoMap.tsx` component:
-   - Leaflet map centered on site coordinates, zoom 15-17
-   - Custom markers per pin type (building, server, switch, router icons)
-   - Click handler on room pins → navigate to `/dc-explorer?room={id}`
-   - Click handler on CI pins → show mini popup with CI details
-   - "Back to Global Map" button
-
-3. Modify CMDBExplorer:
-   - When in 'geo' view mode and user clicks a site marker, show `SiteGeoMap` in a modal or replace the global map
-   - Add breadcrumb: Global Map > Site Name
-
-4. Modify `GeoMap.tsx`:
-   - Wire popup "View Site Map" button to call `onSiteClick`
+### What Changed (Aug 20)
+- GeoMap rewritten with focused site drill-down mode
+- Overlay positioned via `map.latLngToContainerPoint()` for pixel-perfect alignment
+- `SITE_RADIUS_METERS = 800` for the circle
+- Deleted orphaned `SiteGeoMap.tsx` and `.part1` files
+- Fixed 500 errors from DCRoom import bug
 
 ---
 
-## Item 3: Documentation Page
+## Item 3: Documentation Page ✅ COMPLETED
 
-**Goal:** Add a `/docs` page explaining all project capabilities with interactive examples.
+**Goal:** Add a `/docs` page explaining all project capabilities.
 
-### Files to Create/Modify
-- `ui/src/pages/Docs.tsx` — **NEW** documentation page
-- `ui/src/App.tsx` — Add route `/docs`
-- `ui/src/components/Sidebar.tsx` — Add nav item
+### Files Created
+- `ui/src/pages/Docs.tsx` — 390-line comprehensive documentation page
 
 ### Content Structure
-1. **Overview** — What is Next-Gen AiOps, architecture diagram (text-based)
-2. **Getting Started** — Login, default credentials, first steps
-3. **Dashboard** — Site health overview, stat cards, topology
-4. **CMDB Explorer** — 3 view modes explained, site filtering, CI details
-5. **Geo Map** — Global map, site map, flow visualization
-6. **NOC Alerts** — Filtering, acknowledge/resolve workflow
-7. **AI Chatbot** — How to use, suggestion chips, approval queue
-8. **DC Explorer** — Room layout, rack visualization, 42U elevation
-9. **Agent Monitor** — LLM usage, model health
-10. **System Health** — Infrastructure monitoring
-11. **Architecture** — Tech stack, microservices, database schema
-12. **API Reference** — Key endpoints with examples
-13. **Deployment** — Docker Compose setup, environment variables
+13 sections: Overview, Getting Started, Dashboard, CMDB Explorer, Geo Map, NOC Alerts, AI Chatbot, DC Explorer, Agent Monitor, System Health, Architecture, API Reference, Deployment
 
-### Design
-- Sidebar-based navigation within the docs page
-- Code blocks with syntax highlighting
+### What Changed (Aug 20)
+- Created sidebar-based docs navigation with 13 sections
 - Dark theme consistent with the app
+- ASCII architecture diagram
+- Code blocks with API endpoints
+- **Text color fix:** Changed body text from `text-gray-300` → `text-gray-200`, nav items from `text-gray-400` → `text-gray-300` for better readability
 
 ---
 
-## Item 4: SRE Deep Dive Improvements
+## Item 4: SRE Deep Dive Improvements ✅ COMPLETED
 
-### 4A: Critical Quick Wins (< 1 day each)
+### 4A: Critical Quick Wins
 
-| # | Fix | File | Effort |
+| # | Fix | File | Status |
 |---|-----|------|--------|
-| 1 | Fix `time.sleep()` → `asyncio.sleep()` in generator | `plugins/generator/otel_emitter.py` | 30 min |
-| 2 | Add security headers to nginx | `ui/nginx.conf` | 10 min |
-| 3 | Add Redis password to docker-compose | `docker-compose.yml` | 20 min |
-| 4 | Add DB check to health endpoint | `core_platform/routers/health.py` | 30 min |
-| 5 | Add Cache-Control headers to topology endpoints | `core_platform/routers/cmdb.py` | 20 min |
+| 1 | Fix `time.sleep()` → `asyncio.sleep()` | `plugins/generator/otel_emitter.py` | ✅ Done |
+| 2 | Add security headers to nginx | `ui/nginx.conf` | ✅ Done |
+| 3 | Add Redis password to docker-compose | `docker-compose.yml` | ✅ Done |
+| 4 | Add DB check to health endpoint | `core_platform/routers/health.py` | ✅ Done |
+| 5 | Add Cache-Control headers to topology endpoints | `core_platform/routers/cmdb.py` | ✅ Done |
 
-### 4B: Architecture Fixes (1-2 days each)
+### 4B: Architecture Fixes
 
-| # | Fix | File(s) | Effort |
+| # | Fix | File(s) | Status |
 |---|-----|---------|--------|
-| 6 | Fix httpx connection pooling in proxy | `core_platform/main.py` | 1 hr |
-| 7 | Add proxy request timeouts | `core_platform/main.py` | 30 min |
-| 8 | Fix ApprovalManager to read from Redis | `plugins/chatbot/approval.py` | 1 hr |
-| 9 | Fix unbounded list in agent-monitor | `plugins/agent_monitor/router.py` | 30 min |
-| 10 | Add ErrorBoundary to React app | `ui/src/App.tsx` | 30 min |
-| 11 | Wire Dashboard stats to real APIs | `ui/src/pages/Dashboard.tsx` | 2 hr |
-| 12 | Wire edge health to real alert data | `ui/src/components/TopologyGraph.tsx` | 2 hr |
-| 13 | Wire NodeDetailPanel alerts to real data | `ui/src/components/NodeDetailPanel.tsx` | 1 hr |
+| 6 | Fix httpx connection pooling in proxy | `core_platform/main.py` | ✅ Done |
+| 7 | Add proxy request timeouts | `core_platform/main.py` | ✅ Done |
+| 8 | Fix ApprovalManager to read from Redis | `plugins/chatbot/approval.py` | ✅ Done |
+| 9 | Fix unbounded list in agent-monitor | `plugins/agent_monitor/router.py` | ✅ Done |
+| 10 | Add ErrorBoundary to React app | `ui/src/App.tsx` | ✅ Done |
+| 11 | Wire Dashboard stats to real APIs | `ui/src/pages/Dashboard.tsx` | ✅ Done |
+| 12 | Wire edge health to real alert data | `ui/src/components/TopologyGraph.tsx` | ✅ Done |
+| 13 | Wire NodeDetailPanel alerts to real data | `ui/src/components/NodeDetailPanel.tsx` | ✅ Done |
 
 ---
 
@@ -184,34 +131,13 @@ Phase 4 covers 5 workstreams: Geo Map enhancements, Docs page, SRE-driven improv
 
 ---
 
-## Execution Order
+## Execution Status
 
-### Wave 1 (Parallel): Quick Wins + Geo Map Backend
-1. Fix `time.sleep()` → `asyncio.sleep()`
-2. Add security headers to nginx
-3. Add Redis password
-4. Add DB check to health endpoint
-5. Add Cache-Control headers
-6. Add inter-site flow endpoint
-7. Add site map-data endpoint
-
-### Wave 2 (Parallel): Geo Map Frontend + Docs
-8. Implement animated flow lines on GeoMap
-9. Implement SiteGeoMap component
-10. Integrate SiteGeoMap into CMDBExplorer
-11. Create Docs page with all sections
-
-### Wave 3 (Parallel): Architecture Fixes + Dashboard
-12. Fix httpx connection pooling
-13. Add proxy timeouts
-14. Fix ApprovalManager Redis reading
-15. Fix agent-monitor memory leak
-16. Add React ErrorBoundary
-17. Wire Dashboard to real APIs
-18. Wire edge health to real data
-19. Wire NodeDetailPanel to real alerts
-
-### Wave 4: Rebuild & Verify
-20. Docker rebuild all services
-21. End-to-end testing
-22. Performance verification
+### Wave 1 ✅ Quick Wins + Geo Map Backend
+### Wave 2 ✅ Geo Map Frontend + Docs
+### Wave 3 ✅ Architecture Fixes + Dashboard
+### Wave 4 ✅ Rebuild & Verify
+### Wave 5 (Current) — Bug Fixes & Polish
+- [x] Fix geo map flow lines (curved polylines, not static SVG markers)
+- [x] Fix docs text colors (too dim on dark background)
+- [ ] Commit & push all changes

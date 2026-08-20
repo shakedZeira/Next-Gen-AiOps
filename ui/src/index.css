@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.flow-animated-line {
+  animation: flowDash 1s linear infinite;
+}
+
+@keyframes flowDash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}

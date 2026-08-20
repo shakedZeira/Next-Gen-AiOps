@@ -39,6 +39,25 @@ function createSiteMarkerIcon(color: string): L.DivIcon {
   });
 }
 
+function getArcPoints(source: L.LatLngTuple, target: L.LatLngTuple, numPoints = 30): L.LatLngTuple[] {
+  const points: L.LatLngTuple[] = [];
+  const [lat1, lng1] = source;
+  const [lat2, lng2] = target;
+  const midLat = (lat1 + lat2) / 2;
+  const midLng = (lng1 + lng2) / 2;
+  const dist = Math.sqrt((lat2 - lat1) ** 2 + (lng2 - lng1) ** 2);
+  const curvature = dist * 0.15;
+  const perpLat = -(lng2 - lng1) / dist * curvature;
+  const perpLng = (lat2 - lat1) / dist * curvature;
+  for (let i = 0; i <= numPoints; i++) {
+    const t = i / numPoints;
+    const lat = (1 - t) * (1 - t) * lat1 + 2 * (1 - t) * t * (midLat + perpLat) + t * t * lat2;
+    const lng = (1 - t) * (1 - t) * lng1 + 2 * (1 - t) * t * (midLng + perpLng) + t * t * lng2;
+    points.push([lat, lng]);
+  }
+  return points;
+}
+
 interface OverlayPos {
   x: number;
   y: number;
@@ -122,6 +141,53 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
     setLoadingSite(false);
   }, [sites]);
 
+  const drawFlows = useCallback((layer: L.LayerGroup, flowData: SiteFlow[], siteMap: Map<string, SiteLocation>) => {
+    flowData.forEach((flow) => {
+      const source = siteMap.get(flow.source_site);
+      const target = siteMap.get(flow.target_site);
+      if (!source || !target) return;
+
+      const statusColor = STATUS_COLORS[flow.status] || '#6b7280';
+      const strokeW = 2 + (flow.utilization_pct / 100) * 4;
+      const sourceTuple: L.LatLngTuple = [source.lat, source.lng];
+      const targetTuple: L.LatLngTuple = [target.lat, target.lng];
+      const arcPoints = getArcPoints(sourceTuple, targetTuple);
+
+      const polyline = L.polyline(arcPoints, {
+        color: statusColor,
+        weight: strokeW,
+        opacity: 0.85,
+        dashArray: '12, 8',
+        lineCap: 'round',
+      }).addTo(layer);
+
+      const tooltipHtml = `
+        <div style="font-family:system-ui;min-width:180px;font-size:12px;">
+          <div style="font-weight:bold;margin-bottom:4px;">${flow.source_site} → ${flow.target_site}</div>
+          <div>Type: ${flow.connection_type.toUpperCase()}</div>
+          <div>Bandwidth: ${flow.bandwidth_mbps} Mbps</div>
+          <div>Utilization: ${flow.utilization_pct}%</div>
+          <div>Latency: ${flow.latency_ms}ms</div>
+          <div>Packets: ${(flow.packets_per_sec / 1000).toFixed(1)}K/s · Errors: ${flow.errors_per_sec}/s</div>
+          <div>Status: <span style="color:${statusColor};font-weight:600;">${flow.status}</span></div>
+        </div>
+      `;
+      polyline.bindTooltip(tooltipHtml, { direction: 'top', sticky: true });
+
+      // Animated dash overlay (slightly thinner, brighter, offset animation)
+      const animLine = L.polyline(arcPoints, {
+        color: statusColor,
+        weight: Math.max(1, strokeW - 1.5),
+        opacity: 1,
+        dashArray: '6, 14',
+        lineCap: 'round',
+        className: 'flow-animated-line',
+      }).addTo(layer);
+
+      (animLine as any)._flowAnimOffset = 0;
+    });
+  }, []);
+
   const resetToGlobal = useCallback(() => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -139,23 +205,9 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
       const siteMap = new Map(sites.map(s => [s.site, s]));
       const flowLayer = flowLayerRef.current;
       if (!flowLayer) return;
-      flows.forEach((flow) => {
-        const source = siteMap.get(flow.source_site);
-        const target = siteMap.get(flow.target_site);
-        if (!source || !target) return;
-        const statusColor = STATUS_COLORS[flow.status] || '#6b7280';
-        const strokeW = 1 + (flow.utilization_pct / 100) * 5;
-        const midLat = (source.lat + target.lat) / 2;
-        const midLng = (source.lng + target.lng) / 2;
-        const svgHtml = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" style="overflow:visible;position:absolute;top:-20px;left:-100px;"><defs><style>@keyframes flowAnim{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}.flow-line{stroke-dasharray:10 10;animation:flowAnim .8s linear infinite;}</style></defs><line x1="0" y1="20" x2="200" y2="20" stroke="${statusColor}" stroke-width="${strokeW}" class="flow-line"/></svg>`;
-        const icon = L.divIcon({ className: 'flow-overlay', html: svgHtml, iconSize: [200, 40], iconAnchor: [100, 20] });
-        L.marker([midLat, midLng], { icon, interactive: true }).addTo(flowLayer).bindTooltip(
-          `<div style="font-family:system-ui;min-width:180px;font-size:12px;"><div style="font-weight:bold;margin-bottom:4px;">${flow.source_site} → ${flow.target_site}</div><div>Type: ${flow.connection_type.toUpperCase()}</div><div>Bandwidth: ${flow.bandwidth_mbps} Mbps</div><div>Utilization: ${flow.utilization_pct}%</div><div>Latency: ${flow.latency_ms}ms</div><div>Status: <span style="color:${statusColor};font-weight:600;">${flow.status}</span></div></div>`,
-          { direction: 'top', offset: [0, -10] }
-        );
-      });
+      drawFlows(flowLayer, flows, siteMap);
     }
-  }, [flows, showFlows, sites]);
+  }, [flows, showFlows, sites, drawFlows]);
 
   // Init map
   useEffect(() => {
@@ -200,10 +252,10 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
       const target = siteMap.get(conn.target_site);
       if (source && target) {
         const color = CONN_COLORS[conn.connection_type] || '#64748b';
-        L.polyline(
-          [[source.lat, source.lng], [target.lat, target.lng]],
-          { color, weight: 3, dashArray: '8, 6', opacity: 0.8 }
-        ).addTo(map).bindPopup(`
+        const arcPoints = getArcPoints([source.lat, source.lng], [target.lat, target.lng]);
+        L.polyline(arcPoints, {
+          color, weight: 2, dashArray: '6, 8', opacity: 0.5,
+        }).addTo(map).bindPopup(`
           <div style="font-family:system-ui;">
             <div style="font-weight:bold;font-size:13px;">${conn.source_site} ↔ ${conn.target_site}</div>
             <div style="font-size:12px;color:#666;margin-top:4px;">
@@ -233,9 +285,9 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
         div.innerHTML = `
           <div style="background:rgba(0,0,0,0.85);padding:10px 14px;border-radius:8px;font-size:11px;color:white;font-family:system-ui;">
             <div style="font-weight:bold;margin-bottom:6px;">Traffic Flow</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span style="display:inline-block;width:20px;height:3px;background:#22c55e;"></span> Healthy</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span style="display:inline-block;width:20px;height:3px;background:#eab308;"></span> Degraded</div>
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#ef4444;"></span> Critical</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span style="display:inline-block;width:20px;height:3px;background:#22c55e;border-radius:2px;"></span> Healthy</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;"><span style="display:inline-block;width:20px;height:3px;background:#eab308;border-radius:2px;"></span> Degraded</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><span style="display:inline-block;width:20px;height:3px;background:#ef4444;border-radius:2px;"></span> Critical</div>
             <div style="border-top:1px solid #374151;padding-top:4px;font-size:10px;color:#9ca3af;">Thickness = Utilization</div>
           </div>
         `;
@@ -265,7 +317,6 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
 
     const onMoveEnd = () => {
       update();
-      // Fade in topology after flyTo completes
       if (!overlayVisible) {
         setTimeout(() => setOverlayVisible(true), 200);
       }
@@ -273,7 +324,6 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
 
     map.on('zoomend moveend', onMoveEnd);
 
-    // Initial position after a short delay for flyTo to settle
     const timer = setTimeout(() => {
       update();
       setTimeout(() => setOverlayVisible(true), 300);
@@ -294,52 +344,35 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
     if (!showFlows || !flows || flows.length === 0) return;
 
     const siteMap = new Map(sites.map(s => [s.site, s]));
+    drawFlows(flowLayer, flows, siteMap);
+  }, [flows, showFlows, sites, focusedSite, drawFlows]);
 
-    flows.forEach((flow) => {
-      const source = siteMap.get(flow.source_site);
-      const target = siteMap.get(flow.target_site);
-      if (!source || !target) return;
-
-      const statusColor = STATUS_COLORS[flow.status] || '#6b7280';
-      const strokeW = 1 + (flow.utilization_pct / 100) * 5;
-      const midLat = (source.lat + target.lat) / 2;
-      const midLng = (source.lng + target.lng) / 2;
-
-      const svgHtml = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="200" height="40" style="overflow:visible;position:absolute;top:-20px;left:-100px;">
-          <defs>
-            <style>@keyframes flowAnim{from{stroke-dashoffset:20}to{stroke-dashoffset:0}}.flow-line{stroke-dasharray:10 10;animation:flowAnim .8s linear infinite;}</style>
-          </defs>
-          <line x1="0" y1="20" x2="200" y2="20" stroke="${statusColor}" stroke-width="${strokeW}" class="flow-line"/>
-        </svg>
-      `;
-
-      const icon = L.divIcon({
-        className: 'flow-overlay',
-        html: svgHtml,
-        iconSize: [200, 40],
-        iconAnchor: [100, 20],
+  // Animate flow dashes
+  useEffect(() => {
+    const flowLayer = flowLayerRef.current;
+    if (!flowLayer) return;
+    let frameId: number;
+    let offset = 0;
+    const animate = () => {
+      offset -= 0.4;
+      flowLayer.eachLayer((layer) => {
+        if ((layer as any)._flowAnimOffset !== undefined) {
+          const el = (layer as L.Path).getElement();
+          if (el) {
+            (el as SVGElement).style.strokeDashoffset = String(offset);
+          }
+        }
       });
-
-      L.marker([midLat, midLng], { icon, interactive: true }).addTo(flowLayer).bindTooltip(`
-        <div style="font-family:system-ui;min-width:180px;font-size:12px;">
-          <div style="font-weight:bold;margin-bottom:4px;">${flow.source_site} → ${flow.target_site}</div>
-          <div>Type: ${flow.connection_type.toUpperCase()}</div>
-          <div>Bandwidth: ${flow.bandwidth_mbps} Mbps</div>
-          <div>Utilization: ${flow.utilization_pct}%</div>
-          <div>Latency: ${flow.latency_ms}ms</div>
-          <div>Packets: ${(flow.packets_per_sec / 1000).toFixed(1)}K/s · Errors: ${flow.errors_per_sec}/s</div>
-          <div>Status: <span style="color:${statusColor};font-weight:600;">${flow.status}</span></div>
-        </div>
-      `, { direction: 'top', offset: [0, -10] });
-    });
-  }, [flows, showFlows, sites, focusedSite]);
+      frameId = requestAnimationFrame(animate);
+    };
+    frameId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frameId);
+  }, [showFlows, flows, focusedSite]);
 
   return (
     <div className="relative">
       <div ref={mapRef} className={`w-full ${height} rounded-xl border border-gray-700`} />
 
-      {/* Compact site info bar */}
       {focusedSite && (
         <div className="absolute top-4 left-4 z-[1000] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden transition-opacity duration-500">
           {loadingSite ? (
@@ -379,7 +412,6 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
         </div>
       )}
 
-      {/* Topology fills the circle — pixel-positioned, fades in */}
       {focusedSite && siteTopology && overlayPos && (
         <div
           className="absolute z-[999] rounded-full overflow-hidden border-2 border-blue-500/50 shadow-[0_0_40px_rgba(59,130,246,0.4)] pointer-events-auto"
