@@ -129,8 +129,16 @@ export default function Docs() {
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Site Overview</h3>
             <p className="text-gray-200 mb-4">
-              High-level view of all 5 sites with aggregate topology. Click a site to see its summary (devices, racks, teams).
-              "View Full Topology" button to drill into detailed view.
+              High-level view of all 5 sites with aggregate topology. Each site shows key device type
+              counts (routers, switches, firewalls, servers, databases). Click a site for an expandable
+              topology view showing only principal devices (routers, switches, firewalls, load balancers).
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Expandable Topology</h3>
+            <p className="text-gray-200 mb-4">
+              Click any principal device node to expand and reveal its connected child devices
+              (servers, databases, etc.) with animated fade-in. Expanded nodes show a "+N" label
+              indicating how many children they have. Click again to collapse. Non-principal nodes
+              (servers, databases) appear with a cyan border when expanded.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Geo Map</h3>
             <p className="text-gray-200 mb-4">
@@ -171,21 +179,36 @@ export default function Docs() {
           {/* === Section 6: NOC Alerts === */}
           <section id="noc-alerts">
             <h2 className="text-2xl font-bold text-white mb-4">NOC Alert Console</h2>
-            <p className="text-gray-200 mb-4">Real-time alert management interface.</p>
+            <p className="text-gray-200 mb-4">Real-time alert management with deduplication and incident grouping.</p>
+            <h3 className="text-lg font-semibold text-white mb-2">Alerts vs Incidents</h3>
+            <p className="text-gray-200 mb-4">
+              Toggle between individual alerts and grouped incidents. Incidents group related alerts
+              by normalized name, service, and severity. Each incident shows the first seen time,
+              repeat count, and affected device count.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Alert Deduplication</h3>
+            <p className="text-gray-200 mb-4">
+              Alerts with the same normalized name (case-punctuated, whitespace-collapsed) within a
+              60-second window are deduplicated. The repeat count badge (e.g. "x3") shows how many
+              times the alert has recurred since first seen.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">Filtering</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
               <li><span className="font-medium text-white">By status:</span> All, Active, Acknowledged, Resolved</li>
               <li><span className="font-medium text-white">By team:</span> All, Frontend, Backend, Payments, Data, Platform, Security, SRE, Network</li>
             </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Simulate Button</h3>
+            <p className="text-gray-200 mb-4">
+              Run pre-built failure scenarios to test alert handling. Select a scenario from the
+              dropdown (payment-outage, network-failure, disk-exhaustion, cascading-microservice,
+              database-failover) and click "Run" to generate a burst of realistic alerts.
+              Auto-refreshes every 5 seconds during simulation.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">Alert Actions</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
               <li><span className="font-medium text-white">Acknowledge:</span> Mark alert as seen by an operator</li>
               <li><span className="font-medium text-white">Resolve:</span> Mark alert as fixed</li>
             </ul>
-            <h3 className="text-lg font-semibold text-white mb-2">Alert Groups</h3>
-            <p className="text-gray-200">
-              Alerts are grouped by service and severity for easier triage.
-            </p>
           </section>
 
           {/* === Section 7: AI Chatbot === */}
@@ -340,10 +363,16 @@ GET    /api/v1/cmdb/dc/rooms/{id}/racks   - Get racks in room
 GET    /api/v1/cmdb/dc/racks/{id}/equipment - Get equipment in rack`}</pre>
             
             <h3 className="text-lg font-semibold text-white mb-2">Alerts</h3>
-            <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/alerts                     - List alerts
+            <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/alerts                     - List alerts (deduplicated)
+GET    /api/v1/alerts/incidents            - List incident groups
+GET    /api/v1/alerts/stats                - Alert statistics
 POST   /api/v1/alerts                     - Create alert
 POST   /api/v1/alerts/{id}/acknowledge    - Acknowledge alert
 POST   /api/v1/alerts/{id}/resolve        - Resolve alert`}</pre>
+
+            <h3 className="text-lg font-semibold text-white mb-2">Simulation</h3>
+            <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/simulate/scenarios           - List available scenarios
+POST   /api/v1/simulate/scenario            - Run a failure scenario`}</pre>
             
             <h3 className="text-lg font-semibold text-white mb-2">Chatbot</h3>
             <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200">{`POST   /api/v1/chatbot/chat               - Send message

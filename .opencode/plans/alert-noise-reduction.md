@@ -326,3 +326,22 @@ simulateAPI = {
 12. Docker build
 13. Test: trigger scenario → verify dedup → verify incidents view
 14. Git push
+
+---
+
+## Status: COMPLETED ✅
+
+### Commits
+- `2ad3667` — Alert noise reduction + simulated live alerts (backend + frontend)
+- `d9a81f6` — Fix simulate button 404 (add `/api/v1/simulate/*` proxy route)
+- `9cbf623` — ServiceNow Principal Class pattern (site overview simplification)
+- `4a7abe1` — Expandable site topology (drill-down in CMDBExplorer)
+- `851f719` — Fix expand/collapse bug (CMDBExplorer not passing expandable prop)
+- `a14781f` — Fix CI failures (ruff lint + mypy type errors)
+
+### Verified
+- All 5 failure scenarios generate realistic alerts with correct dedup
+- Incidents view groups related alerts with repeat counts
+- Simulate button triggers auto-refresh during scenario
+- Expandable topology shows principal devices, click to expand children
+- ruff: 0 errors, mypy: 0 errors, npm build: success
