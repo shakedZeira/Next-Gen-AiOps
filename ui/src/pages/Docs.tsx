@@ -209,7 +209,14 @@ export default function Docs() {
               Run pre-built failure scenarios to test alert handling. Select a scenario from the
               dropdown (payment-outage, network-failure, disk-exhaustion, cascading-microservice,
               database-failover) and click "Run" to generate a burst of realistic alerts.
-              Auto-refreshes every 5 seconds during simulation.
+              Auto-refreshes every 2 seconds during simulation.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Incidents View</h3>
+            <p className="text-gray-200 mb-4">
+              Toggle to "Incidents" to see alerts grouped by incident. Each incident shows severity,
+              service, alert count, and time range. Click any incident to drill into the detail view
+              with a visual timeline showing alert cascade, time deltas between alerts, and individual
+              alert status. Bulk acknowledge or resolve all alerts in an incident from the detail view.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Alert Actions</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
@@ -375,10 +382,13 @@ GET    /api/v1/cmdb/dc/racks/{id}/equipment - Get equipment in rack`}</pre>
             <h3 className="text-lg font-semibold text-white mb-2">Alerts</h3>
             <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/alerts                     - List alerts (deduplicated)
 GET    /api/v1/alerts/incidents            - List incident groups
+GET    /api/v1/alerts/incidents/{id}       - Get incident detail with alerts
+POST   /api/v1/alerts/incidents/{id}/ack   - Bulk acknowledge incident
+POST   /api/v1/alerts/incidents/{id}/res   - Bulk resolve incident
 GET    /api/v1/alerts/stats                - Alert statistics
 POST   /api/v1/alerts                     - Create alert
-POST   /api/v1/alerts/{id}/acknowledge    - Acknowledge alert
-POST   /api/v1/alerts/{id}/resolve        - Resolve alert`}</pre>
+POST   /api/v1/alerts/{id}/acknowledge    - Acknowledge single alert
+POST   /api/v1/alerts/{id}/resolve        - Resolve single alert`}</pre>
 
             <h3 className="text-lg font-semibold text-white mb-2">Simulation</h3>
             <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/simulate/scenarios           - List available scenarios

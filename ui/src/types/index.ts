@@ -15,11 +15,13 @@ export interface Alert {
   created_at: string;
   acknowledged_at?: string;
   acknowledged_by?: string;
+  resolved_at?: string;
   runbook_url?: string;
   repeat_count?: number;
   first_seen?: string;
   last_seen?: string;
   incident_id?: string;
+  labels?: Record<string, string>;
 }
 
 export interface AlertGroup {
@@ -38,6 +40,8 @@ export interface IncidentGroup {
   alerts: Alert[];
   first_seen?: string;
   last_seen?: string;
+  teams?: string[];
+  status?: string;
 }
 
 export interface AlertStats {

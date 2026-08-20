@@ -33,6 +33,26 @@ async def list_incidents(status: str | None = None):
     return await alert_store.list_incidents(status)
 
 
+@router.get("/alerts/incidents/{incident_id}")
+async def get_incident(incident_id: str):
+    incident = await alert_store.get_incident(incident_id)
+    if not incident:
+        return {"error": "Incident not found"}
+    return incident
+
+
+@router.post("/alerts/incidents/{incident_id}/acknowledge")
+async def acknowledge_incident(incident_id: str, data: AlertAcknowledge):
+    count = await alert_store.acknowledge_incident(incident_id, data.acknowledged_by)
+    return {"success": count > 0, "acknowledged_count": count}
+
+
+@router.post("/alerts/incidents/{incident_id}/resolve")
+async def resolve_incident(incident_id: str):
+    count = await alert_store.resolve_incident(incident_id)
+    return {"success": count > 0, "resolved_count": count}
+
+
 @router.get("/alerts/stats")
 async def alert_stats():
     return await alert_store.dedup.get_stats()

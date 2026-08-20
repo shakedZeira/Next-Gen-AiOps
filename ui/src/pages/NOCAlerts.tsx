@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import AlertTable from '../components/AlertTable';
+import IncidentDetail from '../components/IncidentDetail';
 import { alertsAPI, simulateAPI } from '../api/client';
 import { Alert, IncidentGroup, Scenario } from '../types';
 
@@ -34,6 +35,7 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [selectedScenario, setSelectedScenario] = useState<string>('');
   const [simulating, setSimulating] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
+  const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -255,7 +257,14 @@ export default function NOCAlerts({ user }: { user: any }) {
       </div>
 
       <div className="bg-white rounded-xl border overflow-hidden">
-        {viewMode === 'alerts' ? (
+        {selectedIncidentId ? (
+          <IncidentDetail
+            incidentId={selectedIncidentId}
+            onClose={() => setSelectedIncidentId(null)}
+            onAcknowledge={handleAcknowledge}
+            onResolve={handleResolve}
+          />
+        ) : viewMode === 'alerts' ? (
           <AlertTable alerts={alerts} onAcknowledge={handleAcknowledge} onResolve={handleResolve} />
         ) : (
           <div className="divide-y divide-gray-200">
@@ -263,7 +272,11 @@ export default function NOCAlerts({ user }: { user: any }) {
               <div className="p-8 text-center text-gray-500">No incidents found</div>
             ) : (
               incidents.map((inc) => (
-                <div key={inc.incident_id} className="p-4">
+                <div
+                  key={inc.incident_id}
+                  onClick={() => setSelectedIncidentId(inc.incident_id)}
+                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border ${severityColors[inc.severity] || ''}`}>
@@ -271,6 +284,7 @@ export default function NOCAlerts({ user }: { user: any }) {
                       </span>
                       <span className="font-medium text-gray-900 text-sm">{inc.title}</span>
                       <span className="text-xs text-gray-500">{inc.service}</span>
+                      <span className="text-xs text-gray-400">→</span>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-gray-500">
                       <span className="bg-gray-100 px-2 py-0.5 rounded">{inc.alert_count} alerts</span>
@@ -279,7 +293,7 @@ export default function NOCAlerts({ user }: { user: any }) {
                     </div>
                   </div>
                   <div className="ml-4 space-y-1">
-                    {inc.alerts.map((a) => (
+                    {inc.alerts.slice(0, 3).map((a) => (
                       <div key={a.id} className="flex items-center gap-3 text-xs">
                         <span className="text-gray-400 w-16">{new Date(a.created_at).toLocaleTimeString()}</span>
                         <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${severityColors[a.severity] || ''}`}>
@@ -294,6 +308,9 @@ export default function NOCAlerts({ user }: { user: any }) {
                         <span className="text-gray-400">{a.status}</span>
                       </div>
                     ))}
+                    {inc.alerts.length > 3 && (
+                      <div className="text-xs text-gray-400">+{inc.alerts.length - 3} more alerts</div>
+                    )}
                   </div>
                 </div>
               ))

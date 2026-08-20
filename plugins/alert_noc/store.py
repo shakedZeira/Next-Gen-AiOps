@@ -87,6 +87,7 @@ class AlertStore:
             top_severity = max(inc_alerts, key=lambda a: severity_order.get(a.severity, 0)).severity
             first = min((a.first_seen or a.created_at) for a in inc_alerts)
             last = max((a.last_seen or a.created_at) for a in inc_alerts)
+            teams = list({a.team for a in inc_alerts if a.team})
             result.append({
                 "incident_id": iid,
                 "title": inc_alerts[0].name,
@@ -96,9 +97,57 @@ class AlertStore:
                 "alerts": [a.model_dump() for a in inc_alerts],
                 "first_seen": first.isoformat() if first else None,
                 "last_seen": last.isoformat() if last else None,
+                "teams": teams,
+                "status": "active" if any(a.status == AlertStatus.ACTIVE for a in inc_alerts) else "acknowledged" if any(a.status == AlertStatus.ACKNOWLEDGED for a in inc_alerts) else "resolved",
             })
 
         return sorted(result, key=lambda i: severity_order.get(i["severity"], 0), reverse=True)
+
+    async def get_incident(self, incident_id: str) -> dict | None:
+        """Fetch a single incident by ID."""
+        alerts = await self.list_alerts()
+        inc_alerts = [a for a in alerts if (a.incident_id or a.id) == incident_id]
+        if not inc_alerts:
+            return None
+
+        severity_order = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
+        top_severity = max(inc_alerts, key=lambda a: severity_order.get(a.severity, 0)).severity
+        first = min((a.first_seen or a.created_at) for a in inc_alerts)
+        last = max((a.last_seen or a.created_at) for a in inc_alerts)
+        teams = list({a.team for a in inc_alerts if a.team})
+
+        return {
+            "incident_id": incident_id,
+            "title": inc_alerts[0].name,
+            "service": inc_alerts[0].service,
+            "severity": top_severity,
+            "alert_count": len(inc_alerts),
+            "alerts": [a.model_dump() for a in sorted(inc_alerts, key=lambda a: a.created_at)],
+            "first_seen": first.isoformat() if first else None,
+            "last_seen": last.isoformat() if last else None,
+            "teams": teams,
+            "status": "active" if any(a.status == AlertStatus.ACTIVE for a in inc_alerts) else "acknowledged" if any(a.status == AlertStatus.ACKNOWLEDGED for a in inc_alerts) else "resolved",
+        }
+
+    async def acknowledge_incident(self, incident_id: str, acknowledged_by: str) -> int:
+        """Bulk acknowledge all active alerts in an incident. Returns count acknowledged."""
+        alerts = await self.list_alerts("active")
+        count = 0
+        for alert in alerts:
+            if (alert.incident_id or alert.id) == incident_id:
+                await self.acknowledge(alert.id, acknowledged_by)
+                count += 1
+        return count
+
+    async def resolve_incident(self, incident_id: str) -> int:
+        """Bulk resolve all alerts in an incident. Returns count resolved."""
+        alerts = await self.list_alerts()
+        count = 0
+        for alert in alerts:
+            if (alert.incident_id or alert.id) == incident_id and alert.status != AlertStatus.RESOLVED:
+                await self.resolve(alert.id)
+                count += 1
+        return count
 
     async def acknowledge(self, alert_id: str, acknowledged_by: str) -> bool:
         alert = await self.get_alert(alert_id)
