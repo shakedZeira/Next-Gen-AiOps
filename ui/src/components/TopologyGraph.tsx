@@ -381,46 +381,56 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       maxZoom: 3,
     });
 
-    if (selectedSite) {
-      const siteNodeIds = new Set<string>();
-      cy.nodes().forEach((n) => {
-        if (n.data('site') === selectedSite) {
-          siteNodeIds.add(n.id());
-        }
-      });
-      if (siteNodeIds.size > 0) {
-        cy.nodes().removeClass('highlighted site-highlight').addClass('dimmed');
-        cy.edges().addClass('dimmed');
-        cy.nodes().filter((n) => siteNodeIds.has(n.id())).removeClass('dimmed').addClass('highlighted site-highlight');
-        cy.edges().filter((e) => {
-          return siteNodeIds.has(e.source().id()) && siteNodeIds.has(e.target().id());
-        }).removeClass('dimmed');
+    if (selectedSite || selectedService) {
+      let siteNodeIds: Set<string> | null = null;
+      if (selectedSite) {
+        siteNodeIds = new Set<string>();
+        cy.nodes().forEach((n) => {
+          if (n.data('site') === selectedSite) {
+            siteNodeIds!.add(n.id());
+          }
+        });
       }
-    } else if (selectedService) {
-      const nodeIds = new Set<string>();
-      cy.nodes().forEach((n) => {
-        const team = n.data('team');
-        const name = n.data('label').toLowerCase();
-        if (
-          name.includes(selectedService.toLowerCase()) ||
-          team === selectedService.toLowerCase()
-        ) {
-          nodeIds.add(n.id());
-        }
-      });
-      if (nodeIds.size > 0) {
+
+      let serviceNodeIds: Set<string> | null = null;
+      if (selectedService) {
+        serviceNodeIds = new Set<string>();
+        cy.nodes().forEach((n) => {
+          const team = n.data('team');
+          const label = n.data('label') || '';
+          const name = label.toLowerCase();
+          if (
+            name.includes(selectedService.toLowerCase()) ||
+            team === selectedService.toLowerCase()
+          ) {
+            serviceNodeIds!.add(n.id());
+          }
+        });
+      }
+
+      let matchedNodeIds: Set<string>;
+      if (siteNodeIds && serviceNodeIds) {
+        matchedNodeIds = new Set<string>(
+          [...siteNodeIds].filter((id) => serviceNodeIds!.has(id))
+        );
+      } else {
+        matchedNodeIds = siteNodeIds || serviceNodeIds!;
+      }
+
+      if (matchedNodeIds.size > 0) {
         const connectedEdges = cy.edges().filter((e) => {
-          return nodeIds.has(e.source().id()) || nodeIds.has(e.target().id());
+          return matchedNodeIds.has(e.source().id()) || matchedNodeIds.has(e.target().id());
         });
         connectedEdges.forEach((e) => {
-          nodeIds.add(e.source().id());
-          nodeIds.add(e.target().id());
+          matchedNodeIds.add(e.source().id());
+          matchedNodeIds.add(e.target().id());
         });
-        cy.nodes().removeClass('highlighted').addClass('dimmed');
+
+        cy.nodes().removeClass('highlighted site-highlight').addClass('dimmed');
         cy.edges().addClass('dimmed');
-        cy.nodes().filter((n) => nodeIds.has(n.id())).removeClass('dimmed').addClass('highlighted');
+        cy.nodes().filter((n) => matchedNodeIds.has(n.id())).removeClass('dimmed').addClass('highlighted site-highlight');
         cy.edges().filter((e) => {
-          return nodeIds.has(e.source().id()) && nodeIds.has(e.target().id());
+          return matchedNodeIds.has(e.source().id()) && matchedNodeIds.has(e.target().id());
         }).removeClass('dimmed');
       }
     }

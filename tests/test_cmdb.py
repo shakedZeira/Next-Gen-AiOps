@@ -1,6 +1,7 @@
 from httpx import AsyncClient
 
 from core_platform.main import app
+from tests.conftest import requires_db
 
 
 async def login_admin(client: AsyncClient) -> str:
@@ -8,6 +9,7 @@ async def login_admin(client: AsyncClient) -> str:
     return resp.json()["tokens"]["access_token"]
 
 
+@requires_db
 async def test_crud_ci():
     async with AsyncClient(app=app, base_url="http://test") as client:
         token = await login_admin(client)

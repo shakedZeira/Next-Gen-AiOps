@@ -1,6 +1,7 @@
 from httpx import AsyncClient
 
 from core_platform.main import app
+from tests.conftest import requires_db, requires_redis
 
 
 async def test_login_success():
@@ -24,6 +25,8 @@ async def test_login_invalid():
         assert resp.status_code == 401
 
 
+@requires_db
+@requires_redis
 async def test_health():
     async with AsyncClient(app=app, base_url="http://test") as client:
         resp = await client.get("/health")

@@ -126,6 +126,7 @@ export default function CMDBExplorer() {
       setSiteServices([]);
     }
     setSelectedService('all');
+    setSelectedFlow('all');
   }, [selectedSite]);
 
   const flowOptions = [
@@ -350,6 +351,7 @@ export default function CMDBExplorer() {
             ) : (
               <TopologyGraph
                 topology={topology}
+                selectedService={selectedFlow !== 'all' ? selectedFlow : undefined}
                 selectedSite={selectedSite}
                 expandable={true}
                 height="h-[700px]"
