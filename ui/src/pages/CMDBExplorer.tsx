@@ -5,7 +5,7 @@ import NodeDetailPanel from '../components/NodeDetailPanel';
 import ConnectionsMap from '../components/ConnectionsMap';
 import GeoMap from '../components/GeoMap';
 import { cmdbAPI, dcAPI } from '../api/client';
-import { CI, Topology, Service, SiteInfo, CIDeviceNeighbor, SiteLocation, InterSiteConnection, SiteFlow } from '../types';
+import { CI, Topology, Service, SiteInfo, CIDeviceNeighbor, SiteLocation, InterSiteConnection, SiteFlow, SiteService } from '../types';
 
 const TEAM_BADGE_COLORS: Record<string, string> = {
   frontend: 'bg-blue-100 text-blue-800',
@@ -74,6 +74,8 @@ export default function CMDBExplorer() {
   const [interSiteConns, setInterSiteConns] = useState<InterSiteConnection[]>([]);
   const [siteFlows, setSiteFlows] = useState<SiteFlow[]>([]);
   const [showFlows, setShowFlows] = useState(true);
+  const [siteServices, setSiteServices] = useState<SiteService[]>([]);
+  const [selectedService, setSelectedService] = useState<string>('all');
 
   useEffect(() => {
     Promise.all([
@@ -92,13 +94,14 @@ export default function CMDBExplorer() {
       cmdbAPI.getSiteAggregateTopology().then((r) => setSiteAggregateTopo(r.data));
     } else {
       setSiteAggregateTopo(null);
+      const serviceId = selectedService !== 'all' ? selectedService : undefined;
       if (selectedSite === 'all') {
         cmdbAPI.getGlobalTopology().then((r) => setTopology(r.data));
       } else {
-        cmdbAPI.getSiteTopology(selectedSite).then((r) => setTopology(r.data));
+        cmdbAPI.getSiteTopology(selectedSite, 'detailed', serviceId).then((r) => setTopology(r.data));
       }
     }
-  }, [selectedSite, viewMode]);
+  }, [selectedSite, viewMode, selectedService]);
 
   useEffect(() => {
     if (viewMode === 'aggregated' && selectedSite !== 'all') {
@@ -115,6 +118,15 @@ export default function CMDBExplorer() {
       setSiteRackCount(null);
     }
   }, [selectedSite, viewMode]);
+
+  useEffect(() => {
+    if (selectedSite !== 'all') {
+      cmdbAPI.getSiteServices(selectedSite).then((r) => setSiteServices(r.data)).catch(() => setSiteServices([]));
+    } else {
+      setSiteServices([]);
+    }
+    setSelectedService('all');
+  }, [selectedSite]);
 
   const flowOptions = [
     { value: 'all', label: 'All Services' },
@@ -157,6 +169,21 @@ export default function CMDBExplorer() {
               ))}
             </select>
           </div>
+          {selectedSite !== 'all' && siteServices.length > 0 && (
+            <div className="flex items-center gap-2">
+              <label className="text-sm font-medium text-gray-600">Service:</label>
+              <select
+                value={selectedService}
+                onChange={(e) => setSelectedService(e.target.value)}
+                className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+              >
+                <option value="all">All Services ({siteServices.reduce((sum, s) => sum + s.ci_count, 0)} CIs)</option>
+                {siteServices.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name} ({s.ci_count} CIs)</option>
+                ))}
+              </select>
+            </div>
+          )}
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-600">View:</label>
             <div className="flex rounded-lg border border-gray-300 overflow-hidden">

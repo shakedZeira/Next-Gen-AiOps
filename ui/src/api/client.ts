@@ -40,7 +40,11 @@ export const cmdbAPI = {
   getGlobalTopology: () => api.get('/cmdb/topology/all'),
   getImpact: (ciId: string) => api.get(`/cmdb/impact/${ciId}`),
   getSites: () => api.get('/cmdb/sites'),
-  getSiteTopology: (siteName: string, view: string = "detailed") => api.get(`/cmdb/topology/site/${siteName}`, { params: { view } }),
+  getSiteTopology: (siteName: string, view: string = "detailed", serviceId?: string) => {
+    const params: Record<string, string> = { view };
+    if (serviceId) params.service = serviceId;
+    return api.get(`/cmdb/topology/site/${siteName}`, { params });
+  },
   getInterSiteConnections: () => api.get('/cmdb/topology/inter-site'),
   getSiteAggregateTopology: () => api.get('/cmdb/topology/site-aggregate'),
   getCIDetails: (ciId: string) => api.get(`/cmdb/ci/${ciId}/details`),
@@ -48,6 +52,8 @@ export const cmdbAPI = {
   getInterSiteFlows: () => api.get('/cmdb/topology/inter-site/flows'),
   getSiteMapData: (siteName: string) => api.get(`/cmdb/sites/${siteName}/map-data`),
   getSiteOverview: (siteName: string) => api.get(`/cmdb/sites/${siteName}/overview`),
+  getSiteServices: (siteName: string) => api.get(`/cmdb/sites/${siteName}/services`),
+  getAllServices: () => api.get('/cmdb/services'),
 };
 
 export const alertsAPI = {

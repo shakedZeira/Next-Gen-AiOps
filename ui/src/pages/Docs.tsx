@@ -125,7 +125,14 @@ export default function Docs() {
             <h3 className="text-lg font-semibold text-white mb-2">Detailed View</h3>
             <p className="text-gray-200 mb-4">
               Shows all CIs and relationships as an interactive graph. Nodes colored by type (switch, router, firewall, etc.).
-              Edges show relationship types. Click any node for details. Filter by site and service flow.
+              Edges show relationship types. Click any node for details. Filter by site, service, and flow.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Service Filtering</h3>
+            <p className="text-gray-200 mb-4">
+              When viewing a specific site, a Service dropdown appears showing all services that have CIs
+              in that site. Select a service to filter the topology to only show CIs belonging to that
+              service. The CI count for each service is displayed in the dropdown. The filter works in
+              both Detailed and Site Overview view modes.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Site Overview</h3>
             <p className="text-gray-200 mb-4">
@@ -349,8 +356,11 @@ POST   /api/v1/cmdb/ci                     - Create CI
 GET    /api/v1/cmdb/sites                  - List sites with counts
 GET    /api/v1/cmdb/sites/locations        - Site coordinates
 GET    /api/v1/cmdb/sites/{name}/map-data  - Site indoor map data
+GET    /api/v1/cmdb/sites/{name}/overview  - Site overview stats
+GET    /api/v1/cmdb/sites/{name}/services  - Services with CIs in site
+GET    /api/v1/cmdb/services               - All services with CI counts
 GET    /api/v1/cmdb/topology/all           - Full global topology
-GET    /api/v1/cmdb/topology/site/{name}   - Site-specific topology
+GET    /api/v1/cmdb/topology/site/{name}   - Site topology (?view=&service=)
 GET    /api/v1/cmdb/topology/site-aggregate - 5-node aggregate view
 GET    /api/v1/cmdb/topology/inter-site    - Inter-site connections
 GET    /api/v1/cmdb/topology/inter-site/flows - Traffic flow data

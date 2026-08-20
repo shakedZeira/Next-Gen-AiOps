@@ -92,11 +92,19 @@ class CMDBRepository:
         )
         return [dict(zip(result.keys(), row, strict=False)) for row in result]
 
-    async def get_site_topology(self, site: str, view: str = "detailed") -> dict:
+    async def get_site_topology(self, site: str, view: str = "detailed", service_id: str | None = None) -> dict:
         ci_result = await self.session.execute(
             select(CI).where(CI.site == site)
         )
         cis = ci_result.scalars().all()
+
+        # If service filter is provided, narrow to CIs belonging to that service
+        if service_id:
+            sc_result = await self.session.execute(
+                select(ServiceCI.ci_id).where(ServiceCI.service_id == uuid.UUID(service_id))
+            )
+            service_ci_ids = {row[0] for row in sc_result}
+            cis = [c for c in cis if c.id in service_ci_ids]
 
         # Overview view: only "principal" device types (ServiceNow Principal Class pattern)
         principal_types = {"router", "switch", "firewall", "load_balancer", "physical_server", "database"}
@@ -114,6 +122,36 @@ class CMDBRepository:
         rels = rel_result.scalars().all()
         edges = [{"source": str(r.source_id), "target": str(r.target_id), "type": r.type} for r in rels]
         return {"nodes": nodes, "edges": edges}
+
+    async def get_services_for_site(self, site: str) -> list[dict]:
+        """Return services that have CIs in the given site, with CI counts."""
+        result = await self.session.execute(
+            text("""
+                SELECT s.id, s.name, s.owner_team, s.sla_tier, COUNT(sc.ci_id) as ci_count
+                FROM service s
+                JOIN service_ci sc ON sc.service_id = s.id
+                JOIN ci c ON c.id = sc.ci_id
+                WHERE c.site = :site
+                GROUP BY s.id, s.name, s.owner_team, s.sla_tier
+                ORDER BY s.name
+            """),
+            {"site": site},
+        )
+        return [dict(zip(result.keys(), row, strict=False)) for row in result]
+
+    async def get_all_services(self) -> list[dict]:
+        """Return all services with total CI counts."""
+        result = await self.session.execute(
+            text("""
+                SELECT s.id, s.name, s.owner_team, s.sla_tier, s.operational_status,
+                       COUNT(sc.ci_id) as ci_count
+                FROM service s
+                LEFT JOIN service_ci sc ON sc.service_id = s.id
+                GROUP BY s.id, s.name, s.owner_team, s.sla_tier, s.operational_status
+                ORDER BY s.name
+            """)
+        )
+        return [dict(zip(result.keys(), row, strict=False)) for row in result]
 
     async def get_site_aggregate_topology(self) -> dict:
         """Returns a topology with one node per site and inter-site connections."""

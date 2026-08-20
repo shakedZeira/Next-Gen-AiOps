@@ -233,3 +233,11 @@ export interface SiteOverview {
   device_types: Record<string, number>;
   key_devices: Array<{ id: string; name: string; type: string; provider?: string; team?: string }>;
 }
+
+export interface SiteService {
+  id: string;
+  name: string;
+  owner_team?: string;
+  sla_tier: string;
+  ci_count: number;
+}

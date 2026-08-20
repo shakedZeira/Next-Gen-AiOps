@@ -153,10 +153,30 @@ async def get_sites(session=Depends(get_session), _user=Depends(get_current_user
     )
 
 
-@router.get("/topology/site/{site_name}")
-async def get_site_topology(site_name: str, view: str = "detailed", session=Depends(get_session), _user=Depends(get_current_user)):
+@router.get("/services")
+async def get_all_services(session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
-    topo = await repo.get_site_topology(site_name, view)
+    services = await repo.get_all_services()
+    return JSONResponse(
+        content=[{"id": str(s["id"]), "name": s["name"], "owner_team": s.get("owner_team"), "sla_tier": s.get("sla_tier"), "ci_count": s.get("ci_count", 0)} for s in services],
+        headers={"Cache-Control": "public, max-age=300"}
+    )
+
+
+@router.get("/sites/{site_name}/services")
+async def get_site_services(site_name: str, session=Depends(get_session), _user=Depends(get_current_user)):
+    repo = CMDBRepository(session)
+    services = await repo.get_services_for_site(site_name)
+    return JSONResponse(
+        content=[{"id": str(s["id"]), "name": s["name"], "owner_team": s.get("owner_team"), "sla_tier": s.get("sla_tier"), "ci_count": s.get("ci_count", 0)} for s in services],
+        headers={"Cache-Control": "public, max-age=300"}
+    )
+
+
+@router.get("/topology/site/{site_name}")
+async def get_site_topology(site_name: str, view: str = "detailed", service: str | None = None, session=Depends(get_session), _user=Depends(get_current_user)):
+    repo = CMDBRepository(session)
+    topo = await repo.get_site_topology(site_name, view, service_id=service)
     return JSONResponse(
         content={"nodes": topo["nodes"], "edges": topo["edges"]},
         headers={"Cache-Control": "public, max-age=60"}

@@ -5,12 +5,45 @@
 
 ---
 
-## Tier 1 — High Impact, Medium Effort (Implement First)
+## Completed Features
 
-### Feature 1: Alert Noise Reduction
-**Impact: HIGH | Effort: MEDIUM (2-3 days)**
+### Feature 1: Alert Noise Reduction ✅ COMPLETED
+**Impact: HIGH | Effort: MEDIUM (2-3 days)** — Implemented and deployed.
 
-Reduce alert volume by 60-80% through temporal deduplication and fuzzy grouping.
+#### What Was Built
+- `plugins/alert_noc/dedup.py` — Temporal dedup with 60s window, normalized name matching
+- `plugins/alert_noc/models.py` — `repeat_count`, `first_seen`, `last_seen`, `incident_id`, `normalized_name` fields
+- `plugins/alert_noc/store.py` — Redis-backed store with dedup integration
+- `plugins/alert_noc/router.py` — `/alerts/incidents`, `/alerts/stats` endpoints
+- `plugins/alert_noc/scenarios.py` — 5 failure scenarios (payment-outage, network-failure, disk-exhaustion, cascading-microservice, database-failover)
+- Frontend: AlertTable with ×N badge, NOCAlerts with alerts/incidents toggle, simulate button, auto-refresh
+
+#### Commits
+- `2ad3667` — Backend + frontend implementation
+- `d9a81f6` — Fix simulate button 404 (proxy route)
+
+---
+
+### Feature 16: Service Filtering by Site ✅ COMPLETED
+**Impact: MEDIUM | Effort: LOW (1 day)** — Implemented and deployed.
+
+#### What Was Built
+- Backend: `get_site_topology(site, view, service_id)` — filters CIs by service membership via ServiceCI join
+- Backend: `GET /cmdb/services` — all services with CI counts
+- Backend: `GET /cmdb/sites/{name}/services` — services with CIs in a specific site
+- Frontend: Service dropdown in CMDBExplorer when viewing a specific site
+- Frontend: Topology graph filters to show only CIs belonging to selected service
+- Frontend: SiteService type, API client methods
+
+#### Commits
+- Pending (current work)
+
+---
+
+## Tier 1 — High Impact, Medium Effort (Remaining)
+
+### Feature 2: ML Anomaly Detection
+**Impact: HIGH | Effort: MEDIUM (3-4 days)**
 
 #### Design
 - **Temporal dedup**: Same alert (service + name + severity) within 5-minute window → merge into single alert with "repeat count" field
@@ -614,23 +647,51 @@ Already covered in Fix 25 (Security plan).
 
 ## Execution Order
 
-### Wave 1: Tier 3 Quick Wins (1-2 days)
-11. WebSocket real-time push
-12. CI search & filtering
-13. Impact analysis visualization
-14. SLI/SLO dashboard
-15. Audit log
+### Wave 1: Tier 3 Quick Wins ✅ PARTIALLY DONE
+- [x] CI search & filtering (partial — service filtering implemented)
+- [ ] WebSocket real-time push
+- [ ] Impact analysis visualization (partial — `/impact/{ci_id}` endpoint exists, needs frontend)
+- [ ] SLI/SLO dashboard
+- [ ] Audit log
 
-### Wave 2: Tier 1 Features (2-3 weeks)
-1. Alert noise reduction
-2. ML anomaly detection
-3. Change-aware correlation
-4. Incident timeline
-5. Runbook automation
+### Wave 2: Tier 1 Features
+- [x] Alert noise reduction ✅
+- [x] Service filtering by site ✅
+- [ ] ML anomaly detection
+- [ ] Change-aware correlation
+- [ ] Incident timeline (partial — incidents view exists, needs visual timeline)
+- [ ] Runbook automation
 
-### Wave 3: Tier 2 Features (1-2 months)
-6. Predictive alerting
-7. Self-healing pipeline
-8. Service dependency map
-9. Capacity planning
-10. Cost attribution
+### Wave 3: Tier 2 Features
+- [ ] Predictive alerting
+- [ ] Self-healing pipeline
+- [ ] Service dependency map
+- [ ] Capacity planning
+- [ ] Cost attribution
+
+---
+
+## Project Status Summary (Aug 2026)
+
+### Completed Work
+1. **Phase 1-3:** Backend, seed data, topology visualization, chat suggestions, dashboard overview, geo map
+2. **Phase 4A — SRE Quick Wins:** async sleep, security headers, Redis auth, health checks, cache headers, httpx pooling, ErrorBoundary, dashboard wiring
+3. **Geo Map:** Leaflet dark-theme map with animated traffic flows, site drill-down with topology overlay
+4. **Alert NOC:** Temporal dedup, incident grouping, 5 failure scenarios, simulate button, auto-refresh
+5. **CMDB Explorer:** Expandable topology, ServiceNow Principal Class pattern, service filtering by site
+6. **Docs Page:** 13-section comprehensive documentation
+7. **CI Pipeline:** ruff, mypy, pytest, npm build all passing
+
+### Remaining Work (Prioritized)
+| Priority | Feature | Effort | Impact |
+|----------|---------|--------|--------|
+| 1 | ML Anomaly Detection | 3-4 days | HIGH |
+| 2 | Change-Aware Correlation | 2-3 days | HIGH |
+| 3 | Incident Timeline (visual) | 2-3 days | HIGH |
+| 4 | Runbook Automation | 3-4 days | HIGH |
+| 5 | CI Search & Text Filtering | 1 day | MEDIUM |
+| 6 | Impact Analysis Visualization | 1-2 days | MEDIUM |
+| 7 | WebSocket Real-Time Push | 1-2 days | MEDIUM |
+| 8 | SLI/SLO Dashboard | 1-2 days | MEDIUM |
+| 9 | Service Dependency Map | 4-5 days | HIGH |
+| 10 | Predictive Alerting | 5-7 days | HIGH |
