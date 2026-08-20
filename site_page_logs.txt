@@ -1,72 +1,11 @@
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-127.0.0.1/:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
-2chart.js:607 Tried to use the 'fill' option without the 'Filler' plugin enabled. Please import and register the 'Filler' plugin and make sure it is not disabled in the options
-initialize @ chart.js:607
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cmdb:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cmdb:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-127.0.0.1/:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
-api/v1/chatbot/chat:1  Failed to load resource: the server responded with a status of 404 (Not Found)
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cmdb:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cmdb:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The style property `shape: circle` is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-cytoscape.esm.mjs:1521 The selector `node:after`is invalid
-(anonymous) @ cytoscape.esm.mjs:1521
-react-dom.production.min.js:188 Error: Can not create edge `beb0889b-5b02-4f34-826a-94511e2ef2f6` with nonexistent source `4b383746-524e-44bd-9305-68da173ec2fd`
-    at ot (cytoscape.esm.mjs:1507:9)
-    at tt.restore (cytoscape.esm.mjs:14612:11)
-    at new qt (cytoscape.esm.mjs:14323:10)
-    at Al.add (cytoscape.esm.mjs:14959:18)
-    at d (cytoscape.esm.mjs:19982:12)
-    at cytoscape.esm.mjs:20009:5
-    at c (cytoscape.esm.mjs:19960:7)
-    at new Al (cytoscape.esm.mjs:19999:3)
-    at Oi (cytoscape.esm.mjs:35678:12)
-    at TopologyGraph.tsx:109:16
-Li @ react-dom.production.min.js:188
-react-dom.production.min.js:127 Uncaught Error: Can not create edge `beb0889b-5b02-4f34-826a-94511e2ef2f6` with nonexistent source `4b383746-524e-44bd-9305-68da173ec2fd`
-    at ot (cytoscape.esm.mjs:1507:9)
-    at tt.restore (cytoscape.esm.mjs:14612:11)
-    at new qt (cytoscape.esm.mjs:14323:10)
-    at Al.add (cytoscape.esm.mjs:14959:18)
-    at d (cytoscape.esm.mjs:19982:12)
-    at cytoscape.esm.mjs:20009:5
-    at c (cytoscape.esm.mjs:19960:7)
-    at new Al (cytoscape.esm.mjs:19999:3)
-    at Oi (cytoscape.esm.mjs:35678:12)
-    at TopologyGraph.tsx:109:16
-cmdb:1 Access to image at 'https://unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg' (redirected from 'https://unpkg.com/lucide-static@latest/icons/arrows-up-down.svg') from origin 'http://127.0.0.1' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
-unpkg.com/lucide-static@1.33.0/icons/arrows-up-down.svg:1  Failed to load resource: net::ERR_FAILED
+Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)
+cmdb?site=metro-ring-1:1 Uncaught (in promise) AxiosError: Request failed with status code 422
+    at jP (settle.js:19:12)
+    at XMLHttpRequest.m (xhr.js:63:9)
+leaflet-src.js:2563 Uncaught TypeError: Cannot read properties of undefined (reading '_leaflet_pos')
+    at Za (leaflet-src.js:2563:14)
+    at f._getMapPanePos (leaflet-src.js:4601:12)
+    at f._getNewPixelOrigin (leaflet-src.js:4618:69)
+    at f._move (leaflet-src.js:4337:30)
+    at f._onZoomTransitionEnd (leaflet-src.js:4839:10)
+client.ts:50  GET http://127.0.0.1/api/v1/cmdb/sites/branch-nyc/overview 500 (Internal Server Error)

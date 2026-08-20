@@ -197,10 +197,6 @@ export default function CMDBExplorer() {
             flows={siteFlows}
             showFlows={showFlows}
             onToggleFlows={() => setShowFlows(!showFlows)}
-            onSiteClick={(site) => {
-              setSelectedSite(site);
-              setViewMode('aggregated');
-            }}
             height="h-[500px]"
           />
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

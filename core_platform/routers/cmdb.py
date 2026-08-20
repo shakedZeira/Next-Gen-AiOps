@@ -271,7 +271,7 @@ async def get_site_overview(site_name: str, session=Depends(get_session), _user=
         type_counts[t] = type_counts.get(t, 0) + 1
     
     # Get room count and total racks
-    from core_platform.models.cmdb import DCRoom
+    from aiops_shared.models.dc import DCRoom
     rooms_result = await session.execute(
         select(DCRoom).where(DCRoom.site == site_name)
     )
@@ -315,7 +315,7 @@ async def get_site_map_data(site_name: str, session=Depends(get_session), _user=
     
     center = SITE_COORDS.get(site_name, {"lat": 0, "lng": 0})
     
-    from core_platform.models.cmdb import DCRoom
+    from aiops_shared.models.dc import DCRoom
     rooms_result = await session.execute(
         select(DCRoom).where(DCRoom.site == site_name)
     )
