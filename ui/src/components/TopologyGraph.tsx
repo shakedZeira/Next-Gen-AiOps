@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import cytoscape from 'cytoscape';
 import { Topology } from '../types';
 
@@ -7,6 +7,7 @@ interface Props {
   selectedService?: string | null;
   selectedSite?: string | null;
   siteAggregate?: boolean;
+  expandable?: boolean;
   height?: string;
   onNodeClick?: (nodeId: string) => void;
 }
@@ -74,15 +75,12 @@ const EDGE_HEALTH: Record<string, { color: string; width: number }> = {
 };
 
 function getEdgeHealth(source: string, target: string): string {
-  // Known degraded connections based on alert data
   const degraded: [string, string][] = [
-    ['regional-dc-1', 'branch-nyc'],  // Payment Gateway latency
+    ['regional-dc-1', 'branch-nyc'],
   ];
-
   const isDegraded = degraded.some(
     ([s, t]) => (s === source && t === target) || (s === target && t === source)
   );
-
   return isDegraded ? 'degraded' : 'healthy';
 }
 
@@ -99,10 +97,22 @@ const NODE_SHAPES: Record<string, string> = {
   pod: 'ellipse',
 };
 
-export default function TopologyGraph({ topology, selectedService, selectedSite, siteAggregate = false, height = 'h-[500px]', onNodeClick }: Props) {
+const PRINCIPAL_TYPES = new Set(['router', 'switch', 'firewall', 'load_balancer']);
+
+export default function TopologyGraph({ topology, selectedService, selectedSite, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const animFrameRef = useRef<number | null>(null);
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
+  const toggleExpand = useCallback((nodeId: string) => {
+    setExpandedNodes(prev => {
+      const next = new Set(prev);
+      if (next.has(nodeId)) next.delete(nodeId);
+      else next.add(nodeId);
+      return next;
+    });
+  }, []);
 
   const buildGraph = useCallback(() => {
     if (!containerRef.current || !topology) return;
@@ -111,34 +121,82 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       cyRef.current.destroy();
     }
 
-    const validNodeIds = new Set(topology.nodes.map(n => n.id));
+    const allNodeIds = new Set(topology.nodes.map(n => n.id));
 
-    const edgeHealthMap = new Map<string, string>();
-    topology.edges.forEach((e) => {
-      if (validNodeIds.has(e.source) && validNodeIds.has(e.target)) {
-        edgeHealthMap.set(`${e.source}-${e.target}`, getEdgeHealth(e.source, e.target));
-      }
+    // Build adjacency: for each node, which nodes is it connected to
+    const adjacency = new Map<string, Set<string>>();
+    topology.edges.forEach(e => {
+      if (!allNodeIds.has(e.source) || !allNodeIds.has(e.target)) return;
+      if (!adjacency.has(e.source)) adjacency.set(e.source, new Set());
+      if (!adjacency.has(e.target)) adjacency.set(e.target, new Set());
+      adjacency.get(e.source)!.add(e.target);
+      adjacency.get(e.target)!.add(e.source);
     });
 
-    const validEdges = topology.edges.filter(
-      e => validNodeIds.has(e.source) && validNodeIds.has(e.target)
-    );
+    // In expandable mode, determine visible nodes and edges
+    let visibleNodes: Set<string>;
+    let visibleEdges: { source: string; target: string; type: string }[];
+
+    if (expandable) {
+      visibleNodes = new Set();
+      // Always show principal nodes
+      topology.nodes.forEach(n => {
+        if (PRINCIPAL_TYPES.has(n.type)) visibleNodes.add(n.id);
+      });
+      // Show expanded children
+      expandedNodes.forEach(parentId => {
+        const neighbors = adjacency.get(parentId);
+        if (neighbors) neighbors.forEach(childId => visibleNodes.add(childId));
+      });
+      visibleEdges = topology.edges.filter(e =>
+        visibleNodes.has(e.source) && visibleNodes.has(e.target)
+      );
+    } else {
+      visibleNodes = allNodeIds;
+      visibleEdges = topology.edges.filter(e =>
+        allNodeIds.has(e.source) && allNodeIds.has(e.target)
+      );
+    }
+
+    const edgeHealthMap = new Map<string, string>();
+    visibleEdges.forEach(e => {
+      edgeHealthMap.set(`${e.source}-${e.target}`, getEdgeHealth(e.source, e.target));
+    });
 
     const elements: cytoscape.ElementDefinition[] = [
-      ...topology.nodes.map((n) => ({
-        data: {
-          id: n.id,
-          label: siteAggregate
-            ? `${n.name}\n${(n as any).device_count || 0} devices`
-            : n.name,
-          type: n.type,
-          team: n.team || 'unassigned',
-          site: n.site || 'unassigned',
-          topology_type: (n as any).topology_type || '',
-          device_count: (n as any).device_count || 0,
-        },
-      })),
-      ...validEdges.map((e) => {
+      ...topology.nodes
+        .filter(n => visibleNodes.has(n.id))
+        .map(n => {
+          // Count hidden children for expandable principal nodes
+          let hiddenCount = 0;
+          if (expandable && PRINCIPAL_TYPES.has(n.type) && !expandedNodes.has(n.id)) {
+            const neighbors = adjacency.get(n.id);
+            if (neighbors) {
+              neighbors.forEach(childId => {
+                if (!visibleNodes.has(childId)) hiddenCount++;
+              });
+            }
+          }
+          const label = hiddenCount > 0
+            ? `${n.name}\n+${hiddenCount}`
+            : siteAggregate
+              ? `${n.name}\n${(n as any).device_count || 0} devices`
+              : n.name;
+          return {
+            data: {
+              id: n.id,
+              label,
+              type: n.type,
+              team: n.team || 'unassigned',
+              site: n.site || 'unassigned',
+              topology_type: (n as any).topology_type || '',
+              device_count: (n as any).device_count || 0,
+              hidden_count: hiddenCount,
+              expanded: expandedNodes.has(n.id),
+            },
+          };
+        }),
+      ...visibleEdges.map(e => {
         const key = `${e.source}-${e.target}`;
         const health = edgeHealthMap.get(key) || 'unknown';
         return {
@@ -278,6 +336,25 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       },
     ];
 
+    // Expandable mode: style nodes with hidden children
+    if (expandable) {
+      style.push({
+        selector: 'node[hidden_count > 0]',
+        style: {
+          'border-width': 3.5,
+          'border-color': '#22d3ee',
+          'overlay-padding': '6px',
+        },
+      });
+      style.push({
+        selector: 'node[expanded = true]',
+        style: {
+          'border-width': 2.5,
+          'border-color': (ele: cytoscape.NodeSingular) => NODE_COLORS[ele.data('type')] || '#64748b',
+        },
+      });
+    }
+
     const layoutOpts = siteAggregate
       ? {
           name: topology.nodes.length === 5 ? 'preset' : 'circle',
@@ -363,14 +440,23 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
     cyRef.current = cy;
 
     cy.on('tap', 'node', (evt) => {
-      onNodeClick?.(evt.target.id());
+      const nodeId = evt.target.id();
+      if (expandable) {
+        // If this node has hidden children, toggle expand
+        const hiddenCount = evt.target.data('hidden_count');
+        if (hiddenCount > 0 || expandedNodes.has(nodeId)) {
+          toggleExpand(nodeId);
+          return;
+        }
+      }
+      onNodeClick?.(nodeId);
     });
 
     return () => {
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       cy.destroy();
     };
-  }, [topology, selectedService, selectedSite, siteAggregate, onNodeClick]);
+  }, [topology, selectedService, selectedSite, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick]);
 
   useEffect(() => {
     const cleanup = buildGraph();

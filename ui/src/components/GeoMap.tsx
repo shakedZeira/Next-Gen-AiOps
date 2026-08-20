@@ -130,7 +130,7 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
 
     try {
       const [topoRes, overviewRes] = await Promise.all([
-        cmdbAPI.getSiteTopology(siteName, "overview"),
+        cmdbAPI.getSiteTopology(siteName, "detailed"),
         cmdbAPI.getSiteOverview(siteName),
       ]);
       setSiteTopology(topoRes.data);
@@ -430,6 +430,7 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
             <TopologyGraph
               topology={siteTopology}
               selectedSite={focusedSite}
+              expandable={true}
               height="h-full"
             />
           </div>
