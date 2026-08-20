@@ -90,11 +90,17 @@ class CMDBRepository:
         )
         return [dict(zip(result.keys(), row)) for row in result]
 
-    async def get_site_topology(self, site: str) -> dict:
+    async def get_site_topology(self, site: str, view: str = "detailed") -> dict:
         ci_result = await self.session.execute(
             select(CI).where(CI.site == site)
         )
         cis = ci_result.scalars().all()
+
+        # Overview view: only "principal" device types (ServiceNow Principal Class pattern)
+        PRINCIPAL_TYPES = {"router", "switch", "firewall", "load_balancer", "physical_server", "database"}
+        if view == "overview":
+            cis = [c for c in cis if c.type in PRINCIPAL_TYPES]
+
         ci_ids = {c.id for c in cis}
         nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned", "site": c.site} for c in cis]
         

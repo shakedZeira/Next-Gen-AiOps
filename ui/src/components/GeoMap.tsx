@@ -130,7 +130,7 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
 
     try {
       const [topoRes, overviewRes] = await Promise.all([
-        cmdbAPI.getSiteTopology(siteName),
+        cmdbAPI.getSiteTopology(siteName, "overview"),
         cmdbAPI.getSiteOverview(siteName),
       ]);
       setSiteTopology(topoRes.data);
@@ -391,22 +391,24 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
                 </div>
                 <button onClick={resetToGlobal} className="text-gray-400 hover:text-gray-600 text-lg leading-none" title="Back to Global">×</button>
               </div>
-              <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
+              <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
                 <span><strong className="text-gray-900">{siteOverview.device_count}</strong> devices</span>
                 <span><strong className="text-gray-900">{siteOverview.room_count}</strong> rooms</span>
                 <span><strong className="text-gray-900">{siteOverview.total_racks}</strong> racks</span>
               </div>
-              <div className="flex gap-2">
-                <button onClick={resetToGlobal} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors">
-                  ← Global
-                </button>
-                <div className="flex-1"></div>
-                <div className="flex gap-1 flex-wrap justify-end">
-                  {siteOverview.teams.slice(0, 4).map(team => (
-                    <span key={team} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">{team}</span>
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {Object.entries(siteOverview.device_types)
+                  .filter(([t]) => ["router", "switch", "firewall", "load_balancer", "physical_server", "database"].includes(t))
+                  .sort(([,a], [,b]) => b - a)
+                  .map(([type, count]) => (
+                    <span key={type} className="px-2 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-medium">
+                      {type.replace(/_/g, ' ')}: {count}
+                    </span>
                   ))}
-                </div>
               </div>
+              <button onClick={resetToGlobal} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors">
+                ← Global
+              </button>
             </div>
           ) : null}
         </div>

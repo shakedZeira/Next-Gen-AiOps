@@ -144,9 +144,9 @@ async def get_sites(session=Depends(get_session), _user=Depends(get_current_user
 
 
 @router.get("/topology/site/{site_name}")
-async def get_site_topology(site_name: str, session=Depends(get_session), _user=Depends(get_current_user)):
+async def get_site_topology(site_name: str, view: str = "detailed", session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
-    topo = await repo.get_site_topology(site_name)
+    topo = await repo.get_site_topology(site_name, view)
     return JSONResponse(
         content={"nodes": topo["nodes"], "edges": topo["edges"]},
         headers={"Cache-Control": "public, max-age=60"}

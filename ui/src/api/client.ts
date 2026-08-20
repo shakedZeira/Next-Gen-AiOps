@@ -40,7 +40,7 @@ export const cmdbAPI = {
   getGlobalTopology: () => api.get('/cmdb/topology/all'),
   getImpact: (ciId: string) => api.get(`/cmdb/impact/${ciId}`),
   getSites: () => api.get('/cmdb/sites'),
-  getSiteTopology: (siteName: string) => api.get(`/cmdb/topology/site/${siteName}`),
+  getSiteTopology: (siteName: string, view: string = "detailed") => api.get(`/cmdb/topology/site/${siteName}`, { params: { view } }),
   getInterSiteConnections: () => api.get('/cmdb/topology/inter-site'),
   getSiteAggregateTopology: () => api.get('/cmdb/topology/site-aggregate'),
   getCIDetails: (ciId: string) => api.get(`/cmdb/ci/${ciId}/details`),
