@@ -65,7 +65,7 @@ class AnomalyDetector:
 
     def _detect_log_anomalies(self, logs: list[dict]) -> list[Anomaly]:
         anomalies = []
-        error_logs = [l for l in logs if l.get("level") == "ERROR"]
+        error_logs = [log for log in logs if log.get("level") == "ERROR"]
         if len(error_logs) > 5:
             anomalies.append(Anomaly(
                 service="system", metric_type="log_errors",

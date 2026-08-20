@@ -1,7 +1,8 @@
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from core_platform.auth.service import decode_token, DEMO_USERS
+from fastapi import Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 from core_platform.auth.schemas import UserResponse
+from core_platform.auth.service import DEMO_USERS, decode_token
 
 security = HTTPBearer()
 
@@ -13,8 +14,8 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         if not user:
             raise HTTPException(status_code=401, detail="User not found")
         return UserResponse(id=user["id"], email=user["email"], role=user["role"])
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception as err:
+        raise HTTPException(status_code=401, detail="Invalid token") from err
 
 
 def require_role(*roles):

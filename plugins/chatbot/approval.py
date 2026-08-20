@@ -1,9 +1,11 @@
 import json
-import uuid
 import time
+import uuid
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import StrEnum
+
 import redis.asyncio as aioredis
+
 from plugins.chatbot.config import ChatBotConfig
 
 config = ChatBotConfig()
@@ -12,7 +14,7 @@ PENDING_HASH_KEY = "chatbot:approvals:pending"
 HISTORY_HASH_KEY = "chatbot:approvals:history"
 
 
-class ApprovalStatus(str, Enum):
+class ApprovalStatus(StrEnum):
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"

@@ -1,5 +1,5 @@
-from uuid import uuid4
 from httpx import AsyncClient
+
 from core_platform.main import app
 
 

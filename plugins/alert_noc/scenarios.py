@@ -1,5 +1,6 @@
 import asyncio
 import logging
+
 from plugins.alert_noc.models import AlertCreate, AlertSeverity
 
 logger = logging.getLogger(__name__)

@@ -1,5 +1,6 @@
 import json
 import uuid
+
 from sqlalchemy import create_engine, text
 
 DATABASE_URL = "postgresql://aiops:aiops@localhost:5432/aiops"
@@ -531,7 +532,7 @@ def seed():
 
         for ci in cis:
             conn.execute(text(
-                """INSERT INTO ci (id, name, type, provider, environment, team, labels, site, site_type, network_layer, topology_type) 
+                """INSERT INTO ci (id, name, type, provider, environment, team, labels, site, site_type, network_layer, topology_type)
                    VALUES (:id, :name, :type, :provider, :environment, :team, CAST(:labels AS jsonb), :site, :site_type, :network_layer, :topology_type)"""
             ), {**ci, "labels": json.dumps(ci.get("labels", {}))})
 

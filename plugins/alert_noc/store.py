@@ -1,10 +1,11 @@
-import json
 import uuid
 from datetime import datetime
+
 import redis.asyncio as aioredis
-from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
-from plugins.alert_noc.dedup import AlertDeduplicator
+
 from plugins.alert_noc.config import AlertNOCConfig
+from plugins.alert_noc.dedup import AlertDeduplicator
+from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
 
 
 class AlertStore:

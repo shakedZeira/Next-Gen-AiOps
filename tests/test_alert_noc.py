@@ -1,4 +1,5 @@
 from httpx import AsyncClient
+
 from plugins.alert_noc.main import app
 
 

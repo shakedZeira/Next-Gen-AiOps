@@ -1,9 +1,11 @@
-from unittest.mock import patch, AsyncMock, MagicMock
+from unittest.mock import AsyncMock, patch
+
 from httpx import AsyncClient
+
+from plugins.infra_simulator.alert_rules import build_alert_payload, trigger_alert
+from plugins.infra_simulator.log_emitter import _format_log
 from plugins.infra_simulator.main import app
 from plugins.infra_simulator.topology import INFRA_DEVICES, SERVICE_MAP
-from plugins.infra_simulator.log_emitter import _format_log
-from plugins.infra_simulator.alert_rules import build_alert_payload, trigger_alert
 
 
 async def test_health():

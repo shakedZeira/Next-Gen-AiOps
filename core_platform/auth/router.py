@@ -1,9 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
-from core_platform.auth.schemas import LoginRequest, TokenPair, LoginResponse, UserResponse
-from core_platform.auth.service import (
-    DEMO_USERS, verify_password, create_access_token, create_refresh_token, decode_token
-)
+
 from core_platform.auth.dependencies import get_current_user
+from core_platform.auth.schemas import LoginRequest, LoginResponse, TokenPair, UserResponse
+from core_platform.auth.service import (
+    DEMO_USERS,
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    verify_password,
+)
 
 router = APIRouter()
 
@@ -25,8 +30,8 @@ async def login(req: LoginRequest):
 async def refresh(refresh_token: str):
     try:
         payload = decode_token(refresh_token)
-    except Exception:
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+    except Exception as err:
+        raise HTTPException(status_code=401, detail="Invalid refresh token") from err
     user = next((u for u in DEMO_USERS.values() if u["id"] == payload["sub"]), None)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")

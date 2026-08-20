@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
+
 from aiops_shared.database import get_session
 
 router = APIRouter()
@@ -20,6 +21,7 @@ async def health(session=Depends(get_session)):
 
     try:
         import os
+
         import redis.asyncio as aioredis
         redis_url = os.getenv("REDIS_URL", "redis://redis:6379/0")
         r = aioredis.from_url(redis_url)

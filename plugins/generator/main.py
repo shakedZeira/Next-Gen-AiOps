@@ -1,12 +1,14 @@
 import asyncio
-import random
 import logging
-import httpx
+import random
 from contextlib import asynccontextmanager
+
+import httpx
 from fastapi import FastAPI
+
 from plugins.generator.config import GeneratorConfig
+from plugins.generator.otel_emitter import emit_transaction, init_emitter
 from plugins.generator.topology import DEFAULT_TOPOLOGY
-from plugins.generator.otel_emitter import init_emitter, emit_transaction
 
 logger = logging.getLogger(__name__)
 config = GeneratorConfig()

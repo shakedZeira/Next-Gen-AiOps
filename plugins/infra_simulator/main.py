@@ -1,12 +1,14 @@
 import asyncio
-import random
 import logging
+import random
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
-from plugins.infra_simulator.config import InfraSimulatorConfig
-from plugins.infra_simulator.topology import INFRA_DEVICES
-from plugins.infra_simulator.log_emitter import init_log_emitter, emit_device_logs
+
 from plugins.infra_simulator.alert_rules import trigger_alert
+from plugins.infra_simulator.config import InfraSimulatorConfig
+from plugins.infra_simulator.log_emitter import emit_device_logs, init_log_emitter
+from plugins.infra_simulator.topology import INFRA_DEVICES
 
 logger = logging.getLogger(__name__)
 config = InfraSimulatorConfig()

@@ -1,12 +1,14 @@
 import asyncio
-import random
 import logging
+import random
 from collections import deque
 from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
+
 from plugins.agent_monitor.config import AgentMonitorConfig
 from plugins.agent_monitor.metrics_collector import init_metrics, record_llm_call
-from plugins.agent_monitor.router import router, _stats
+from plugins.agent_monitor.router import _stats, router
 
 logger = logging.getLogger(__name__)
 config = AgentMonitorConfig()

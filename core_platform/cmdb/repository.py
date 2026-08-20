@@ -1,6 +1,8 @@
 import uuid
+
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from aiops_shared.models.ci import CI
 from aiops_shared.models.relationship import Relationship
 from aiops_shared.models.service import Service
@@ -88,7 +90,7 @@ class CMDBRepository:
         result = await self.session.execute(
             text("SELECT DISTINCT site, site_type, topology_type, COUNT(*) as device_count FROM ci WHERE site IS NOT NULL GROUP BY site, site_type, topology_type")
         )
-        return [dict(zip(result.keys(), row)) for row in result]
+        return [dict(zip(result.keys(), row, strict=False)) for row in result]
 
     async def get_site_topology(self, site: str, view: str = "detailed") -> dict:
         ci_result = await self.session.execute(
@@ -97,13 +99,13 @@ class CMDBRepository:
         cis = ci_result.scalars().all()
 
         # Overview view: only "principal" device types (ServiceNow Principal Class pattern)
-        PRINCIPAL_TYPES = {"router", "switch", "firewall", "load_balancer", "physical_server", "database"}
+        principal_types = {"router", "switch", "firewall", "load_balancer", "physical_server", "database"}
         if view == "overview":
-            cis = [c for c in cis if c.type in PRINCIPAL_TYPES]
+            cis = [c for c in cis if c.type in principal_types]
 
         ci_ids = {c.id for c in cis}
         nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned", "site": c.site} for c in cis]
-        
+
         rel_result = await self.session.execute(
             select(Relationship).where(
                 (Relationship.source_id.in_(ci_ids)) & (Relationship.target_id.in_(ci_ids))
@@ -118,7 +120,7 @@ class CMDBRepository:
         sites_result = await self.session.execute(
             text("SELECT DISTINCT site, site_type, topology_type, COUNT(*) as device_count FROM ci WHERE site IS NOT NULL GROUP BY site, site_type, topology_type")
         )
-        sites = [dict(zip(sites_result.keys(), row)) for row in sites_result]
+        sites = [dict(zip(sites_result.keys(), row, strict=False)) for row in sites_result]
 
         nodes = []
         for s in sites:
@@ -199,8 +201,8 @@ class CMDBRepository:
 
     async def get_inter_site_connections(self) -> list[dict]:
         result = await self.session.execute(text("""
-            SELECT 
-                s.site as source_site, 
+            SELECT
+                s.site as source_site,
                 t.site as target_site,
                 r.type as connection_type,
                 s.name as source_device,
@@ -211,7 +213,7 @@ class CMDBRepository:
             JOIN ci t ON r.target_id = t.id
             WHERE s.site IS NOT NULL AND t.site IS NOT NULL AND s.site != t.site
         """))
-        return [dict(zip(result.keys(), row)) for row in result]
+        return [dict(zip(result.keys(), row, strict=False)) for row in result]
 
     async def get_dc_rooms(self, site: str | None = None) -> list[dict]:
         if site:

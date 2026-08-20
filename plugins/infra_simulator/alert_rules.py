@@ -1,7 +1,9 @@
-import random
-import httpx
 import logging
-from plugins.infra_simulator.topology import SimulatedDevice, SERVICE_MAP
+import random
+
+import httpx
+
+from plugins.infra_simulator.topology import SERVICE_MAP, SimulatedDevice
 
 logger = logging.getLogger(__name__)
 

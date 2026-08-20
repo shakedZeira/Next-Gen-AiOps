@@ -1,6 +1,9 @@
-from fastapi import FastAPI
 from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
 from plugins.chatbot.router import router
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

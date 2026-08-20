@@ -1,7 +1,9 @@
 import uuid
 from datetime import datetime, timedelta
+
 from jose import jwt
 from passlib.context import CryptContext
+
 from aiops_shared.config import settings
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

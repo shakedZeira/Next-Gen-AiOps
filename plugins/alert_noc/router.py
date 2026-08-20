@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from plugins.alert_noc.models import AlertCreate, AlertAcknowledge
+
+from plugins.alert_noc.models import AlertAcknowledge, AlertCreate
 from plugins.alert_noc.store import alert_store
 
 router = APIRouter()
@@ -69,6 +70,7 @@ async def list_scenarios():
 @router.post("/simulate/scenario")
 async def run_scenario(data: ScenarioRequest):
     import asyncio
+
     from plugins.alert_noc.scenarios import ScenarioRunner
     runner = ScenarioRunner(alert_store)
     asyncio.create_task(runner.run(data.scenario))

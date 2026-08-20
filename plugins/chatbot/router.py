@@ -1,8 +1,9 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
-from plugins.chatbot.agent import create_agent
-from plugins.chatbot.approval import approval_manager, ApprovalStatus
 from langchain_core.messages import HumanMessage
+from pydantic import BaseModel
+
+from plugins.chatbot.agent import create_agent
+from plugins.chatbot.approval import approval_manager
 
 router = APIRouter()
 agent = create_agent()

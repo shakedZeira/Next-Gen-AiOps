@@ -1,5 +1,7 @@
 from collections import deque
+
 from fastapi import APIRouter
+
 from plugins.agent_monitor.models import LLMStats, ModelHealth
 
 router = APIRouter()

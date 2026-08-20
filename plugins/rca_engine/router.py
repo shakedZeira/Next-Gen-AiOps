@@ -1,9 +1,10 @@
 from fastapi import APIRouter
+from pydantic import BaseModel
+
 from plugins.rca_engine.anomaly_detector import AnomalyDetector
+from plugins.rca_engine.config import RCAConfig
 from plugins.rca_engine.correlation import CorrelationEngine
 from plugins.rca_engine.llm_explainer import LLMExplainer
-from plugins.rca_engine.config import RCAConfig
-from pydantic import BaseModel
 
 router = APIRouter()
 config = RCAConfig()

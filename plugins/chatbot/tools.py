@@ -1,5 +1,6 @@
-from langchain_core.tools import tool
 import httpx
+from langchain_core.tools import tool
+
 from plugins.chatbot.config import ChatBotConfig
 
 config = ChatBotConfig()

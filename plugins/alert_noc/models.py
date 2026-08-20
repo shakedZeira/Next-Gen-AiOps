@@ -1,9 +1,10 @@
-from pydantic import BaseModel
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
+
+from pydantic import BaseModel
 
 
-class AlertSeverity(str, Enum):
+class AlertSeverity(StrEnum):
     CRITICAL = "critical"
     HIGH = "high"
     MEDIUM = "medium"
@@ -11,7 +12,7 @@ class AlertSeverity(str, Enum):
     INFO = "info"
 
 
-class AlertStatus(str, Enum):
+class AlertStatus(StrEnum):
     ACTIVE = "active"
     ACKNOWLEDGED = "acknowledged"
     RESOLVED = "resolved"

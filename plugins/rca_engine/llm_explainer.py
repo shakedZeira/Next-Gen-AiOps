@@ -1,6 +1,7 @@
 import httpx
-from plugins.rca_engine.correlation import RCACandidate
+
 from plugins.rca_engine.config import RCAConfig
+from plugins.rca_engine.correlation import RCACandidate
 
 
 class LLMExplainer:

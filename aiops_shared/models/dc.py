@@ -1,6 +1,8 @@
 import uuid
-from sqlalchemy import Column, String, Integer, Float, JSON
+
+from sqlalchemy import JSON, Column, Float, Integer, String
 from sqlalchemy.dialects.postgresql import UUID
+
 from aiops_shared.database import Base
 
 

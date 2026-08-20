@@ -1,11 +1,13 @@
 from contextlib import asynccontextmanager
+
+import httpx
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+
 from aiops_shared.otel.instrumentation import init_tracer, instrument_fastapi
 from core_platform.auth.router import router as auth_router
-from core_platform.routers.health import router as health_router
 from core_platform.routers.cmdb import router as cmdb_router
-import httpx
+from core_platform.routers.health import router as health_router
 
 _http_client: httpx.AsyncClient | None = None
 

@@ -1,7 +1,7 @@
 import uuid
+
 from aiops_shared.models.ci import CI
 from aiops_shared.models.relationship import Relationship
-from aiops_shared.models.service import Service
 
 
 def test_ci_creation():

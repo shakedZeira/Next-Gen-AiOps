@@ -1,11 +1,13 @@
 import random
 import time
+
 from opentelemetry import _logs
+from opentelemetry._logs import SeverityNumber
+from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
 from opentelemetry.sdk._logs import LoggerProvider
 from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-from opentelemetry.exporter.otlp.proto.http._log_exporter import OTLPLogExporter
 from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry._logs import SeverityNumber
+
 from plugins.infra_simulator.topology import SimulatedDevice
 
 SEVERITY_MAP = {

@@ -1,16 +1,24 @@
 from uuid import UUID
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
+from sqlalchemy import select
+
+from aiops_shared.database import get_session
+from core_platform.auth.dependencies import get_current_user
 from core_platform.cmdb.repository import CMDBRepository
 from core_platform.cmdb.schemas import (
-    CICreate, CIResponse, RelationshipCreate, RelationshipResponse,
-    ServiceCreate, ServiceResponse, ServiceCIRequest, TopologyResponse,
-    ImpactResponse, SiteInfoResponse, InterSiteConnectionResponse,
-    DCRoomResponse, DCRackResponse, DCRackEquipmentResponse,
+    CICreate,
+    CIResponse,
+    ImpactResponse,
+    InterSiteConnectionResponse,
+    RelationshipCreate,
+    RelationshipResponse,
+    ServiceCIRequest,
+    ServiceCreate,
+    ServiceResponse,
+    TopologyResponse,
 )
-from core_platform.auth.dependencies import get_current_user
-from sqlalchemy import select
-from aiops_shared.database import get_session
 
 router = APIRouter()
 
@@ -26,6 +34,8 @@ async def create_ci(data: CICreate, session=Depends(get_session), _user=Depends(
 async def get_ci(ci_id: UUID, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
     ci = await repo.get_ci(ci_id)
+    if not ci:
+        return JSONResponse(status_code=404, content={"error": "CI not found"})
     return CIResponse(id=ci.id, name=ci.name, type=ci.type, provider=ci.provider, environment=ci.environment, team=ci.team, site=ci.site, site_type=ci.site_type, network_layer=ci.network_layer, topology_type=ci.topology_type, labels=ci.labels, properties=ci.properties)
 
 
@@ -113,7 +123,7 @@ async def get_impact(ci_id: UUID, session=Depends(get_session), _user=Depends(ge
 async def get_site_locations(session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
     sites = await repo.get_all_sites()
-    SITE_COORDS = {
+    site_coords = {
         "global-hq": {"lat": 40.7128, "lng": -74.0060, "city": "New York", "country": "USA"},
         "regional-dc-1": {"lat": 41.8781, "lng": -87.6298, "city": "Chicago", "country": "USA"},
         "metro-ring-1": {"lat": 32.7767, "lng": -96.7970, "city": "Dallas", "country": "USA"},
@@ -122,7 +132,7 @@ async def get_site_locations(session=Depends(get_session), _user=Depends(get_cur
     }
     result = []
     for s in sites:
-        coords = SITE_COORDS.get(s["site"], {"lat": 0, "lng": 0, "city": "Unknown", "country": ""})
+        coords = site_coords.get(s["site"], {"lat": 0, "lng": 0, "city": "Unknown", "country": ""})
         result.append({
             "site": s["site"], "name": s["site"].replace("-", " ").title(),
             "city": coords["city"], "country": coords["country"],
@@ -161,7 +171,7 @@ async def get_inter_site_connections(session=Depends(get_session), _user=Depends
 
 
 @router.get("/dc/rooms")
-async def get_dc_rooms(site: str = None, session=Depends(get_session), _user=Depends(get_current_user)):
+async def get_dc_rooms(site: str | None = None, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
     return await repo.get_dc_rooms(site)
 
@@ -261,15 +271,15 @@ async def get_inter_site_flows(_user=Depends(get_current_user)):
 @router.get("/sites/{site_name}/overview")
 async def get_site_overview(site_name: str, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
-    
+
     # Get device count and types
     cis = await repo.get_cis_by_site(site_name)
     device_count = len(cis)
-    type_counts = {}
+    type_counts: dict[str, int] = {}
     for ci in cis:
         t = ci.get("type", "unknown")
         type_counts[t] = type_counts.get(t, 0) + 1
-    
+
     # Get room count and total racks
     from aiops_shared.models.dc import DCRoom
     rooms_result = await session.execute(
@@ -278,16 +288,16 @@ async def get_site_overview(site_name: str, session=Depends(get_session), _user=
     rooms = rooms_result.scalars().all()
     room_count = len(rooms)
     total_racks = sum(r.total_racks for r in rooms)
-    
+
     # Get teams
     teams = list(set(ci.get("team") for ci in cis if ci.get("team")))
-    
+
     # Get topology type from a CI
     topology_type = next((ci.get("topology_type") for ci in cis if ci.get("topology_type")), "unknown")
-    
+
     # Get site type from first CI
     site_type = next((ci.get("site_type") for ci in cis if ci.get("site_type")), "unknown")
-    
+
     return {
         "site_name": site_name,
         "site_type": site_type,
@@ -304,28 +314,28 @@ async def get_site_overview(site_name: str, session=Depends(get_session), _user=
 @router.get("/sites/{site_name}/map-data")
 async def get_site_map_data(site_name: str, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
-    
-    SITE_COORDS = {
+
+    site_coords = {
         "global-hq": {"lat": 40.7128, "lng": -74.0060},
         "regional-dc-1": {"lat": 41.8781, "lng": -87.6298},
         "metro-ring-1": {"lat": 32.7767, "lng": -96.7970},
         "branch-nyc": {"lat": 40.7580, "lng": -73.9855},
         "branch-london": {"lat": 51.5074, "lng": -0.1278},
     }
-    
-    center = SITE_COORDS.get(site_name, {"lat": 0, "lng": 0})
-    
+
+    center = site_coords.get(site_name, {"lat": 0, "lng": 0})
+
     from aiops_shared.models.dc import DCRoom
     rooms_result = await session.execute(
         select(DCRoom).where(DCRoom.site == site_name)
     )
     rooms = rooms_result.scalars().all()
-    
+
     cis = await repo.get_cis_by_site(site_name)
-    
+
     import math
     pins = []
-    
+
     for i, room in enumerate(rooms):
         angle = (2 * math.pi * i) / max(len(rooms), 1)
         offset_lat = 0.002 * math.cos(angle)
@@ -344,10 +354,10 @@ async def get_site_map_data(site_name: str, session=Depends(get_session), _user=
                 "cooling_type": room.cooling_type,
             }
         })
-    
+
     key_types = {"router", "firewall", "load_balancer", "switch", "physical_server"}
     key_cis = [ci for ci in cis if ci.get("type") in key_types]
-    
+
     for i, ci in enumerate(key_cis[:20]):
         angle = (2 * math.pi * i) / min(len(key_cis), 20)
         radius = 0.001 + (i % 3) * 0.0005
@@ -365,7 +375,7 @@ async def get_site_map_data(site_name: str, session=Depends(get_session), _user=
                 "network_layer": ci.get("network_layer"),
             }
         })
-    
+
     return {
         "center": center,
         "zoom": 15,

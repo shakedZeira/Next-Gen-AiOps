@@ -1,16 +1,17 @@
 import asyncio
 import random
 import time
-from opentelemetry import trace, metrics
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.metrics import MeterProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+
+from opentelemetry import metrics, trace
 from opentelemetry.exporter.otlp.proto.http.metric_exporter import OTLPMetricExporter
-from opentelemetry.sdk.resources import SERVICE_NAME, Resource
-from opentelemetry.semconv.trace import SpanAttributes
+from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from opentelemetry.instrumentation.httpx import HTTPXClientInstrumentor
+from opentelemetry.sdk.metrics import MeterProvider
+from opentelemetry.sdk.metrics.export import PeriodicExportingMetricReader
+from opentelemetry.sdk.resources import SERVICE_NAME, Resource
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.semconv.trace import SpanAttributes
 
 HTTPXClientInstrumentor().instrument()
 
@@ -36,7 +37,7 @@ async def emit_transaction(tracer, meter, service_name: str, latency_mean: int, 
     latency_histogram = meter.create_histogram("http.server.duration", description="Request latency", unit="ms")
     error_counter = meter.create_counter("http.server.errors", description="Total errors")
 
-    start = time.time()
+    time.time()
     is_error = random.random() < error_rate
     status_code = 500 if is_error else 200
 
