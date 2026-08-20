@@ -167,9 +167,9 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       ...topology.nodes
         .filter(n => visibleNodes.has(n.id))
         .map(n => {
-          // Count hidden children for expandable principal nodes
+          // Count hidden children for expandable nodes with hidden neighbors
           let hiddenCount = 0;
-          if (expandable && PRINCIPAL_TYPES.has(n.type) && !expandedNodes.has(n.id)) {
+          if (expandable && !expandedNodes.has(n.id)) {
             const neighbors = adjacency.get(n.id);
             if (neighbors) {
               neighbors.forEach(childId => {
@@ -442,7 +442,6 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
     cy.on('tap', 'node', (evt) => {
       const nodeId = evt.target.id();
       if (expandable) {
-        // If this node has hidden children, toggle expand
         const hiddenCount = evt.target.data('hidden_count');
         if (hiddenCount > 0 || expandedNodes.has(nodeId)) {
           toggleExpand(nodeId);

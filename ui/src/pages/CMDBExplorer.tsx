@@ -324,6 +324,7 @@ export default function CMDBExplorer() {
               <TopologyGraph
                 topology={topology}
                 selectedSite={selectedSite}
+                expandable={true}
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
               />
