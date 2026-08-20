@@ -613,16 +613,21 @@ Already covered in Fix 37 (Performance plan).
 
 ---
 
-### Feature 12: CI Search & Filtering
-**Impact: MEDIUM | Effort: LOW (1 day)**
+### Feature 12: CI Search & Filtering ✅ COMPLETED
+**Impact: MEDIUM | Effort: LOW (1 day)** — Implemented and deployed.
 
-Add text search to CMDB Explorer.
+Client-side text search in CMDB Explorer for filtering CIs by name, type, team, site, and provider.
 
-#### Design
-- Search input filters CIs by name, type, team, site
-- Real-time filtering as user types
-- Highlight matching text in results
-- Backend: `GET /api/v1/cmdb/ci?search=payment`
+#### What Was Built
+- Search input in toolbar with magnifying glass icon, real-time filtering
+- `filteredCIs` filters by case-insensitive substring match across name/type/team/site/provider
+- TopologyGraph `searchQuery` prop: highlights matching nodes (gold border), dims non-matching
+- Search resets on site change; intersects with existing site/service filters
+- CI list shows "X of Y" count when search is active
+- Docs page updated with CI Search subsection
+
+#### Commits
+- `5ca3c3f` — CI search & text filtering implementation
 
 ---
 
@@ -697,8 +702,7 @@ Already covered in Fix 25 (Security plan).
 | 2 | Change-Aware Correlation | 2-3 days | HIGH |
 | 3 | Incident Timeline (visual) | 2-3 days | HIGH |
 | 4 | Runbook Automation | 3-4 days | HIGH |
-| 5 | CI Search & Text Filtering | 1 day | MEDIUM |
-| 6 | Impact Analysis Visualization | 1-2 days | MEDIUM |
+| 5 | Impact Analysis Visualization | 1-2 days | MEDIUM |
 | 7 | WebSocket Real-Time Push | 1-2 days | MEDIUM |
 | 8 | SLI/SLO Dashboard | 1-2 days | MEDIUM |
 | 9 | Service Dependency Map | 4-5 days | HIGH |
