@@ -6,6 +6,7 @@ interface Props {
   topology: Topology | null;
   selectedService?: string | null;
   selectedSite?: string | null;
+  searchQuery?: string | null;
   siteAggregate?: boolean;
   expandable?: boolean;
   height?: string;
@@ -99,7 +100,7 @@ const NODE_SHAPES: Record<string, string> = {
 
 const PRINCIPAL_TYPES = new Set(['router', 'switch', 'firewall', 'load_balancer']);
 
-export default function TopologyGraph({ topology, selectedService, selectedSite, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick }: Props) {
+export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -381,7 +382,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       maxZoom: 3,
     });
 
-    if (selectedSite || selectedService) {
+    if (selectedSite || selectedService || searchQuery) {
       let siteNodeIds: Set<string> | null = null;
       if (selectedSite) {
         siteNodeIds = new Set<string>();
@@ -408,29 +409,54 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
         });
       }
 
-      let matchedNodeIds: Set<string>;
-      if (siteNodeIds && serviceNodeIds) {
-        matchedNodeIds = new Set<string>(
-          [...siteNodeIds].filter((id) => serviceNodeIds!.has(id))
-        );
-      } else {
-        matchedNodeIds = siteNodeIds || serviceNodeIds!;
+      let searchNodeIds: Set<string> | null = null;
+      if (searchQuery) {
+        searchNodeIds = new Set<string>();
+        const q = searchQuery.toLowerCase();
+        cy.nodes().forEach((n) => {
+          const label = (n.data('label') || '').toLowerCase();
+          const team = (n.data('team') || '').toLowerCase();
+          const type = (n.data('type') || '').toLowerCase();
+          const site = (n.data('site') || '').toLowerCase();
+          if (
+            label.includes(q) ||
+            team.includes(q) ||
+            type.includes(q) ||
+            site.includes(q)
+          ) {
+            searchNodeIds!.add(n.id());
+          }
+        });
       }
 
-      if (matchedNodeIds.size > 0) {
+      let matchedNodeIds: Set<string> | null = null;
+      const sets = [siteNodeIds, serviceNodeIds, searchNodeIds].filter((s): s is Set<string> => s !== null);
+      for (const set of sets) {
+        if (matchedNodeIds === null) {
+          matchedNodeIds = set;
+        } else {
+          const result = new Set<string>();
+          for (const id of matchedNodeIds) {
+            if (set.has(id)) result.add(id);
+          }
+          matchedNodeIds = result;
+        }
+      }
+
+      if (matchedNodeIds && matchedNodeIds.size > 0) {
         const connectedEdges = cy.edges().filter((e) => {
-          return matchedNodeIds.has(e.source().id()) || matchedNodeIds.has(e.target().id());
+          return matchedNodeIds!.has(e.source().id()) || matchedNodeIds!.has(e.target().id());
         });
         connectedEdges.forEach((e) => {
-          matchedNodeIds.add(e.source().id());
-          matchedNodeIds.add(e.target().id());
+          matchedNodeIds!.add(e.source().id());
+          matchedNodeIds!.add(e.target().id());
         });
 
         cy.nodes().removeClass('highlighted site-highlight').addClass('dimmed');
         cy.edges().addClass('dimmed');
-        cy.nodes().filter((n) => matchedNodeIds.has(n.id())).removeClass('dimmed').addClass('highlighted site-highlight');
+        cy.nodes().filter((n) => matchedNodeIds!.has(n.id())).removeClass('dimmed').addClass('highlighted site-highlight');
         cy.edges().filter((e) => {
-          return matchedNodeIds.has(e.source().id()) && matchedNodeIds.has(e.target().id());
+          return matchedNodeIds!.has(e.source().id()) && matchedNodeIds!.has(e.target().id());
         }).removeClass('dimmed');
       }
     }
@@ -465,7 +491,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       cy.destroy();
     };
-  }, [topology, selectedService, selectedSite, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick]);
+  }, [topology, selectedService, selectedSite, searchQuery, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick]);
 
   useEffect(() => {
     const cleanup = buildGraph();

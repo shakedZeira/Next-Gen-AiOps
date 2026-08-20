@@ -134,6 +134,14 @@ export default function Docs() {
               service. The CI count for each service is displayed in the dropdown. The filter works in
               both Detailed and Site Overview view modes.
             </p>
+            <h3 className="text-lg font-semibold text-white mb-2">CI Search</h3>
+            <p className="text-gray-200 mb-4">
+              Real-time text search for filtering CIs by name, type, team, site, or provider.
+              Type in the search box in the toolbar to instantly filter the CI list and highlight
+              matching nodes in the topology graph with a gold border. Non-matching nodes are dimmed.
+              The search is case-insensitive and resets when you change the selected site. The CI list
+              shows a "X of Y" count when a search is active.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">Site Overview</h3>
             <p className="text-gray-200 mb-4">
               High-level view of all 5 sites with aggregate topology. Each site shows key device type

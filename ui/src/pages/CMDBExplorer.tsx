@@ -76,6 +76,7 @@ export default function CMDBExplorer() {
   const [showFlows, setShowFlows] = useState(true);
   const [siteServices, setSiteServices] = useState<SiteService[]>([]);
   const [selectedService, setSelectedService] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     Promise.all([
@@ -127,6 +128,7 @@ export default function CMDBExplorer() {
     }
     setSelectedService('all');
     setSelectedFlow('all');
+    setSearchQuery('');
   }, [selectedSite]);
 
   const flowOptions = [
@@ -139,7 +141,16 @@ export default function CMDBExplorer() {
     ...sites.map((s) => ({ value: s.name, label: `${s.name} (${TOPOLOGY_LABELS[s.topology_type || ''] || s.topology_type || 'unknown'})`, count: s.device_count })),
   ];
 
-  const filteredCIs = selectedSite === 'all' ? cis : cis.filter((ci) => ci.site === selectedSite);
+  const filteredCIs = (selectedSite === 'all' ? cis : cis.filter((ci) => ci.site === selectedSite))
+    .filter((ci) => {
+      if (!searchQuery) return true;
+      const q = searchQuery.toLowerCase();
+      return ci.name.toLowerCase().includes(q) ||
+             ci.type.toLowerCase().includes(q) ||
+             (ci.team || '').toLowerCase().includes(q) ||
+             (ci.site || '').toLowerCase().includes(q) ||
+             (ci.provider || '').toLowerCase().includes(q);
+    });
 
   const selectedServiceName = selectedService !== 'all'
     ? (siteServices.find((s) => s.id === selectedService)?.name || services.find((s) => s.id === selectedService)?.name || null)
@@ -162,6 +173,18 @@ export default function CMDBExplorer() {
                 <option key={opt.value} value={opt.value}>{opt.label} ({opt.count})</option>
               ))}
             </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search CIs..."
+              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500 w-48"
+            />
           </div>
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium text-gray-600">Flow:</label>
@@ -358,6 +381,7 @@ export default function CMDBExplorer() {
                 topology={topology}
                 selectedService={highlightedService}
                 selectedSite={selectedSite}
+                searchQuery={searchQuery || undefined}
                 expandable={true}
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
@@ -386,6 +410,7 @@ export default function CMDBExplorer() {
                 topology={topology}
                 selectedService={highlightedService}
                 selectedSite={selectedSite !== 'all' ? selectedSite : undefined}
+                searchQuery={searchQuery || undefined}
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
               />
@@ -394,7 +419,7 @@ export default function CMDBExplorer() {
 
           <div className="bg-white rounded-xl border p-6">
             <h2 className="text-lg font-semibold mb-4">
-              Configuration Items ({filteredCIs.length})
+              Configuration Items {searchQuery ? `(${filteredCIs.length} of ${cis.filter((ci) => selectedSite === 'all' || ci.site === selectedSite).length})` : `(${filteredCIs.length})`}
               {selectedSite !== 'all' && (
                 <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[selectedSite] || 'bg-gray-500 text-white'}`}>
                   {selectedSite}
