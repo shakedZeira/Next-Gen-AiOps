@@ -35,6 +35,11 @@ class AlertResponse(AlertCreate):
     acknowledged_at: datetime | None = None
     acknowledged_by: str | None = None
     resolved_at: datetime | None = None
+    repeat_count: int = 1
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None
+    incident_id: str | None = None
+    normalized_name: str | None = None
 
 
 class AlertAcknowledge(BaseModel):
@@ -46,3 +51,14 @@ class AlertGroup(BaseModel):
     severity: AlertSeverity
     count: int
     alerts: list[AlertResponse]
+
+
+class IncidentGroup(BaseModel):
+    incident_id: str
+    title: str
+    service: str
+    severity: str
+    alert_count: int
+    alerts: list[AlertResponse]
+    first_seen: datetime | None = None
+    last_seen: datetime | None = None

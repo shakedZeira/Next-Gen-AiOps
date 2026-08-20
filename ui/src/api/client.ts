@@ -58,8 +58,15 @@ export const alertsAPI = {
     return api.get('/alerts', { params });
   },
   groups: () => api.get('/alerts/groups'),
+  incidents: (status?: string) => api.get('/alerts/incidents', { params: status ? { status } : {} }),
+  stats: () => api.get('/alerts/stats'),
   acknowledge: (id: string, user: string) => api.post(`/alerts/${id}/acknowledge`, { acknowledged_by: user }),
   resolve: (id: string) => api.post(`/alerts/${id}/resolve`),
+};
+
+export const simulateAPI = {
+  scenarios: () => api.get('/simulate/scenarios'),
+  run: (scenario: string) => api.post('/simulate/scenario', { scenario }),
 };
 
 export const agentMonitorAPI = {

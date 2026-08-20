@@ -3,26 +3,56 @@ import uuid
 from datetime import datetime
 import redis.asyncio as aioredis
 from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
+from plugins.alert_noc.dedup import AlertDeduplicator
+from plugins.alert_noc.config import AlertNOCConfig
 
 
 class AlertStore:
     def __init__(self):
-        self.redis = aioredis.from_url("redis://redis:6379/0")
+        config = AlertNOCConfig()
+        self.redis = aioredis.from_url(config.REDIS_URL)
+        self.dedup = AlertDeduplicator(self.redis)
 
     async def create_alert(self, data: AlertCreate) -> AlertResponse:
+        normalized = self.dedup.normalize_name(data.name)
+
+        existing_id = await self.dedup.check_dedup(data.service, normalized)
+        if existing_id:
+            existing = await self.get_alert(existing_id)
+            if existing and existing.status == AlertStatus.ACTIVE:
+                existing.repeat_count += 1
+                existing.last_seen = datetime.utcnow()
+                await self.redis.hset("alerts", existing_id, existing.model_dump_json())
+                await self.dedup.increment_stats("deduplicated")
+                return existing
+
+        incident_id = await self.dedup.find_or_create_incident(data.service, normalized)
+
         alert_id = str(uuid.uuid4())
+        now = datetime.utcnow()
         alert = AlertResponse(
             id=alert_id, **data.model_dump(),
-            status=AlertStatus.ACTIVE, created_at=datetime.utcnow(),
+            status=AlertStatus.ACTIVE,
+            created_at=now,
+            first_seen=now,
+            last_seen=now,
+            repeat_count=1,
+            incident_id=incident_id,
+            normalized_name=normalized,
         )
         await self.redis.hset("alerts", alert_id, alert.model_dump_json())
         await self.redis.sadd("alerts:active", alert_id)
+        await self.dedup.register_dedup(data.service, normalized, alert_id)
+        await self.dedup.increment_stats("total_created")
         return alert
 
     async def get_alert(self, alert_id: str) -> AlertResponse | None:
         data = await self.redis.hget("alerts", alert_id)
         if data:
-            return AlertResponse.model_validate_json(data)
+            try:
+                return AlertResponse.model_validate_json(data)
+            except Exception:
+                return None
         return None
 
     async def list_alerts(self, status: str | None = None, team: str | None = None) -> list[AlertResponse]:
@@ -38,6 +68,36 @@ class AlertStore:
                     continue
                 alerts.append(alert)
         return sorted(alerts, key=lambda a: a.created_at, reverse=True)
+
+    async def list_incidents(self, status: str | None = None) -> list[dict]:
+        alerts = await self.list_alerts(status)
+        incidents: dict[str, list[AlertResponse]] = {}
+        for alert in alerts:
+            iid = alert.incident_id or alert.id
+            if iid not in incidents:
+                incidents[iid] = []
+            incidents[iid].append(alert)
+
+        result = []
+        severity_order = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
+        for iid, inc_alerts in incidents.items():
+            if len(inc_alerts) < 1:
+                continue
+            top_severity = max(inc_alerts, key=lambda a: severity_order.get(a.severity, 0)).severity
+            first = min((a.first_seen or a.created_at) for a in inc_alerts)
+            last = max((a.last_seen or a.created_at) for a in inc_alerts)
+            result.append({
+                "incident_id": iid,
+                "title": inc_alerts[0].name,
+                "service": inc_alerts[0].service,
+                "severity": top_severity,
+                "alert_count": len(inc_alerts),
+                "alerts": [a.model_dump() for a in inc_alerts],
+                "first_seen": first.isoformat() if first else None,
+                "last_seen": last.isoformat() if last else None,
+            })
+
+        return sorted(result, key=lambda i: severity_order.get(i["severity"], 0), reverse=True)
 
     async def acknowledge(self, alert_id: str, acknowledged_by: str) -> bool:
         alert = await self.get_alert(alert_id)
@@ -71,7 +131,7 @@ class AlertStore:
             if key not in groups:
                 groups[key] = {"service": alert.service, "severity": alert.severity, "count": 0, "alerts": []}
             groups[key]["count"] += 1
-            groups[key]["alerts"].append(alert)
+            groups[key]["alerts"].append(alert.model_dump())
         return list(groups.values())
 
 

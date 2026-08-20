@@ -55,7 +55,16 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve }: Props) 
                   {alert.severity}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm font-medium text-gray-900">{alert.name}</td>
+              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+                <span className="flex items-center gap-2">
+                  {alert.name}
+                  {(alert.repeat_count ?? 1) > 1 && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
+                      x{alert.repeat_count}
+                    </span>
+                  )}
+                </span>
+              </td>
               <td className="px-4 py-3 text-sm text-gray-600">{alert.service}</td>
               <td className="px-4 py-3">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${teamColors[alert.team || 'unassigned'] || teamColors.unassigned}`}>

@@ -16,6 +16,10 @@ export interface Alert {
   acknowledged_at?: string;
   acknowledged_by?: string;
   runbook_url?: string;
+  repeat_count?: number;
+  first_seen?: string;
+  last_seen?: string;
+  incident_id?: string;
 }
 
 export interface AlertGroup {
@@ -23,6 +27,30 @@ export interface AlertGroup {
   severity: string;
   count: number;
   alerts: Alert[];
+}
+
+export interface IncidentGroup {
+  incident_id: string;
+  title: string;
+  service: string;
+  severity: string;
+  alert_count: number;
+  alerts: Alert[];
+  first_seen?: string;
+  last_seen?: string;
+}
+
+export interface AlertStats {
+  total_created: number;
+  deduplicated: number;
+  incidents_formed: number;
+}
+
+export interface Scenario {
+  id: string;
+  name: string;
+  description: string;
+  alert_count: number;
 }
 
 export interface CI {
