@@ -354,17 +354,49 @@ relationships = [
 ]
 
 service_ci_map = [
+    # Service 0: E-Commerce Platform - spans all sites
     (0, 0, "entry_point"), (0, 1, "dependency"), (0, 2, "dependency"), (0, 3, "dependency"),
     (0, 37, "dependency"), (0, 33, "dependency"), (0, 34, "dependency"), (0, 24, "dependency"),
+    (0, 62, "dependency"), (0, 66, "dependency"),
+    (0, 81, "dependency"), (0, 84, "dependency"),
+    (0, 96, "dependency"), (0, 98, "dependency"),
+    (0, 102, "dependency"), (0, 103, "dependency"),
+    # Service 1: Payment Gateway - HQ + regional-dc-1
     (1, 4, "entry_point"), (1, 7, "dependency"), (1, 39, "dependency"),
+    (1, 68, "dependency"), (1, 70, "dependency"), (1, 71, "dependency"),
+    # Service 2: Inventory Service - HQ + regional-dc-1
     (2, 8, "entry_point"),
+    (2, 63, "dependency"), (2, 69, "dependency"),
+    # Service 3: Notification Service - HQ + metro-ring-1 + branch-nyc
     (3, 9, "entry_point"), (3, 18, "dependency"), (3, 49, "dependency"),
+    (3, 85, "dependency"),
+    (3, 98, "dependency"),
+    # Service 4: Order Processing - HQ + branch-nyc + branch-london
     (4, 10, "entry_point"), (4, 11, "dependency"), (4, 12, "dependency"),
     (4, 45, "dependency"), (4, 46, "dependency"),
+    (4, 97, "dependency"),
+    (4, 102, "dependency"),
+    # Service 5: Analytics Pipeline - HQ + regional-dc-1 + metro-ring-1
     (5, 13, "entry_point"), (5, 14, "dependency"), (5, 15, "dependency"),
     (5, 47, "dependency"), (5, 35, "dependency"),
+    (5, 64, "dependency"), (5, 65, "dependency"),
+    (5, 83, "dependency"), (5, 86, "dependency"),
+    # Service 6: Auth Service - HQ + branch-london
     (6, 16, "entry_point"), (6, 17, "dependency"), (6, 48, "dependency"),
-    (7, 21, "entry_point"), (7, 22, "dependency"), (7, 23, "dependency"), (7, 24, "dependency"),
+    (6, 104, "dependency"),
+    # Service 7: Network Infrastructure - all sites (network devices)
+    (7, 20, "entry_point"), (7, 21, "dependency"), (7, 22, "dependency"), (7, 23, "dependency"),
+    (7, 24, "dependency"), (7, 25, "dependency"), (7, 34, "dependency"), (7, 35, "dependency"),
+    (7, 36, "dependency"), (7, 37, "dependency"),
+    (7, 55, "dependency"), (7, 56, "dependency"), (7, 57, "dependency"), (7, 58, "dependency"),
+    (7, 59, "dependency"), (7, 60, "dependency"), (7, 61, "dependency"),
+    (7, 72, "dependency"), (7, 73, "dependency"), (7, 74, "dependency"), (7, 75, "dependency"),
+    (7, 76, "dependency"), (7, 77, "dependency"), (7, 78, "dependency"), (7, 79, "dependency"),
+    (7, 80, "dependency"),
+    (7, 87, "dependency"), (7, 88, "dependency"), (7, 89, "dependency"), (7, 90, "dependency"),
+    (7, 91, "dependency"), (7, 92, "dependency"), (7, 93, "dependency"), (7, 94, "dependency"),
+    (7, 95, "dependency"),
+    (7, 100, "dependency"), (7, 101, "dependency"),
 ]
 
 

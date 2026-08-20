@@ -141,6 +141,11 @@ export default function CMDBExplorer() {
 
   const filteredCIs = selectedSite === 'all' ? cis : cis.filter((ci) => ci.site === selectedSite);
 
+  const selectedServiceName = selectedService !== 'all'
+    ? (siteServices.find((s) => s.id === selectedService)?.name || services.find((s) => s.id === selectedService)?.name || null)
+    : null;
+  const highlightedService = selectedServiceName || (selectedFlow !== 'all' ? selectedFlow : undefined);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -351,7 +356,7 @@ export default function CMDBExplorer() {
             ) : (
               <TopologyGraph
                 topology={topology}
-                selectedService={selectedFlow !== 'all' ? selectedFlow : undefined}
+                selectedService={highlightedService}
                 selectedSite={selectedSite}
                 expandable={true}
                 height="h-[700px]"
@@ -379,7 +384,7 @@ export default function CMDBExplorer() {
             ) : (
               <TopologyGraph
                 topology={topology}
-                selectedService={selectedFlow !== 'all' ? selectedFlow : undefined}
+                selectedService={highlightedService}
                 selectedSite={selectedSite !== 'all' ? selectedSite : undefined}
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}

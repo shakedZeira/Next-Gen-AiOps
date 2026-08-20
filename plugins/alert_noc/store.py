@@ -70,6 +70,19 @@ class AlertStore:
                 alerts.append(alert)
         return sorted(alerts, key=lambda a: a.created_at, reverse=True)
 
+    async def list_all_alerts(self) -> list[AlertResponse]:
+        """List ALL alerts across all statuses."""
+        all_ids: set[bytes] = set()
+        for status in ("active", "acknowledged", "resolved"):
+            ids = await self.redis.smembers(f"alerts:{status}")
+            all_ids.update(ids)
+        alerts = []
+        for alert_id in all_ids:
+            alert = await self.get_alert(alert_id.decode() if isinstance(alert_id, bytes) else alert_id)
+            if alert:
+                alerts.append(alert)
+        return sorted(alerts, key=lambda a: a.created_at, reverse=True)
+
     async def list_incidents(self, status: str | None = None) -> list[dict]:
         alerts = await self.list_alerts(status)
         incidents: dict[str, list[AlertResponse]] = {}
@@ -105,7 +118,7 @@ class AlertStore:
 
     async def get_incident(self, incident_id: str) -> dict | None:
         """Fetch a single incident by ID."""
-        alerts = await self.list_alerts()
+        alerts = await self.list_all_alerts()
         inc_alerts = [a for a in alerts if (a.incident_id or a.id) == incident_id]
         if not inc_alerts:
             return None
@@ -131,17 +144,17 @@ class AlertStore:
 
     async def acknowledge_incident(self, incident_id: str, acknowledged_by: str) -> int:
         """Bulk acknowledge all active alerts in an incident. Returns count acknowledged."""
-        alerts = await self.list_alerts("active")
+        alerts = await self.list_all_alerts()
         count = 0
         for alert in alerts:
-            if (alert.incident_id or alert.id) == incident_id:
+            if (alert.incident_id or alert.id) == incident_id and alert.status == AlertStatus.ACTIVE:
                 await self.acknowledge(alert.id, acknowledged_by)
                 count += 1
         return count
 
     async def resolve_incident(self, incident_id: str) -> int:
         """Bulk resolve all alerts in an incident. Returns count resolved."""
-        alerts = await self.list_alerts()
+        alerts = await self.list_all_alerts()
         count = 0
         for alert in alerts:
             if (alert.incident_id or alert.id) == incident_id and alert.status != AlertStatus.RESOLVED:

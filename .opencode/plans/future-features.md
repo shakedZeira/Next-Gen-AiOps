@@ -35,8 +35,16 @@
 - Frontend: Topology graph filters to show only CIs belonging to selected service
 - Frontend: SiteService type, API client methods
 
+#### Bug Fixes Applied (2026-08-20)
+- **Service filter not appearing for non-HQ sites**: All 8 services only had CIs mapped to `global-hq`. Added multi-site service-CI mappings via migration `004_expand_service_ci_mappings.sql` — all services now span 2-5 sites.
+- **TopologyGraph visual highlighting broken**: `selectedService` prop was receiving `selectedFlow` (team name) instead of the actual service name. Fixed CMDBExplorer to resolve service UUID → name and pass as `highlightedService`.
+- **Incidents not clickable**: `get_incident()`, `acknowledge_incident()`, `resolve_incident()` in `store.py` only searched active alerts. Added `list_all_alerts()` method that searches across all statuses (active, acknowledged, resolved). All three methods now use it.
+- Updated seed data `service_ci_map` in `db/seed.py` for future re-seeds.
+
 #### Commits
-- Pending (current work)
+- `4e6c2dd` — Service filter initial implementation
+- `88977c1` — Flow dropdown fix
+- Current session — Bug fixes for service filter + incidents
 
 ---
 
