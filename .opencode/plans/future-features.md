@@ -44,7 +44,7 @@
 #### Commits
 - `4e6c2dd` — Service filter initial implementation
 - `88977c1` — Flow dropdown fix
-- Current session — Bug fixes for service filter + incidents
+- `491b19e` — Bug fixes for service filter + incidents (multi-site CI mappings, list_all_alerts, highlightedService)
 
 ---
 
