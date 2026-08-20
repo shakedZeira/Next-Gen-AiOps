@@ -38,10 +38,11 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:-changeme}
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-changeme}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -73,7 +74,8 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql+asyncpg://aiops:aiops@postgres:5432/aiops
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-changeme}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-lgtm:4318
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
@@ -129,7 +131,7 @@ services:
         condition: service_healthy
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
 
   alert-noc:
     build:
@@ -141,7 +143,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      REDIS_URL: redis://redis:6379/0
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8005/health')\""]
       interval: 15s

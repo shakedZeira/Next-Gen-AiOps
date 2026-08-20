@@ -56,7 +56,7 @@ async def generation_loop():
     while running:
         cycle += 1
         for svc in DEFAULT_TOPOLOGY:
-            result = emit_transaction(tracer, meter, svc.name, svc.latency_mean_ms, svc.error_rate)
+            result = await emit_transaction(tracer, meter, svc.name, svc.latency_mean_ms, svc.error_rate)
             if result["error"]:
                 logger.warning("Error in %s: status=%d", svc.name, result["status"])
                 if random.random() < 0.3:

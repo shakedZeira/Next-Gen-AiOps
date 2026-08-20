@@ -1,6 +1,7 @@
 import asyncio
 import random
 import logging
+from collections import deque
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from plugins.agent_monitor.config import AgentMonitorConfig
@@ -25,7 +26,7 @@ async def simulate_traffic():
         record_llm_call(meters, model, input_tokens, output_tokens, latency, success)
         _stats["requests"].append({"model": model, "input_tokens": input_tokens, "output_tokens": output_tokens, "latency_ms": latency, "cost_usd": cost, "success": success})
         if model not in _stats["models"]:
-            _stats["models"][model] = []
+            _stats["models"][model] = deque(maxlen=10000)
         _stats["models"][model].append(_stats["requests"][-1])
 
         await asyncio.sleep(config.TRAFFIC_INTERVAL_S)

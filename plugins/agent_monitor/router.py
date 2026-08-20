@@ -1,18 +1,20 @@
+from collections import deque
 from fastapi import APIRouter
 from plugins.agent_monitor.models import LLMStats, ModelHealth
 
 router = APIRouter()
 
 # In-memory stats (would be Redis/DB in production)
+# Using bounded deque to prevent unbounded memory growth
 _stats = {
-    "requests": [],
+    "requests": deque(maxlen=10000),
     "models": {},
 }
 
 
 @router.get("/stats", response_model=LLMStats)
 async def get_stats():
-    requests = _stats["requests"]
+    requests = list(_stats["requests"])
     total = len(requests)
     if total == 0:
         return LLMStats(total_requests=0, total_input_tokens=0, total_output_tokens=0, total_cost_usd=0, avg_latency_ms=0, error_rate=0, models=[])

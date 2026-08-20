@@ -1,12 +1,48 @@
+﻿import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Dashboard from './pages/Dashboard';
 import NOCAlerts from './pages/NOCAlerts';
 import ChatBot from './pages/ChatBot';
 import CMDBExplorer from './pages/CMDBExplorer';
+import DCExplorer from './pages/DCExplorer';
 import AgentMonitor from './pages/AgentMonitor';
+import SystemHealth from './pages/SystemHealth';
+import Docs from './pages/Docs';
 import Layout from './components/Layout';
 import { User } from './types';
+
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean; error: Error | null }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+            <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
+            <p className="text-gray-600 mb-4">{this.state.error?.message}</p>
+            <button
+              onClick={() => { this.setState({ hasError: false }); window.location.reload(); }}
+              className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700"
+            >
+              Reload Page
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 function App() {
   const [user, setUser] = useState<User | null>(null);
@@ -19,18 +55,23 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login onLogin={setUser} />} />
-        <Route path="/" element={<Layout user={user} />}>
-          <Route index element={<Dashboard />} />
-          <Route path="alerts" element={<NOCAlerts user={user} />} />
-          <Route path="chatbot" element={<ChatBot user={user} />} />
-          <Route path="cmdb" element={<CMDBExplorer />} />
-          <Route path="agent-monitor" element={<AgentMonitor />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/login" element={<Login onLogin={setUser} />} />
+          <Route path="/" element={<Layout user={user} />}>
+            <Route index element={<Dashboard />} />
+            <Route path="alerts" element={<NOCAlerts user={user} />} />
+            <Route path="chatbot" element={<ChatBot user={user} />} />
+            <Route path="cmdb" element={<CMDBExplorer />} />
+            <Route path="dc-explorer" element={<DCExplorer />} />
+            <Route path="agent-monitor" element={<AgentMonitor />} />
+            <Route path="system-health" element={<SystemHealth />} />
+            <Route path="docs" element={<Docs />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
 

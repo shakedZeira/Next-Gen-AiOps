@@ -39,6 +39,15 @@ export const cmdbAPI = {
   getTopology: (serviceId: string) => api.get(`/cmdb/topology/${serviceId}`),
   getGlobalTopology: () => api.get('/cmdb/topology/all'),
   getImpact: (ciId: string) => api.get(`/cmdb/impact/${ciId}`),
+  getSites: () => api.get('/cmdb/sites'),
+  getSiteTopology: (siteName: string) => api.get(`/cmdb/topology/site/${siteName}`),
+  getInterSiteConnections: () => api.get('/cmdb/topology/inter-site'),
+  getSiteAggregateTopology: () => api.get('/cmdb/topology/site-aggregate'),
+  getCIDetails: (ciId: string) => api.get(`/cmdb/ci/${ciId}/details`),
+  getSiteLocations: () => api.get('/cmdb/sites/locations'),
+  getInterSiteFlows: () => api.get('/cmdb/topology/inter-site/flows'),
+  getSiteMapData: (siteName: string) => api.get(`/cmdb/sites/${siteName}/map-data`),
+  getSiteOverview: (siteName: string) => api.get(`/cmdb/sites/${siteName}/overview`),
 };
 
 export const alertsAPI = {
@@ -67,4 +76,11 @@ export const chatbotAPI = {
 
 export const rcaAPI = {
   analyze: (data: any) => api.post('/rca/analyze', data),
+};
+
+export const dcAPI = {
+  getRooms: (site?: string) => api.get('/cmdb/dc/rooms', { params: site ? { site } : {} }),
+  getRoom: (roomId: string) => api.get(`/cmdb/dc/rooms/${roomId}`),
+  getRacks: (roomId: string) => api.get(`/cmdb/dc/rooms/${roomId}/racks`),
+  getRackEquipment: (rackId: string) => api.get(`/cmdb/dc/racks/${rackId}/equipment`),
 };

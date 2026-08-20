@@ -11,16 +11,18 @@ const DEMO_ALERTS: Alert[] = [
 ];
 
 export default function NOCAlerts({ user }: { user: any }) {
+  const [allAlerts, setAllAlerts] = useState<Alert[]>(DEMO_ALERTS);
   const [alerts, setAlerts] = useState<Alert[]>(DEMO_ALERTS);
   const [filter, setFilter] = useState<string>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [teams, setTeams] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const fetchAlerts = async () => {
     try {
       const resp = await alertsAPI.list(filter === 'all' ? undefined : filter, teamFilter === 'all' ? undefined : teamFilter);
       if (resp.data && resp.data.length > 0) {
-        setAlerts(resp.data);
+        setAllAlerts(resp.data);
       }
     } catch {
       // API may be down, keep demo data
@@ -32,20 +34,55 @@ export default function NOCAlerts({ user }: { user: any }) {
   }, [filter, teamFilter]);
 
   useEffect(() => {
-    const allTeams = [...new Set(alerts.map((a) => a.team).filter(Boolean))];
+    const filtered = allAlerts.filter((a) => {
+      const matchStatus = filter === 'all' || a.status === filter;
+      const matchTeam = teamFilter === 'all' || a.team === teamFilter;
+      return matchStatus && matchTeam;
+    });
+    setAlerts(filtered);
+  }, [allAlerts, filter, teamFilter]);
+
+  useEffect(() => {
+    const allTeams = [...new Set(allAlerts.map((a) => a.team).filter(Boolean))];
     setTeams(allTeams.sort());
-  }, [alerts]);
+  }, [allAlerts]);
+
+  const showToast = (message: string, type: 'success' | 'error') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   const handleAcknowledge = async (id: string) => {
-    setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'acknowledged' as const, acknowledged_by: user?.email } : a)));
+    try {
+      await alertsAPI.acknowledge(id, user?.email || 'operator');
+    } catch {
+      // API may be down, proceed with local update
+    }
+    setAllAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'acknowledged' as const, acknowledged_by: user?.email } : a)));
+    showToast('Alert acknowledged', 'success');
   };
 
   const handleResolve = async (id: string) => {
-    setAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'resolved' as const } : a)));
+    try {
+      await alertsAPI.resolve(id);
+    } catch {
+      // API may be down, proceed with local update
+    }
+    setAllAlerts((prev) => prev.map((a) => (a.id === id ? { ...a, status: 'resolved' as const } : a)));
+    showToast('Alert resolved', 'success');
   };
 
   return (
     <div className="space-y-6">
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg shadow-lg text-white text-sm font-medium transition-opacity ${
+            toast.type === 'success' ? 'bg-green-600' : 'bg-red-600'
+          }`}
+        >
+          {toast.message}
+        </div>
+      )}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <h1 className="text-2xl font-bold text-gray-900">NOC Alert Console</h1>
         <div className="flex gap-2 flex-wrap">

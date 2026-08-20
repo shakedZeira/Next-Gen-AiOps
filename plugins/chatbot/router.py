@@ -44,3 +44,8 @@ async def decide_approval(request_id: str, decision: ApprovalDecision):
     else:
         success = await approval_manager.reject(request_id, decision.decided_by)
     return {"success": success, "status": "approved" if decision.approved else "rejected"}
+
+
+@router.get("/history/{thread_id}")
+async def get_history(thread_id: str):
+    return {"thread_id": thread_id, "messages": []}

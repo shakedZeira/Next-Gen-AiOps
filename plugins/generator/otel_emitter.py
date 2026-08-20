@@ -1,3 +1,4 @@
+import asyncio
 import random
 import time
 from opentelemetry import trace, metrics
@@ -30,7 +31,7 @@ def init_emitter(service_name: str, endpoint: str):
     return trace.get_tracer(service_name), metrics.get_meter(service_name)
 
 
-def emit_transaction(tracer, meter, service_name: str, latency_mean: int, error_rate: float):
+async def emit_transaction(tracer, meter, service_name: str, latency_mean: int, error_rate: float):
     request_counter = meter.create_counter("http.server.requests", description="Total HTTP requests")
     latency_histogram = meter.create_histogram("http.server.duration", description="Request latency", unit="ms")
     error_counter = meter.create_counter("http.server.errors", description="Total errors")
@@ -41,7 +42,7 @@ def emit_transaction(tracer, meter, service_name: str, latency_mean: int, error_
 
     with tracer.start_as_current_span(f"HTTP GET /{service_name}/api/v1/data") as span:
         latency = max(1, random.gauss(latency_mean, latency_mean * 0.3))
-        time.sleep(latency / 1000)
+        await asyncio.sleep(latency / 1000)
 
         span.set_attribute(SpanAttributes.HTTP_STATUS_CODE, status_code)
         span.set_attribute(SpanAttributes.HTTP_METHOD, "GET")
