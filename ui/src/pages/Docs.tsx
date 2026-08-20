@@ -28,7 +28,7 @@ export default function Docs() {
   return (
     <div className="flex h-[calc(100vh-4rem)]">
       {/* Sidebar */}
-      <nav className="w-64 bg-gray-900 border-r border-gray-800 p-4 overflow-y-auto flex-shrink-0">
+      <nav className="w-64 bg-gray-950 border-r border-gray-800 p-4 overflow-y-auto flex-shrink-0">
         <h2 className="text-lg font-bold text-white mb-4">Documentation</h2>
         <div className="space-y-1">
           {SECTIONS.map((s) => (
@@ -48,7 +48,7 @@ export default function Docs() {
       </nav>
 
       {/* Content */}
-      <main ref={mainRef} className="flex-1 overflow-y-auto p-8">
+      <main ref={mainRef} className="flex-1 overflow-y-auto p-8 bg-gray-950">
         <div className="max-w-4xl mx-auto space-y-16">
           {/* === Section 1: Overview === */}
           <section id="overview">
