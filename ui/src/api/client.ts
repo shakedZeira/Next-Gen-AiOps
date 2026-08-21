@@ -111,3 +111,16 @@ export const changesAPI = {
   recent: (service: string, minutes?: number) => api.get(`/changes/recent/${service}`, { params: minutes ? { minutes } : {} }),
   correlate: (service: string) => api.get(`/changes/correlate/${service}`),
 };
+
+export const networkSimAPI = {
+  health: () => api.get('/network-sim/health'),
+  listDevices: () => api.get('/network-sim/devices'),
+  getRoutes: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/routes`),
+  getArp: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/arp`),
+  getMacTable: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/mac-table`),
+  ping: (srcId: string, dstIp: string) => api.post('/network-sim/ping', { src_id: srcId, dst_ip: dstIp }),
+  traceroute: (srcId: string, dstIp: string) => api.post('/network-sim/traceroute', { src_id: srcId, dst_ip: dstIp }),
+  injectFailure: (targetId: string, failureType: string = 'link') => api.post('/network-sim/failure', { target_id: targetId, failure_type: failureType }),
+  recover: (targetId: string, recoveryType: string = 'link') => api.post('/network-sim/recovery', { target_id: targetId, recovery_type: recoveryType }),
+  getEvents: (count?: number) => api.get('/network-sim/events', { params: count ? { count } : {} }),
+};

@@ -11,6 +11,7 @@ const SECTIONS = [
   { id: 'dc-explorer', title: 'DC Explorer' },
   { id: 'agent-monitor', title: 'Agent Monitor' },
   { id: 'system-health', title: 'System Health' },
+  { id: 'network-sim', title: 'Network Simulation' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -389,7 +390,46 @@ export default function Docs() {
             </ul>
           </section>
 
-          {/* === Section 11: Architecture === */}
+          {/* === Section 11: Network Simulation === */}
+          <section id="network-sim">
+            <h2 className="text-2xl font-bold text-white mb-4">Network Simulation Engine</h2>
+            <p className="text-gray-300 mb-4">
+              A pure-Python network simulation plugin built on NetworkX graph algorithms. Models the entire CMDB topology as a packet-switched network with IP addressing, Dijkstra shortest-path routing, ARP resolution, and ping/traceroute simulation.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Features</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">Dijkstra SPF Routing:</span> Computes shortest-path routing tables for all 105 devices. 81 links with simulated cost metrics.</li>
+              <li><span className="text-green-400 font-medium">IP Addressing:</span> Assigns /31 transit links, loopback addresses, and management subnets from CMDB data.</li>
+              <li><span className="text-yellow-400 font-medium">ARP &amp; MAC Tables:</span> Simulates ARP resolution across L2 flooding domains. Switch MAC learning from frame inspection.</li>
+              <li><span className="text-purple-400 font-medium">Ping / Traceroute:</span> Hop-by-hop packet simulation with TTL decrement, latency modeling, loop detection, and blackhole detection.</li>
+              <li><span className="text-red-400 font-medium">Failure Injection:</span> Link-down and node-down failures with automatic routing reconvergence. Events streamed via WebSocket.</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">REST API (port 8013)</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-300">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/health</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Engine health, device/link count</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/devices</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">All device summaries (105 devices)</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/devices/{'{id}'}/routes</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Dijkstra routing table for device</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/devices/{'{id}'}/arp</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">ARP cache entries</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/devices/{'{id}'}/mac-table</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Switch MAC forwarding table</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/ping</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Simulate ICMP ping (src_id, dst_ip)</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/traceroute</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Simulate traceroute with hop details</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/failure</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Inject link or node failure</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/recovery</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Recover from failure</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/events</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Recent simulation events</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/network-sim/stream</code></td><td className="px-4 py-2">WS</td><td className="px-4 py-2">WebSocket real-time event stream</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">Docker Service</h3>
+            <p className="text-gray-300 mb-2">Runs as <code className="bg-gray-800 px-2 py-1 rounded">network-sim</code> container on port 8013. Reads CMDB directly from PostgreSQL (bypasses auth-gated API gateway for topology bootstrap). Proxied via API gateway at <code className="bg-gray-800 px-2 py-1 rounded">/api/v1/network-sim/*</code>.</p>
+          </section>
+
+          {/* === Section 12: Architecture === */}
           <section id="architecture">
             <h2 className="text-2xl font-bold text-white mb-4">Architecture Deep Dive</h2>
             <h3 className="text-lg font-semibold text-white mb-2">Database Schema</h3>
@@ -411,6 +451,7 @@ export default function Docs() {
                   <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2">chatbot</td><td className="px-4 py-2">8004</td><td className="px-4 py-2">LangGraph AI agent</td></tr>
                   <tr className="border-b border-gray-800"><td className="px-4 py-2">alert-noc</td><td className="px-4 py-2">8005</td><td className="px-4 py-2">Alert management</td></tr>
                   <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2">rca-engine</td><td className="px-4 py-2">-</td><td className="px-4 py-2">Root cause analysis</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2">network-sim</td><td className="px-4 py-2">8013</td><td className="px-4 py-2">Network simulation engine</td></tr>
                   <tr className="border-b border-gray-800"><td className="px-4 py-2">agent-monitor</td><td className="px-4 py-2">-</td><td className="px-4 py-2">LLM usage tracking</td></tr>
                   <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2">generator</td><td className="px-4 py-2">-</td><td className="px-4 py-2">Synthetic data generation</td></tr>
                   <tr><td className="px-4 py-2">infra-simulator</td><td className="px-4 py-2">-</td><td className="px-4 py-2">Infrastructure simulation</td></tr>

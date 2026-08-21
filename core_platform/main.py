@@ -116,6 +116,28 @@ async def proxy_chatbot(path: str, request: Request):
         return JSONResponse(content={"error": "Chatbot service unavailable"}, status_code=502)
 
 
+@app.api_route("/api/v1/network-sim/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
+async def proxy_network_sim(path: str, request: Request):
+    client = await get_http_client()
+    try:
+        resp = await client.request(
+            method=request.method,
+            url=f"http://network-sim:8013/api/v1/network-sim/{path}",
+            params=dict(request.query_params),
+            content=await request.body(),
+            headers={"Content-Type": request.headers.get("content-type", "application/json")},
+        )
+        try:
+            body = resp.json()
+        except Exception:
+            body = {"raw": resp.text[:2000]}
+        return JSONResponse(content=body, status_code=resp.status_code)
+    except httpx.TimeoutException:
+        return JSONResponse(content={"error": "Network sim request timed out"}, status_code=504)
+    except httpx.ConnectError:
+        return JSONResponse(content={"error": "Network sim service unavailable"}, status_code=502)
+
+
 @app.get("/")
 async def root():
     return {"service": "nextgen-aiops", "version": "0.1.0"}
