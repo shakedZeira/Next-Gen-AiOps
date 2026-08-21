@@ -779,25 +779,31 @@ Audit trail for all user actions.
 
 ### Wave 1: Tier 3 Quick Wins ✅ MOSTLY DONE
 - [x] CI search & filtering
-- [ ] WebSocket real-time push (1-2 days)
-- [x] Impact analysis visualization (backend endpoint exists, needs frontend wiring — 0.5 day)
-- [ ] SLI/SLO dashboard (1-2 days)
-- [ ] Audit log (1 day)
+- [ ] WebSocket real-time push (1-2 days) → `websocket-realtime-push.md`
+- [x] Impact analysis visualization (backend done, needs frontend wiring — 0.5 day) → `impact-analysis-visualization.md`
+- [ ] SLI/SLO dashboard (1-2 days) → `sli-slo-dashboard.md`
+- [ ] Audit log (1 day) → `audit-log.md`
 
 ### Wave 2: Tier 1 Features ✅ MOSTLY DONE
 - [x] Alert noise reduction ✅
 - [x] Service filtering by site ✅
-- [ ] ML anomaly detection (3-4 days)
+- [ ] ML anomaly detection (3-4 days) → `ml-anomaly-detection.md`
 - [x] Change-aware correlation ✅
 - [x] Incident timeline ✅ (IncidentDetail + AlertDetail drill-down)
-- [ ] Runbook automation (3-4 days)
+- [ ] Runbook automation (3-4 days) → `runbook-automation.md`
 
 ### Wave 3: Tier 2 Features (Future)
-- [ ] Predictive alerting (5-7 days)
-- [ ] Self-healing pipeline (5-7 days)
-- [ ] Service dependency map (4-5 days)
-- [ ] Capacity planning (5-7 days)
-- [ ] Cost attribution (5-7 days)
+- [ ] Predictive alerting (5-7 days) → `predictive-alerting.md`
+- [ ] Self-healing pipeline (5-7 days) → `self-healing-pipeline.md`
+- [ ] Service dependency map (4-5 days) → `service-dependency-map.md`
+- [ ] Capacity planning (5-7 days) → `capacity-planning.md`
+- [ ] Cost attribution (5-7 days) → `cost-attribution.md`
+
+### SRE Waves (Production Readiness)
+- [ ] SRE Performance (3-4 days) → `sre-performance.md`
+- [ ] SRE Operational (3-4 days) → `sre-operational.md`
+- [x] SRE Observability (2-3 days) → `sre-observability.md` (Fix 17 done)
+- [x] SRE Security (3-4 days) → `sre-security.md` (Fixes 21, 26 done)
 
 ---
 
@@ -822,23 +828,22 @@ Audit trail for all user actions.
 16. **Incident Suggestions:** One-click AI analysis via chatbot with change context
 
 ### Remaining Work (Prioritized)
-| Priority | Feature | Effort | Impact | Status |
-|----------|---------|--------|--------|--------|
-| 1 | IP Address Assignment | 0.5 day | MEDIUM | ✅ COMPLETED |
-| 2 | IP Address Search | 0.25 day | MEDIUM | ✅ COMPLETED |
-| 3 | Chat Human Language | 2-3 days | HIGH | ✅ COMPLETED |
-| 4 | Manual Device + MIB Loading | 2-3 days | HIGH | `manual-device-mib.md` |
-| 5 | LLD Automated Planner | 3-4 days | HIGH | `lld-automated-planner.md` |
-| 6 | Network Simulation Engine | 3-5 days | HIGH | `network-simulation.md` |
-| 7 | ML Anomaly Detection | 3-4 days | HIGH | |
-| 8 | Change-Aware Correlation | 2-3 days | HIGH | ✅ COMPLETED |
-| 9 | Incident Timeline (visual) | 2-3 days | HIGH | ✅ PARTIAL (IncidentDetail + AlertDetail drill-down) |
-| 10 | Runbook Automation | 3-4 days | HIGH | |
-| 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | |
-| 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | |
-| 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | |
-| 14 | Service Dependency Map | 4-5 days | HIGH | |
-| 15 | Predictive Alerting | 5-7 days | HIGH | |
+| Priority | Feature | Effort | Impact | Status | Plan |
+|----------|---------|--------|--------|--------|------|
+| 1 | IP Address Assignment | 0.5 day | MEDIUM | ✅ COMPLETED | `ip-address-assignment.md` |
+| 2 | IP Address Search | 0.25 day | MEDIUM | ✅ COMPLETED | `ip-address-search.md` |
+| 3 | Chat Human Language | 2-3 days | HIGH | ✅ COMPLETED | `chat-human-language.md` |
+| 4 | Manual Device + MIB Loading | 2-3 days | HIGH | NOT STARTED | `manual-device-mib.md` |
+| 5 | LLD Automated Planner | 3-4 days | HIGH | NOT STARTED | `lld-automated-planner.md` |
+| 6 | Network Simulation Engine | 3-5 days | HIGH | NOT STARTED | `network-simulation.md` |
+| 7 | ML Anomaly Detection | 3-4 days | HIGH | NOT STARTED | `ml-anomaly-detection.md` |
+| 8 | Change-Aware Correlation | 2-3 days | HIGH | ✅ COMPLETED | `change-aware-correlation.md` |
+| 9 | Incident Timeline (visual) | 2-3 days | HIGH | ✅ PARTIAL | — |
+| 10 | Runbook Automation | 3-4 days | HIGH | NOT STARTED | `runbook-automation.md` |
+| 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | NOT STARTED | `impact-analysis-visualization.md` |
+| 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | NOT STARTED | `websocket-realtime-push.md` |
+| 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | NOT STARTED | `sli-slo-dashboard.md` |
+| 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
+| 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
 
-**Recommended next:** Manual Device + MIB → LLD Planner → Network Simulation (all have detailed plans)
-Or: Impact Analysis → WebSocket Push (quick wins, 1-2 days each)
+**Recommended next:** Impact Analysis (0.5 day) → WebSocket Push (1-2 days) → then pick from the networking plans (Manual Device, LLD Planner, Network Simulation) which all have detailed plans ready.
