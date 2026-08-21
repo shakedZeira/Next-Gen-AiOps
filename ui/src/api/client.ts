@@ -87,6 +87,7 @@ export const agentMonitorAPI = {
 export const chatbotAPI = {
   chat: (message: string, threadId?: string) => api.post('/chatbot/chat', { message, thread_id: threadId }),
   deleteThread: (threadId: string) => api.delete(`/chatbot/history/${threadId}`),
+  getHistory: (threadId: string) => api.get(`/chatbot/history/${threadId}`),
   suggestFix: (data: { incident_id: string; title: string; service: string; severity: string; alert_count: number; alerts: any[]; teams?: string[] }) =>
     api.post('/chatbot/suggest-fix', data),
   pendingApprovals: () => api.get('/chatbot/approvals/pending'),

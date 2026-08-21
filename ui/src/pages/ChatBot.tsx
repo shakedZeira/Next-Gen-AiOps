@@ -130,8 +130,28 @@ export default function ChatBot({ user }: { user: any }) {
       return [{ id: prefillThreadId, title: prefillTitle || 'Incident Analysis', timestamp: new Date().toISOString() }, ...prev];
     });
     setActiveThreadId(prefillThreadId);
+
+    // Try localStorage first, fall back to backend Redis
     const saved = loadMessages(prefillThreadId);
-    setMessages(saved.length > 0 ? saved : [WELCOME_MSG]);
+    if (saved.length > 0) {
+      setMessages(saved);
+    } else {
+      chatbotAPI.getHistory(prefillThreadId)
+        .then((resp) => {
+          const backendMsgs = (resp.data?.messages || []).map((m: any) => ({
+            role: m.role as 'user' | 'assistant',
+            content: m.content,
+            timestamp: new Date(),
+          }));
+          if (backendMsgs.length > 0) {
+            setMessages(backendMsgs);
+            saveMessages(prefillThreadId, backendMsgs);
+          } else {
+            setMessages([WELCOME_MSG]);
+          }
+        })
+        .catch(() => setMessages([WELCOME_MSG]));
+    }
   }, [prefillThreadId, prefillTitle]);
 
   // Handle prefill message (auto-send a message on mount)

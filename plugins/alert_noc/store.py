@@ -223,30 +223,44 @@ class AlertStore:
         return f"{most_common} ({len(alerts)} alerts, {svc_str})" if svc_str else f"{most_common} ({len(alerts)} alerts)"
 
     async def get_incident(self, incident_id: str) -> dict | None:
-        """Fetch a single incident by ID."""
+        """Fetch a single incident by ID, using the same merging logic as list_incidents."""
         alerts = await self.list_all_alerts()
-        inc_alerts = [a for a in alerts if (a.incident_id or a.id) == incident_id]
-        if not inc_alerts:
+        if not alerts:
             return None
 
-        severity_order = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
-        top_severity = max(inc_alerts, key=lambda a: severity_order.get(a.severity, 0)).severity
-        first = min((a.first_seen or a.created_at) for a in inc_alerts)
-        last = max((a.last_seen or a.created_at) for a in inc_alerts)
-        teams = list({a.team for a in inc_alerts if a.team})
+        # Group by initial incident_id, then merge like list_incidents does
+        raw_groups: dict[str, list[AlertResponse]] = {}
+        for alert in alerts:
+            iid = alert.incident_id or alert.id
+            raw_groups.setdefault(iid, []).append(alert)
 
-        return {
-            "incident_id": incident_id,
-            "title": inc_alerts[0].name,
-            "service": inc_alerts[0].service,
-            "severity": top_severity,
-            "alert_count": len(inc_alerts),
-            "alerts": [a.model_dump() for a in sorted(inc_alerts, key=lambda a: a.created_at)],
-            "first_seen": first.isoformat() if first else None,
-            "last_seen": last.isoformat() if last else None,
-            "teams": teams,
-            "status": "active" if any(a.status == AlertStatus.ACTIVE for a in inc_alerts) else "acknowledged" if any(a.status == AlertStatus.ACKNOWLEDGED for a in inc_alerts) else "resolved",
-        }
+        merged = self._merge_related_incidents(list(raw_groups.values()))
+
+        # Find the group that contains an alert whose incident_id matches
+        severity_order = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
+        for group in merged:
+            group_iids = {a.incident_id or a.id for a in group}
+            if incident_id in group_iids:
+                top_severity = max(group, key=lambda a: severity_order.get(a.severity, 0)).severity
+                first = min((a.first_seen or a.created_at) for a in group)
+                last = max((a.last_seen or a.created_at) for a in group)
+                teams = list({a.team for a in group if a.team})
+                services = list({a.service for a in group if a.service})
+                return {
+                    "incident_id": incident_id,
+                    "title": self._derive_incident_title(group),
+                    "service": services[0] if len(services) == 1 else f"{services[0]} +{len(services)-1}" if services else "unknown",
+                    "severity": top_severity,
+                    "alert_count": len(group),
+                    "alerts": [a.model_dump() for a in sorted(group, key=lambda a: a.created_at)],
+                    "first_seen": first.isoformat() if first else None,
+                    "last_seen": last.isoformat() if last else None,
+                    "teams": teams,
+                    "services": services,
+                    "status": "active" if any(a.status == AlertStatus.ACTIVE for a in group) else "acknowledged" if any(a.status == AlertStatus.ACKNOWLEDGED for a in group) else "resolved",
+                }
+
+        return None
 
     async def acknowledge_incident(self, incident_id: str, acknowledged_by: str) -> int:
         """Bulk acknowledge all active alerts in an incident. Returns count acknowledged."""
