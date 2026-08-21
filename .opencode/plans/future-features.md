@@ -48,6 +48,43 @@
 
 ---
 
+### Feature 17: Change-Aware Correlation ✅ COMPLETED
+**Impact: HIGH | Effort: MEDIUM (2-3 days)** — Implemented and deployed.
+
+Correlate alerts with recent deployments/config changes to identify root cause.
+
+#### What Was Built
+- `aiops_shared/models/change.py` — SQLAlchemy 2.0 Change model
+- `db/migrations/006_create_changes.sql` — change table with indexes
+- `db/seed_changes.py` — 27 realistic changes across 7 services
+- `core_platform/routers/changes.py` — CRUD + correlation endpoints (`/changes/correlate/{service}`)
+- `ui/src/components/RecentChanges.tsx` — risk-colored panel with "LIKELY ROOT CAUSE" badge
+- `ui/src/components/AlertDetail.tsx` — alert drill-down with changes, timeline, suggest fix
+- `ui/src/api/client.ts` — changesAPI (list/recent/correlate)
+- `plugins/chatbot/tools.py` — get_recent_changes tool + TOOL_MAP entry
+- `ui/src/pages/Docs.tsx` — Change-Aware Correlation section + API Reference
+
+#### Commits
+- `a5a7fe2` — Backend + frontend implementation
+- `b571966` — Improved visibility + alert drill-down
+
+---
+
+### Feature 18: Alert Drill-Down ✅ COMPLETED
+**Impact: MEDIUM | Effort: LOW (0.5 day)** — Implemented and deployed.
+
+Click any alert in the NOC Alerts table to see full detail view.
+
+#### What Was Built
+- `ui/src/components/AlertDetail.tsx` — full alert detail with metadata, description, changes, timeline, suggest fix
+- `ui/src/components/AlertTable.tsx` — clickable rows with `onAlertClick` callback
+- `ui/src/pages/NOCAlerts.tsx` — wires AlertDetail drill-down
+
+#### Commits
+- `b571966` — Alert drill-down implementation
+
+---
+
 ## Tier 1 — High Impact, Medium Effort (Remaining)
 
 ### Feature 2: ML Anomaly Detection
@@ -210,7 +247,7 @@ async def detect_anomaly(service_name: str, metrics: dict, _user=Depends(get_cur
 
 ---
 
-### Feature 3: Change-Aware Correlation
+### Feature 3: Change-Aware Correlation ✅ COMPLETED
 **Impact: HIGH | Effort: MEDIUM (2-3 days)**
 
 Correlate alerts with recent deployments/config changes to identify root cause.
@@ -307,10 +344,16 @@ class ChangeCorrelator:
 
 ---
 
-### Feature 4: Incident Timeline
+### Feature 4: Incident Timeline ✅ PARTIAL
 **Impact: HIGH | Effort: MEDIUM (2-3 days)**
 
 Visual timeline showing alert cascade and resolution for incident investigation.
+
+#### What Was Built
+- `IncidentDetail.tsx` — full incident drill-down with timeline (creation → alerts → ack → resolve events)
+- `AlertDetail.tsx` — alert drill-down with timeline, changes, suggest fix
+- `AlertTable.tsx` — clickable rows with `onAlertClick` callback
+- `NOCAlerts.tsx` — wires AlertDetail and IncidentDetail drill-downs
 
 #### Design
 - When multiple alerts fire within a short window, group into an "incident"
@@ -379,6 +422,7 @@ class IncidentManager:
 **Impact: HIGH | Effort: MEDIUM (3-4 days)**
 
 YAML-based playbooks with approval gates for automated remediation.
+**Plan:** `runbook-automation.md` (not yet created)
 
 #### Design
 - Define runbooks as YAML files with steps
@@ -514,6 +558,7 @@ class RunbookEngine:
 **Impact: HIGH | Effort: HIGH (5-7 days)**
 
 Forecast metric trends and alert before threshold breach.
+**Plan:** Not yet created
 
 #### Design
 - Use ARIMA or Prophet for time series forecasting
@@ -533,6 +578,7 @@ Forecast metric trends and alert before threshold breach.
 **Impact: HIGH | Effort: HIGH (5-7 days)**
 
 End-to-end: Anomaly → RCA → Fix → Approval → Execute → Validate.
+**Plan:** Not yet created
 
 #### Design
 - Combines: Anomaly Detection + RCA Engine + Runbook Automation
@@ -552,6 +598,7 @@ End-to-end: Anomaly → RCA → Fix → Approval → Execute → Validate.
 **Impact: MEDIUM-HIGH | Effort: HIGH (4-5 days)**
 
 Real-time service mesh visualization with latency/error rates.
+**Plan:** Not yet created
 
 #### Design
 - Extend CMDB topology to show service-to-service dependencies
@@ -570,6 +617,7 @@ Real-time service mesh visualization with latency/error rates.
 **Impact: MEDIUM-HIGH | Effort: HIGH (5-7 days)**
 
 Trend analysis for CPU/memory/disk/network forecasting.
+**Plan:** Not yet created
 
 #### Design
 - Collect historical resource usage (CPU, memory, disk, network)
@@ -589,6 +637,7 @@ Trend analysis for CPU/memory/disk/network forecasting.
 **Impact: MEDIUM-HIGH | Effort: HIGH (5-7 days)**
 
 Map infrastructure costs to services/teams.
+**Plan:** Not yet created
 
 #### Design
 - Track compute, storage, network costs per service
@@ -609,7 +658,8 @@ Map infrastructure costs to services/teams.
 ### Feature 11: WebSocket Real-Time Push
 **Impact: MEDIUM | Effort: LOW (1-2 days)**
 
-Already covered in Fix 37 (Performance plan).
+Real-time alert push via WebSocket instead of polling.
+**Plan:** Not yet created
 
 ---
 
@@ -698,6 +748,8 @@ One-click AI analysis of incidents with topology-aware remediation suggestions.
 **Impact: MEDIUM | Effort: LOW (1-2 days)**
 
 Highlight downstream blast radius on topology.
+**Status:** Backend endpoint exists (`/cmdb/impact/{ci_id}`), needs frontend wiring
+**Plan:** Not yet created
 
 #### Design
 - "Show Impact" button on NodeDetailPanel
@@ -710,23 +762,25 @@ Highlight downstream blast radius on topology.
 ### Feature 14: SLI/SLO Dashboard
 **Impact: MEDIUM | Effort: LOW (1-2 days)**
 
-Already covered in Fix 18 (Observability plan).
+Service Level Indicators and Objectives dashboard.
+**Plan:** Not yet created
 
 ---
 
 ### Feature 15: Audit Log
 **Impact: MEDIUM | Effort: LOW (1 day)**
 
-Already covered in Fix 25 (Security plan).
+Audit trail for all user actions.
+**Plan:** Not yet created
 
 ---
 
 ## Execution Order
 
-### Wave 1: Tier 3 Quick Wins ✅ DONE
+### Wave 1: Tier 3 Quick Wins ✅ MOSTLY DONE
 - [x] CI search & filtering
 - [ ] WebSocket real-time push (1-2 days)
-- [x] Impact analysis visualization (backend endpoint exists, frontend needs wiring)
+- [x] Impact analysis visualization (backend endpoint exists, needs frontend wiring — 0.5 day)
 - [ ] SLI/SLO dashboard (1-2 days)
 - [ ] Audit log (1 day)
 
