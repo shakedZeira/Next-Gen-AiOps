@@ -7,6 +7,7 @@ from fastapi.responses import JSONResponse
 from aiops_shared.otel.instrumentation import init_tracer, instrument_fastapi
 from core_platform.auth.router import router as auth_router
 from core_platform.routers.cmdb import router as cmdb_router
+from core_platform.routers.changes import router as changes_router
 from core_platform.routers.health import router as health_router
 
 _http_client: httpx.AsyncClient | None = None
@@ -51,6 +52,7 @@ instrument_fastapi(app, "api-gateway")
 app.include_router(health_router, tags=["health"])
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(cmdb_router, prefix="/api/v1/cmdb", tags=["cmdb"])
+app.include_router(changes_router, prefix="/api/v1/changes", tags=["changes"])
 
 
 @app.api_route("/api/v1/alerts/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])

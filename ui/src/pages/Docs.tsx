@@ -250,6 +250,15 @@ export default function Docs() {
               which analyzes the topology and alert patterns to suggest remediation steps. The chatbot
               opens in a new thread pre-loaded with the analysis for seamless investigation.
             </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Change-Aware Correlation</h3>
+            <p className="text-gray-200 mb-4">
+              When viewing an incident, the system automatically checks for recent deployments,
+              config changes, and infrastructure changes within the last 30 minutes for the affected
+              service. A "Recent Changes" panel appears with a risk score (0-100%) based on timing
+              proximity — the closer the change, the higher the risk. Changes marked as "Likely Cause"
+              (risk &gt; 70%) are flagged prominently. The Suggest Fix button includes change context
+              in the AI prompt, helping the chatbot consider recent deployments as potential root causes.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">Alert Actions</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
               <li><span className="font-medium text-white">Acknowledge:</span> Mark alert as seen by an operator</li>
@@ -303,9 +312,10 @@ export default function Docs() {
             <h3 className="text-lg font-semibold text-white mb-2">Incident Suggestions</h3>
             <p className="text-gray-200 mb-4">
               Click "Suggest Fix" on any incident in the NOC Alerts page to send the full incident
-              context to the chatbot. The AI analyzes the affected service's topology and related
-              alerts, then proposes step-by-step remediation. The suggestion opens in its own chat
-              thread for follow-up investigation.
+              context to the chatbot. The AI analyzes the affected service's topology, related
+              alerts, and recent changes (deployments, config updates) to propose step-by-step
+              remediation. Recent changes with high risk scores are highlighted as potential root
+              causes. The suggestion opens in its own chat thread for follow-up investigation.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Approval Queue</h3>
             <p className="text-gray-200 mb-4">
@@ -464,6 +474,12 @@ POST   /api/v1/alerts/{id}/resolve        - Resolve single alert`}</pre>
             <h3 className="text-lg font-semibold text-white mb-2">Simulation</h3>
             <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/simulate/scenarios           - List available scenarios
 POST   /api/v1/simulate/scenario            - Run a failure scenario`}</pre>
+
+            <h3 className="text-lg font-semibold text-white mb-2">Change Tracking</h3>
+            <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/changes/                     - List changes (?service= filter)
+POST   /api/v1/changes/                     - Create a change record
+GET    /api/v1/changes/recent/{service}     - Recent changes (?minutes= lookback)
+GET    /api/v1/changes/correlate/{service}  - Risk analysis for recent changes`}</pre>
             
             <h3 className="text-lg font-semibold text-white mb-2">Chatbot</h3>
             <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200">{`POST   /api/v1/chatbot/chat               - Send message

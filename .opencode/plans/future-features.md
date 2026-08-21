@@ -768,7 +768,7 @@ Already covered in Fix 25 (Security plan).
 | 5 | LLD Automated Planner | 3-4 days | HIGH | `lld-automated-planner.md` |
 | 6 | Network Simulation Engine | 3-5 days | HIGH | `network-simulation.md` |
 | 7 | ML Anomaly Detection | 3-4 days | HIGH | |
-| 8 | Change-Aware Correlation | 2-3 days | HIGH | |
+| 8 | Change-Aware Correlation | 2-3 days | HIGH | COMPLETED |
 | 9 | Incident Timeline (visual) | 2-3 days | HIGH | |
 | 10 | Runbook Automation | 3-4 days | HIGH | |
 | 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | |

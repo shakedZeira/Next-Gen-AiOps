@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { alertsAPI } from '../api/client';
+import { alertsAPI, changesAPI } from '../api/client';
 import { IncidentGroup } from '../types';
+import { RecentChanges } from './RecentChanges';
 
 const severityColors: Record<string, string> = {
   critical: 'bg-red-100 text-red-800 border-red-300',
@@ -74,14 +75,25 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
     const alertLines = incident.alerts.slice(0, 10).map(
       (a) => `- [${a.severity}] ${a.name} — ${a.description?.slice(0, 100) || ''}`
     ).join('\n');
+    let changeContext = '';
+    try {
+      const corr = await changesAPI.correlate(incident.service);
+      if (corr.data.has_recent_changes) {
+        const changeLines = corr.data.changes.slice(0, 5).map(
+          (c: any) => `- [${c.type}] ${c.description} (${c.minutes_ago}m ago, risk ${c.risk_score}%)`
+        ).join('\n');
+        changeContext = `\n\nRecent Changes (last 30min) — risk score: ${corr.data.overall_risk_score}%:\n${changeLines}`;
+      }
+    } catch { /* continue without changes */ }
     const prompt =
       `I need help resolving an incident.\n\n` +
       `Incident: ${incident.title}\n` +
       `Service: ${incident.service}\n` +
       `Severity: ${incident.severity}\n` +
-      `Alerts (${incident.alert_count}):\n${alertLines}\n\n` +
-      `Please analyze the topology and alerts for ${incident.service} and suggest steps to resolve this incident. ` +
-      `Consider service dependencies, related CIs, and common root causes.`;
+      `Alerts (${incident.alert_count}):\n${alertLines}` +
+      changeContext +
+      `\n\nPlease analyze the topology and alerts for ${incident.service} and suggest steps to resolve this incident. ` +
+      `Consider service dependencies, related CIs, recent changes, and common root causes.`;
     navigate('/chatbot', {
       state: {
         prefillMessage: prompt,
@@ -180,7 +192,9 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
         </div>
       </div>
 
-      <h3 className="text-sm font-semibold text-gray-900 mb-3">Alert Timeline</h3>
+      <RecentChanges service={incident.service} />
+
+      <h3 className="text-sm font-semibold text-gray-900 mb-3 mt-4">Alert Timeline</h3>
       <div className="relative">
         <div className="absolute left-4 top-0 bottom-0 w-px bg-gray-200"></div>
         <div className="space-y-3">

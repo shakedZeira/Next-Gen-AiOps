@@ -105,3 +105,9 @@ export const dcAPI = {
   getRacks: (roomId: string) => api.get(`/cmdb/dc/rooms/${roomId}/racks`),
   getRackEquipment: (rackId: string) => api.get(`/cmdb/dc/racks/${rackId}/equipment`),
 };
+
+export const changesAPI = {
+  list: (service?: string) => api.get('/changes', { params: service ? { service } : {} }),
+  recent: (service: string, minutes?: number) => api.get(`/changes/recent/${service}`, { params: minutes ? { minutes } : {} }),
+  correlate: (service: string) => api.get(`/changes/correlate/${service}`),
+};

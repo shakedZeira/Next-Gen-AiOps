@@ -229,6 +229,33 @@ async def execute_fix(action_id: str) -> str:
 # Tool definitions for Ollama (JSON Schema format)
 # ---------------------------------------------------------------------------
 
+async def get_recent_changes(args: dict) -> str:
+    """Get recent deployment/config/infrastructure changes for a service."""
+    service = args.get("service", "")
+    minutes = args.get("minutes", 30)
+    if not service:
+        return "service is required"
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            r = await client.get(
+                f"http://api-gateway:8000/api/v1/changes/correlate/{service}",
+            )
+            if r.status_code == 200:
+                data = r.json()
+                if not data.get("has_recent_changes"):
+                    return f"No changes in the last {minutes} minutes for {service}."
+                lines = [f"Risk score: {data['overall_risk_score']}%", f"Likely cause: {data['likely_cause']}"]
+                for c in data["changes"]:
+                    lines.append(
+                        f"- [{c['type']}] {c['description']} ({c['minutes_ago']}m ago, "
+                        f"status={c['status']}, risk={c['risk_score']}%)"
+                    )
+                return f"Recent changes for {service} (last {minutes}min):\\n" + "\\n".join(lines)
+            return f"Failed to fetch changes: {r.status_code}"
+    except Exception as e:
+        return f"Error fetching changes: {e}"
+
+
 TOOL_DEFINITIONS = [
     {
         "type": "function",
@@ -322,6 +349,21 @@ TOOL_DEFINITIONS = [
             },
         },
     },
+    {
+        "type": "function",
+        "function": {
+            "name": "get_recent_changes",
+            "description": "Get recent deployment, config, and infrastructure changes for a service. Shows risk score and timing to help identify if a change caused an incident.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "service": {"type": "string", "description": "Service name (e.g. Payment Gateway, Auth Service)"},
+                    "minutes": {"type": "integer", "description": "Lookback window in minutes (default 30)"},
+                },
+                "required": ["service"],
+            },
+        },
+    },
 ]
 
 # Map tool names to callables
@@ -333,6 +375,7 @@ TOOL_MAP = {
     "search_cis": search_cis,
     "get_services": get_services,
     "get_site_overview": get_site_overview,
+    "get_recent_changes": get_recent_changes,
     "propose_fix": propose_fix,
     "execute_fix": execute_fix,
 }
