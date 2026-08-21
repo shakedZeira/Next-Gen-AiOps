@@ -10,6 +10,7 @@ from core_platform.routers.cmdb import router as cmdb_router
 from core_platform.routers.health import router as health_router
 
 _http_client: httpx.AsyncClient | None = None
+_chatbot_client: httpx.AsyncClient | None = None
 
 
 async def get_http_client() -> httpx.AsyncClient:
@@ -22,12 +23,24 @@ async def get_http_client() -> httpx.AsyncClient:
     return _http_client
 
 
+async def get_chatbot_client() -> httpx.AsyncClient:
+    global _chatbot_client
+    if _chatbot_client is None or _chatbot_client.is_closed:
+        _chatbot_client = httpx.AsyncClient(
+            timeout=httpx.Timeout(120.0, connect=5.0),
+            limits=httpx.Limits(max_connections=5, max_keepalive_connections=2),
+        )
+    return _chatbot_client
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
     # Cleanup
     if _http_client and not _http_client.is_closed:
         await _http_client.aclose()
+    if _chatbot_client and not _chatbot_client.is_closed:
+        await _chatbot_client.aclose()
 
 
 app = FastAPI(title="Next-Gen AiOps Platform", version="0.1.0", lifespan=lifespan)
@@ -81,7 +94,7 @@ async def proxy_simulate(path: str, request: Request):
 
 @app.api_route("/api/v1/chatbot/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_chatbot(path: str, request: Request):
-    client = await get_http_client()
+    client = await get_chatbot_client()
     resp = await client.request(
         method=request.method,
         url=f"http://chatbot:8004/api/v1/chatbot/{path}",

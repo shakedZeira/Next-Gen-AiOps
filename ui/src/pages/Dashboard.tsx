@@ -32,7 +32,7 @@ export default function Dashboard() {
   }, []);
 
   const siteCount = sites.length;
-  const systemHealth = totalCIs > 0 ? Math.max(0, Math.min(100, Math.round(100 - (alertCount / totalCIs) * 100))) : 87;
+  const systemHealth = Math.max(0, Math.round(100 - Math.log2(alertCount + 1) * 5));
 
   const STATS = [
     { label: 'Total Sites', value: String(siteCount), color: 'text-blue-500', icon: 'M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18ZM6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2M18 12h2a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2' },
