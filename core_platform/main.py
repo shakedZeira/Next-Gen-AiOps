@@ -27,7 +27,7 @@ async def get_chatbot_client() -> httpx.AsyncClient:
     global _chatbot_client
     if _chatbot_client is None or _chatbot_client.is_closed:
         _chatbot_client = httpx.AsyncClient(
-            timeout=httpx.Timeout(120.0, connect=5.0),
+            timeout=httpx.Timeout(300.0, connect=5.0),
             limits=httpx.Limits(max_connections=5, max_keepalive_connections=2),
         )
     return _chatbot_client
