@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { alertsAPI } from '../api/client';
+import { useNavigate } from 'react-router-dom';
+import { alertsAPI, chatbotAPI } from '../api/client';
 import { IncidentGroup } from '../types';
 
 const severityColors: Record<string, string> = {
@@ -26,6 +27,8 @@ interface Props {
 export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onResolve }: Props) {
   const [incident, setIncident] = useState<IncidentGroup | null>(null);
   const [loading, setLoading] = useState(true);
+  const [suggesting, setSuggesting] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     setLoading(true);
@@ -67,6 +70,32 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
     }
   };
 
+  const handleSuggestFix = async () => {
+    if (!incident) return;
+    setSuggesting(true);
+    try {
+      const resp = await chatbotAPI.suggestFix({
+        incident_id: incident.incident_id,
+        title: incident.title,
+        service: incident.service,
+        severity: incident.severity,
+        alert_count: incident.alert_count,
+        alerts: incident.alerts,
+        teams: (incident as any).teams,
+      });
+      navigate('/chatbot', {
+        state: {
+          prefillMessage: null,
+          threadId: resp.data.thread_id,
+          title: `Fix: ${incident.title.slice(0, 30)}`,
+        },
+      });
+    } catch {
+      // ignore
+    }
+    setSuggesting(false);
+  };
+
   if (loading) {
     return (
       <div className="bg-white rounded-xl border p-6">
@@ -106,6 +135,13 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
           </span>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleSuggestFix}
+            disabled={suggesting}
+            className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+          >
+            {suggesting ? 'Analyzing...' : 'Suggest Fix'}
+          </button>
           {hasActive && (
             <button
               onClick={handleBulkAcknowledge}
@@ -125,8 +161,8 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
         <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Service</p>
-          <p className="text-sm font-medium text-gray-900">{incident.service}</p>
+          <p className="text-xs text-gray-500">Service(s)</p>
+          <p className="text-sm font-medium text-gray-900">{(incident as any).services?.join(', ') || incident.service}</p>
         </div>
         <div className="p-3 bg-gray-50 rounded-lg">
           <p className="text-xs text-gray-500">Total Alerts</p>

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AlertTable from '../components/AlertTable';
 import IncidentDetail from '../components/IncidentDetail';
-import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
+import { alertsAPI, simulateAPI, cmdbAPI, chatbotAPI } from '../api/client';
 import { Alert, IncidentGroup, Scenario } from '../types';
 
 const DEMO_ALERTS: Alert[] = [
@@ -165,6 +165,31 @@ export default function NOCAlerts({ user }: { user: any }) {
     }
   };
 
+  const handleSuggestFix = async (inc: IncidentGroup, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try {
+      const resp = await chatbotAPI.suggestFix({
+        incident_id: inc.incident_id,
+        title: inc.title,
+        service: inc.service,
+        severity: inc.severity,
+        alert_count: inc.alert_count,
+        alerts: inc.alerts,
+        teams: inc.teams,
+      });
+      const threadId = resp.data.thread_id;
+      navigate('/chatbot', {
+        state: {
+          prefillMessage: null,
+          threadId,
+          title: `Fix: ${inc.title.slice(0, 30)}`,
+        },
+      });
+    } catch {
+      showToast('Failed to get suggestions', 'error');
+    }
+  };
+
   const handleResolveIp = async () => {
     const ip = resolveIpInput.trim();
     if (!ip) return;
@@ -314,10 +339,17 @@ export default function NOCAlerts({ user }: { user: any }) {
                       <span className="text-xs text-gray-500">{inc.service}</span>
                       <span className="text-xs text-gray-400">→</span>
                     </div>
-                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
                       <span className="bg-gray-100 px-2 py-0.5 rounded">{inc.alert_count} alerts</span>
                       {inc.first_seen && <span>First: {new Date(inc.first_seen).toLocaleTimeString()}</span>}
                       {inc.last_seen && <span>Last: {new Date(inc.last_seen).toLocaleTimeString()}</span>}
+                      <button
+                        onClick={(e) => handleSuggestFix(inc, e)}
+                        className="ml-2 px-2 py-1 bg-purple-600 text-white rounded-md text-xs font-medium hover:bg-purple-700 transition-colors whitespace-nowrap"
+                        title="Get AI suggestions for this incident"
+                      >
+                        Suggest Fix
+                      </button>
                     </div>
                   </div>
                   <div className="ml-4 space-y-1">

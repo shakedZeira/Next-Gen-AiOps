@@ -109,3 +109,66 @@ async def get_history(thread_id: str):
         except json.JSONDecodeError:
             continue
     return {"thread_id": thread_id, "messages": messages}
+
+
+@router.delete("/history/{thread_id}")
+async def delete_history(thread_id: str):
+    r = await _get_redis()
+    thread_key = f"chat:thread:{thread_id}"
+    deleted = await r.delete(thread_key)
+    return {"success": deleted > 0, "thread_id": thread_id}
+
+
+class SuggestFixRequest(BaseModel):
+    incident_id: str
+    title: str
+    service: str
+    severity: str
+    alert_count: int
+    alerts: list[dict]
+    teams: list[str] = []
+
+
+@router.post("/suggest-fix", response_model=ChatResponse)
+async def suggest_fix(req: SuggestFixRequest):
+    r = await _get_redis()
+    thread_id = f"incident-{req.incident_id}"
+
+    alert_summary = "\n".join(
+        f"- [{a.get('severity','?')}] {a.get('name','?')} — {a.get('description','')[:120]}"
+        for a in req.alerts[:15]
+    )
+    message = (
+        f"I need help resolving an incident.\n\n"
+        f"**Incident:** {req.title}\n"
+        f"**Service:** {req.service}\n"
+        f"**Severity:** {req.severity}\n"
+        f"**Alerts ({req.alert_count}):**\n{alert_summary}\n\n"
+        f"Please analyze the topology and alerts for {req.service} and suggest steps to resolve this incident. "
+        f"Consider service dependencies, related CIs, and common root causes."
+    )
+
+    thread_key = f"chat:thread:{thread_id}"
+    existing = await r.lrange(thread_key, 0, -1)
+    history = []
+    for raw in existing:
+        try:
+            msg = json.loads(raw)
+            if msg["role"] == "user":
+                history.append(HumanMessage(content=msg["content"]))
+            elif msg["role"] == "assistant" and msg["content"]:
+                history.append(AIMessage(content=msg["content"]))
+        except (json.JSONDecodeError, KeyError):
+            continue
+
+    history.append(HumanMessage(content=message))
+    config = {"configurable": {"thread_id": thread_id}}
+    result = await agent.ainvoke({"messages": history}, config)
+    last_msg = result["messages"][-1]
+    response_text = last_msg.content if hasattr(last_msg, "content") else str(last_msg)
+
+    await r.rpush(thread_key, json.dumps({"role": "user", "content": message}))
+    await r.rpush(thread_key, json.dumps({"role": "assistant", "content": response_text}))
+    await r.expire(thread_key, cfg.CONVERSATION_TTL_S)
+
+    return ChatResponse(response=response_text, thread_id=thread_id)

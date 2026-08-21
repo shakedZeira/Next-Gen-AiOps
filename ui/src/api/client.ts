@@ -86,6 +86,9 @@ export const agentMonitorAPI = {
 
 export const chatbotAPI = {
   chat: (message: string, threadId?: string) => api.post('/chatbot/chat', { message, thread_id: threadId }),
+  deleteThread: (threadId: string) => api.delete(`/chatbot/history/${threadId}`),
+  suggestFix: (data: { incident_id: string; title: string; service: string; severity: string; alert_count: number; alerts: any[]; teams?: string[] }) =>
+    api.post('/chatbot/suggest-fix', data),
   pendingApprovals: () => api.get('/chatbot/approvals/pending'),
   approve: (id: string, user: string) => api.post(`/chatbot/approvals/${id}`, { approved: true, decided_by: user }),
   reject: (id: string, user: string) => api.post(`/chatbot/approvals/${id}`, { approved: false, decided_by: user }),

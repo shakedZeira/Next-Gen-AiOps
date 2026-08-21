@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import ApprovalQueue from '../components/ApprovalQueue';
 import { chatbotAPI } from '../api/client';
 import { ApprovalRequest } from '../types';
@@ -61,21 +62,31 @@ function createThread(): Thread {
 }
 
 export default function ChatBot({ user }: { user: any }) {
+  const location = useLocation();
+  const prefillMessage = (location.state as any)?.prefillMessage as string | undefined;
+  const prefillThreadId = (location.state as any)?.threadId as string | undefined;
+  const prefillTitle = (location.state as any)?.title as string | undefined;
+
   const [threads, setThreads] = useState<Thread[]>(() => {
     const existing = loadThreads();
     if (existing.length > 0) return existing;
     const first = createThread();
     return [first];
   });
-  const [activeThreadId, setActiveThreadId] = useState<string>(() => threads[0]?.id || '');
+  const [activeThreadId, setActiveThreadId] = useState<string>(() => prefillThreadId || threads[0]?.id || '');
   const [messages, setMessages] = useState<Message[]>(() => {
-    const saved = loadMessages(activeThreadId);
+    if (prefillThreadId) {
+      const saved = loadMessages(prefillThreadId);
+      return saved.length > 0 ? saved : [WELCOME_MSG];
+    }
+    const saved = loadMessages(threads[0]?.id || '');
     return saved.length > 0 ? saved : [WELCOME_MSG];
   });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [approvals, setApprovals] = useState<ApprovalRequest[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const hasSentPrefill = useRef(false);
 
   // Scroll on new messages
   useEffect(() => {
@@ -109,6 +120,27 @@ export default function ChatBot({ user }: { user: any }) {
     return () => clearInterval(interval);
   }, []);
 
+  // Handle prefill message from navigation (incident suggestions)
+  useEffect(() => {
+    if (!prefillMessage || hasSentPrefill.current) return;
+    hasSentPrefill.current = true;
+
+    const threadId = prefillThreadId || Date.now().toString();
+    const title = prefillTitle || prefillMessage.slice(0, 40);
+
+    setThreads(prev => {
+      const exists = prev.find(t => t.id === threadId);
+      if (exists) return prev;
+      return [{ id: threadId, title, timestamp: new Date().toISOString() }, ...prev];
+    });
+    setActiveThreadId(threadId);
+
+    const saved = loadMessages(threadId);
+    setMessages(saved.length > 0 ? saved : [WELCOME_MSG]);
+
+    setTimeout(() => sendMessage(prefillMessage), 300);
+  }, [prefillMessage, prefillThreadId, prefillTitle]);
+
   const switchThread = useCallback((threadId: string) => {
     setActiveThreadId(threadId);
     const saved = loadMessages(threadId);
@@ -125,6 +157,26 @@ export default function ChatBot({ user }: { user: any }) {
   const clearChat = useCallback(() => {
     setMessages([WELCOME_MSG]);
     localStorage.removeItem(`${MESSAGES_KEY}_${activeThreadId}`);
+  }, [activeThreadId]);
+
+  const deleteThread = useCallback(async (threadId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    try { await chatbotAPI.deleteThread(threadId); } catch { /* ignore */ }
+    localStorage.removeItem(`${MESSAGES_KEY}_${threadId}`);
+    setThreads(prev => {
+      const next = prev.filter(t => t.id !== threadId);
+      if (next.length === 0) {
+        const fresh = createThread();
+        next.push(fresh);
+        setActiveThreadId(fresh.id);
+        setMessages([WELCOME_MSG]);
+      } else if (threadId === activeThreadId) {
+        setActiveThreadId(next[0].id);
+        const saved = loadMessages(next[0].id);
+        setMessages(saved.length > 0 ? saved : [WELCOME_MSG]);
+      }
+      return next;
+    });
   }, [activeThreadId]);
 
   const sendMessage = async (text?: string) => {
@@ -183,16 +235,27 @@ export default function ChatBot({ user }: { user: any }) {
         </div>
         <div className="flex-1 overflow-y-auto">
           {threads.map(thread => (
-            <button
+            <div
               key={thread.id}
               onClick={() => switchThread(thread.id)}
-              className={`w-full text-left px-3 py-2.5 text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors ${
+              className={`group flex items-center justify-between w-full text-left px-3 py-2.5 text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
                 thread.id === activeThreadId ? 'bg-primary-50 border-l-2 border-l-primary-600 text-primary-700 font-medium' : 'text-gray-700'
               }`}
             >
-              <p className="truncate">{thread.title}</p>
-              <p className="text-xs text-gray-400 mt-0.5">{new Date(thread.timestamp).toLocaleString()}</p>
-            </button>
+              <div className="min-w-0 flex-1">
+                <p className="truncate">{thread.title}</p>
+                <p className="text-xs text-gray-400 mt-0.5">{new Date(thread.timestamp).toLocaleString()}</p>
+              </div>
+              <button
+                onClick={(e) => deleteThread(thread.id, e)}
+                className="opacity-0 group-hover:opacity-100 ml-2 p-1 text-gray-400 hover:text-red-500 transition-all shrink-0"
+                title="Delete chat"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </button>
+            </div>
           ))}
         </div>
       </div>

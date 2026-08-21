@@ -41,6 +41,7 @@ export interface IncidentGroup {
   first_seen?: string;
   last_seen?: string;
   teams?: string[];
+  services?: string[];
   status?: string;
 }
 

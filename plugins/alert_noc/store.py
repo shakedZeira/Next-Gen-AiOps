@@ -85,36 +85,142 @@ class AlertStore:
 
     async def list_incidents(self, status: str | None = None) -> list[dict]:
         alerts = await self.list_alerts(status)
-        incidents: dict[str, list[AlertResponse]] = {}
+        if not alerts:
+            return []
+
+        # Step 1: group by initial incident_id
+        raw_groups: dict[str, list[AlertResponse]] = {}
         for alert in alerts:
             iid = alert.incident_id or alert.id
-            if iid not in incidents:
-                incidents[iid] = []
-            incidents[iid].append(alert)
+            raw_groups.setdefault(iid, []).append(alert)
 
-        result = []
+        # Step 2: merge groups that are related (same service + overlapping names / cascade)
+        merged = self._merge_related_incidents(list(raw_groups.values()))
+
         severity_order = {"critical": 4, "high": 3, "medium": 2, "low": 1, "info": 0}
-        for iid, inc_alerts in incidents.items():
-            if len(inc_alerts) < 1:
-                continue
-            top_severity = max(inc_alerts, key=lambda a: severity_order.get(a.severity, 0)).severity
-            first = min((a.first_seen or a.created_at) for a in inc_alerts)
-            last = max((a.last_seen or a.created_at) for a in inc_alerts)
-            teams = list({a.team for a in inc_alerts if a.team})
+        result = []
+        for group in merged:
+            top_severity = max(group, key=lambda a: severity_order.get(a.severity, 0)).severity
+            first = min((a.first_seen or a.created_at) for a in group)
+            last = max((a.last_seen or a.created_at) for a in group)
+            teams = list({a.team for a in group if a.team})
+            services = list({a.service for a in group if a.service})
             result.append({
-                "incident_id": iid,
-                "title": inc_alerts[0].name,
-                "service": inc_alerts[0].service,
+                "incident_id": group[0].incident_id or group[0].id,
+                "title": self._derive_incident_title(group),
+                "service": services[0] if len(services) == 1 else f"{services[0]} +{len(services)-1}" if services else "unknown",
                 "severity": top_severity,
-                "alert_count": len(inc_alerts),
-                "alerts": [a.model_dump() for a in inc_alerts],
+                "alert_count": len(group),
+                "alerts": [a.model_dump() for a in group],
                 "first_seen": first.isoformat() if first else None,
                 "last_seen": last.isoformat() if last else None,
                 "teams": teams,
-                "status": "active" if any(a.status == AlertStatus.ACTIVE for a in inc_alerts) else "acknowledged" if any(a.status == AlertStatus.ACKNOWLEDGED for a in inc_alerts) else "resolved",
+                "services": services,
+                "status": "active" if any(a.status == AlertStatus.ACTIVE for a in group) else "acknowledged" if any(a.status == AlertStatus.ACKNOWLEDGED for a in group) else "resolved",
             })
 
         return sorted(result, key=lambda i: severity_order.get(i["severity"], 0), reverse=True)
+
+    def _merge_related_incidents(self, groups: list[list[AlertResponse]]) -> list[list[AlertResponse]]:
+        if len(groups) <= 1:
+            return groups
+
+        # Build an index: service -> list of group indices
+        service_idx: dict[str, list[int]] = {}
+        for i, group in enumerate(groups):
+            for svc in {a.service for a in group if a.service}:
+                service_idx.setdefault(svc, []).append(i)
+
+        # Union-Find for merging
+        parent = list(range(len(groups)))
+
+        def find(x: int) -> int:
+            while parent[x] != x:
+                parent[x] = parent[parent[x]]
+                x = parent[x]
+            return x
+
+        def union(x: int, y: int):
+            rx, ry = find(x), find(y)
+            if rx != ry:
+                parent[rx] = ry
+
+        # Merge groups in the same service if they share normalized name patterns
+        for svc, indices in service_idx.items():
+            for i in range(len(indices)):
+                for j in range(i + 1, len(indices)):
+                    gi, gj = groups[indices[i]], groups[indices[j]]
+                    if self._should_merge(gi, gj):
+                        union(indices[i], indices[j])
+
+        # Collect merged groups
+        buckets: dict[int, list[AlertResponse]] = {}
+        for i, group in enumerate(groups):
+            root = find(i)
+            buckets.setdefault(root, []).extend(group)
+
+        # Deduplicate alerts that ended up in the same bucket
+        result = []
+        for alerts in buckets.values():
+            seen = set()
+            deduped = []
+            for a in alerts:
+                if a.id not in seen:
+                    seen.add(a.id)
+                    deduped.append(a)
+            result.append(deduped)
+
+        return result
+
+    def _should_merge(self, group_a: list[AlertResponse], group_b: list[AlertResponse]) -> bool:
+        names_a = {self._base_name(a.name) for a in group_a}
+        names_b = {self._base_name(a.name) for a in group_b}
+
+        # Same normalized name pattern → definitely related
+        if names_a & names_b:
+            return True
+
+        # Shared keywords in alert names (e.g. both mention "latency" or "disk")
+        kw_a = set()
+        kw_b = set()
+        for n in names_a:
+            kw_a.update(n.lower().split())
+        for n in names_b:
+            kw_b.update(n.lower().split())
+        shared = kw_a & kw_b - {"the", "a", "is", "on", "for", "and", "or", "of", "in", "at", "to"}
+        if len(shared) >= 2:
+            return True
+
+        # Same service + similar time window (within 10 min) + same severity
+        times_a = [(a.first_seen or a.created_at) for a in group_a]
+        times_b = [(a.first_seen or a.created_at) for a in group_b]
+        sevs_a = {a.severity for a in group_a}
+        sevs_b = {a.severity for a in group_b}
+        if sevs_a & sevs_b:
+            for ta in times_a:
+                for tb in times_b:
+                    if abs((ta - tb).total_seconds()) < 600:
+                        return True
+
+        return False
+
+    def _base_name(self, name: str) -> str:
+        import re
+        n = name.lower()
+        n = re.sub(r'\bp\d+\b', '', n)
+        n = re.sub(r'\b\d+/\d+\b', 'n/n', n)
+        n = re.sub(r'\s+', ' ', n).strip()
+        return n
+
+    def _derive_incident_title(self, alerts: list[AlertResponse]) -> str:
+        if len(alerts) == 1:
+            return alerts[0].name
+        from collections import Counter
+        name_counts = Counter(self._base_name(a.name) for a in alerts)
+        most_common = name_counts.most_common(1)[0][0]
+        services = {a.service for a in alerts if a.service}
+        svc_str = services.pop() if len(services) == 1 else f"{next(iter(services))} +{len(services)-1}" if services else ""
+        return f"{most_common} ({len(alerts)} alerts, {svc_str})" if svc_str else f"{most_common} ({len(alerts)} alerts)"
 
     async def get_incident(self, incident_id: str) -> dict | None:
         """Fetch a single incident by ID."""
