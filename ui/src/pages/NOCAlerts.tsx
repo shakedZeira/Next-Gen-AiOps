@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AlertTable from '../components/AlertTable';
+import AlertDetail from '../components/AlertDetail';
 import IncidentDetail from '../components/IncidentDetail';
 import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
 import { Alert, IncidentGroup, Scenario } from '../types';
@@ -37,6 +38,7 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [simulating, setSimulating] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
+  const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [showResolveIp, setShowResolveIp] = useState(false);
   const [resolveIpInput, setResolveIpInput] = useState('');
   const [resolveIpResult, setResolveIpResult] = useState<any>(null);
@@ -307,7 +309,14 @@ export default function NOCAlerts({ user }: { user: any }) {
       </div>
 
       <div className="bg-white rounded-xl border overflow-hidden">
-        {selectedIncidentId ? (
+        {selectedAlert ? (
+          <AlertDetail
+            alert={selectedAlert}
+            onClose={() => setSelectedAlert(null)}
+            onAcknowledge={handleAcknowledge}
+            onResolve={handleResolve}
+          />
+        ) : selectedIncidentId ? (
           <IncidentDetail
             incidentId={selectedIncidentId}
             onClose={() => setSelectedIncidentId(null)}
@@ -315,7 +324,7 @@ export default function NOCAlerts({ user }: { user: any }) {
             onResolve={handleResolve}
           />
         ) : viewMode === 'alerts' ? (
-          <AlertTable alerts={alerts} onAcknowledge={handleAcknowledge} onResolve={handleResolve} />
+          <AlertTable alerts={alerts} onAcknowledge={handleAcknowledge} onResolve={handleResolve} onAlertClick={setSelectedAlert} />
         ) : (
           <div className="divide-y divide-gray-200">
             {incidents.length === 0 ? (

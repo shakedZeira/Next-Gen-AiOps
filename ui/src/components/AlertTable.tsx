@@ -4,6 +4,7 @@ interface Props {
   alerts: Alert[];
   onAcknowledge: (id: string) => void;
   onResolve: (id: string) => void;
+  onAlertClick?: (alert: Alert) => void;
 }
 
 const severityColors: Record<string, string> = {
@@ -32,7 +33,7 @@ const teamColors: Record<string, string> = {
   unassigned: 'bg-gray-100 text-gray-600',
 };
 
-export default function AlertTable({ alerts, onAcknowledge, onResolve }: Props) {
+export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertClick }: Props) {
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full divide-y divide-gray-200">
@@ -49,7 +50,12 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve }: Props) 
         </thead>
         <tbody className="divide-y divide-gray-200">
           {alerts.map((alert) => (
-            <tr key={alert.id} className={`border-l-4 ${statusColors[alert.status] || ''}`}>
+            <tr key={alert.id}
+              className={`border-l-4 ${statusColors[alert.status] || ''} ${
+                onAlertClick ? 'cursor-pointer hover:bg-blue-50 transition-colors' : ''
+              }`}
+              onClick={() => onAlertClick?.(alert)}
+            >
               <td className="px-4 py-3">
                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${severityColors[alert.severity] || ''}`}>
                   {alert.severity}
@@ -73,7 +79,7 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve }: Props) 
               </td>
               <td className="px-4 py-3 text-sm text-gray-600">{alert.status}</td>
               <td className="px-4 py-3 text-sm text-gray-500">{new Date(alert.created_at).toLocaleTimeString()}</td>
-              <td className="px-4 py-3 text-right space-x-2">
+              <td className="px-4 py-3 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
                 {alert.status === 'active' && (
                   <button onClick={() => onAcknowledge(alert.id)} className="px-3 py-1 bg-yellow-500 text-white rounded-lg text-xs hover:bg-yellow-600">
                     Ack

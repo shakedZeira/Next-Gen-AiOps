@@ -146,6 +146,7 @@ async def correlate_changes(service: str, session: AsyncSession = Depends(get_se
     return {
         "service": service,
         "has_recent_changes": len(changes) > 0,
+        "change_count": len(changes),
         "overall_risk_score": overall_risk,
         "likely_cause": overall_risk > 70,
         "changes": changes,
