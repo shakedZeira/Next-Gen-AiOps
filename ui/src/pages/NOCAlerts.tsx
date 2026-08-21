@@ -167,8 +167,10 @@ export default function NOCAlerts({ user }: { user: any }) {
 
   const handleSuggestFix = async (inc: IncidentGroup, e: React.MouseEvent) => {
     e.stopPropagation();
+    const threadId = `incident-${inc.incident_id}`;
+    const title = `Fix: ${inc.title.slice(0, 30)}`;
     try {
-      const resp = await chatbotAPI.suggestFix({
+      await chatbotAPI.suggestFix({
         incident_id: inc.incident_id,
         title: inc.title,
         service: inc.service,
@@ -177,17 +179,10 @@ export default function NOCAlerts({ user }: { user: any }) {
         alerts: inc.alerts,
         teams: inc.teams,
       });
-      const threadId = resp.data.thread_id;
-      navigate('/chatbot', {
-        state: {
-          prefillMessage: null,
-          threadId,
-          title: `Fix: ${inc.title.slice(0, 30)}`,
-        },
-      });
     } catch {
-      showToast('Failed to get suggestions', 'error');
+      showToast('Suggestion request failed, opening chat anyway', 'error');
     }
+    navigate('/chatbot', { state: { threadId, title } });
   };
 
   const handleResolveIp = async () => {

@@ -120,26 +120,26 @@ export default function ChatBot({ user }: { user: any }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle prefill message from navigation (incident suggestions)
+  // Handle navigation from NOC Alerts (suggest-fix thread switch)
+  useEffect(() => {
+    if (!prefillThreadId) return;
+    // Ensure the thread exists in the sidebar
+    setThreads(prev => {
+      const exists = prev.find(t => t.id === prefillThreadId);
+      if (exists) return prev;
+      return [{ id: prefillThreadId, title: prefillTitle || 'Incident Analysis', timestamp: new Date().toISOString() }, ...prev];
+    });
+    setActiveThreadId(prefillThreadId);
+    const saved = loadMessages(prefillThreadId);
+    setMessages(saved.length > 0 ? saved : [WELCOME_MSG]);
+  }, [prefillThreadId, prefillTitle]);
+
+  // Handle prefill message (auto-send a message on mount)
   useEffect(() => {
     if (!prefillMessage || hasSentPrefill.current) return;
     hasSentPrefill.current = true;
-
-    const threadId = prefillThreadId || Date.now().toString();
-    const title = prefillTitle || prefillMessage.slice(0, 40);
-
-    setThreads(prev => {
-      const exists = prev.find(t => t.id === threadId);
-      if (exists) return prev;
-      return [{ id: threadId, title, timestamp: new Date().toISOString() }, ...prev];
-    });
-    setActiveThreadId(threadId);
-
-    const saved = loadMessages(threadId);
-    setMessages(saved.length > 0 ? saved : [WELCOME_MSG]);
-
     setTimeout(() => sendMessage(prefillMessage), 300);
-  }, [prefillMessage, prefillThreadId, prefillTitle]);
+  }, [prefillMessage]);
 
   const switchThread = useCallback((threadId: string) => {
     setActiveThreadId(threadId);

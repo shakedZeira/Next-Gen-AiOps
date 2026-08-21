@@ -95,14 +95,23 @@ async def proxy_simulate(path: str, request: Request):
 @app.api_route("/api/v1/chatbot/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
 async def proxy_chatbot(path: str, request: Request):
     client = await get_chatbot_client()
-    resp = await client.request(
-        method=request.method,
-        url=f"http://chatbot:8004/api/v1/chatbot/{path}",
-        params=dict(request.query_params),
-        content=await request.body(),
-        headers={"Content-Type": request.headers.get("content-type", "application/json")},
-    )
-    return JSONResponse(content=resp.json(), status_code=resp.status_code)
+    try:
+        resp = await client.request(
+            method=request.method,
+            url=f"http://chatbot:8004/api/v1/chatbot/{path}",
+            params=dict(request.query_params),
+            content=await request.body(),
+            headers={"Content-Type": request.headers.get("content-type", "application/json")},
+        )
+        try:
+            body = resp.json()
+        except Exception:
+            body = {"raw": resp.text[:2000]}
+        return JSONResponse(content=body, status_code=resp.status_code)
+    except httpx.TimeoutException:
+        return JSONResponse(content={"error": "Chatbot request timed out"}, status_code=504)
+    except httpx.ConnectError:
+        return JSONResponse(content={"error": "Chatbot service unavailable"}, status_code=502)
 
 
 @app.get("/")

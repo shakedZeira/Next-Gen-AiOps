@@ -73,8 +73,10 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
   const handleSuggestFix = async () => {
     if (!incident) return;
     setSuggesting(true);
+    const threadId = `incident-${incident.incident_id}`;
+    const title = `Fix: ${incident.title.slice(0, 30)}`;
     try {
-      const resp = await chatbotAPI.suggestFix({
+      await chatbotAPI.suggestFix({
         incident_id: incident.incident_id,
         title: incident.title,
         service: incident.service,
@@ -83,17 +85,11 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
         alerts: incident.alerts,
         teams: (incident as any).teams,
       });
-      navigate('/chatbot', {
-        state: {
-          prefillMessage: null,
-          threadId: resp.data.thread_id,
-          title: `Fix: ${incident.title.slice(0, 30)}`,
-        },
-      });
     } catch {
-      // ignore
+      // navigate anyway
     }
     setSuggesting(false);
+    navigate('/chatbot', { state: { threadId, title } });
   };
 
   if (loading) {
