@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AlertTable from '../components/AlertTable';
 import IncidentDetail from '../components/IncidentDetail';
-import { alertsAPI, simulateAPI } from '../api/client';
+import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
 import { Alert, IncidentGroup, Scenario } from '../types';
 
 const DEMO_ALERTS: Alert[] = [
@@ -36,6 +37,11 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [simulating, setSimulating] = useState(false);
   const [refreshInterval, setRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
+  const [showResolveIp, setShowResolveIp] = useState(false);
+  const [resolveIpInput, setResolveIpInput] = useState('');
+  const [resolveIpResult, setResolveIpResult] = useState<any>(null);
+  const [resolveIpLoading, setResolveIpLoading] = useState(false);
+  const navigate = useNavigate();
 
   const fetchAlerts = useCallback(async () => {
     try {
@@ -159,6 +165,21 @@ export default function NOCAlerts({ user }: { user: any }) {
     }
   };
 
+  const handleResolveIp = async () => {
+    const ip = resolveIpInput.trim();
+    if (!ip) return;
+    setResolveIpLoading(true);
+    setResolveIpResult(null);
+    try {
+      const resp = await cmdbAPI.resolveIp(ip);
+      setResolveIpResult(resp.data);
+    } catch {
+      setResolveIpResult({ error: `No CI found for IP ${ip}` });
+    } finally {
+      setResolveIpLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {toast && (
@@ -253,6 +274,13 @@ export default function NOCAlerts({ user }: { user: any }) {
               {simulating ? 'Running...' : 'Run'}
             </button>
           </div>
+
+          <button
+            onClick={() => { setShowResolveIp(true); setResolveIpResult(null); setResolveIpInput(''); }}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-cyan-600 text-white hover:bg-cyan-700 transition-colors"
+          >
+            Resolve IP
+          </button>
         </div>
       </div>
 
@@ -318,6 +346,63 @@ export default function NOCAlerts({ user }: { user: any }) {
           </div>
         )}
       </div>
+
+      {showResolveIp && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-gray-900">Resolve IP Address</h3>
+              <button onClick={() => setShowResolveIp(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+            </div>
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={resolveIpInput}
+                onChange={(e) => setResolveIpInput(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleResolveIp()}
+                placeholder="e.g. 10.0.1.5"
+                className="flex-1 px-3 py-2 rounded-lg border border-gray-300 font-mono text-sm focus:ring-2 focus:ring-cyan-500"
+              />
+              <button
+                onClick={handleResolveIp}
+                disabled={resolveIpLoading}
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium hover:bg-cyan-700 disabled:opacity-50"
+              >
+                {resolveIpLoading ? '...' : 'Lookup'}
+              </button>
+            </div>
+            {resolveIpResult && (
+              resolveIpResult.error ? (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">{resolveIpResult.error}</div>
+              ) : (
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-sm font-medium text-green-800 mb-1">Found CI</div>
+                  <div className="text-sm text-gray-700">
+                    <span className="font-semibold">{resolveIpResult.ci?.name}</span>
+                    <span className="text-gray-400 mx-1">&middot;</span>
+                    <span>{resolveIpResult.ci?.type}</span>
+                    <span className="text-gray-400 mx-1">&middot;</span>
+                    <span>{resolveIpResult.ci?.site}</span>
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">
+                    Match: {resolveIpResult.match_type}
+                    {resolveIpResult.ci?.management_ip && <span className="ml-2">Mgmt: {resolveIpResult.ci.management_ip}</span>}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowResolveIp(false);
+                      navigate(`/cmdb?site=${resolveIpResult.ci?.site || 'all'}`);
+                    }}
+                    className="mt-2 px-3 py-1 bg-blue-600 text-white rounded text-xs font-medium hover:bg-blue-700"
+                  >
+                    View in CMDB Explorer
+                  </button>
+                </div>
+              )
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

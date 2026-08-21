@@ -696,10 +696,10 @@ Already covered in Fix 25 (Security plan).
 7. **CI Pipeline:** ruff, mypy, pytest, npm build all passing
 
 ### Remaining Work (Prioritized)
-| Priority | Feature | Effort | Impact | Plan |
-|----------|---------|--------|--------|------|
-| 1 | IP Address Assignment | 0.5 day | MEDIUM | `ip-address-assignment.md` |
-| 2 | IP Address Search | 0.25 day | MEDIUM | `ip-address-search.md` |
+| Priority | Feature | Effort | Impact | Status |
+|----------|---------|--------|--------|--------|
+| 1 | IP Address Assignment | 0.5 day | MEDIUM | COMPLETED |
+| 2 | IP Address Search | 0.25 day | MEDIUM | COMPLETED |
 | 3 | Chat Human Language | 2-3 days | HIGH | `chat-human-language.md` |
 | 4 | Manual Device + MIB Loading | 2-3 days | HIGH | `manual-device-mib.md` |
 | 5 | LLD Automated Planner | 3-4 days | HIGH | `lld-automated-planner.md` |

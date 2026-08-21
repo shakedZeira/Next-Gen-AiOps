@@ -7,6 +7,7 @@ interface Props {
   selectedService?: string | null;
   selectedSite?: string | null;
   searchQuery?: string | null;
+  ipSearch?: string | null;
   siteAggregate?: boolean;
   expandable?: boolean;
   height?: string;
@@ -100,7 +101,7 @@ const NODE_SHAPES: Record<string, string> = {
 
 const PRINCIPAL_TYPES = new Set(['router', 'switch', 'firewall', 'load_balancer']);
 
-export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick }: Props) {
+export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -190,6 +191,8 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
               type: n.type,
               team: n.team || 'unassigned',
               site: n.site || 'unassigned',
+              management_ip: (n as any).management_ip || '',
+              loopback_ip: (n as any).loopback_ip || '',
               topology_type: (n as any).topology_type || '',
               device_count: (n as any).device_count || 0,
               hidden_count: hiddenCount,
@@ -335,6 +338,14 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
           opacity: 1,
         },
       },
+      {
+        selector: '.ip-highlight',
+        style: {
+          'border-width': 4,
+          'border-color': '#06b6d4',
+          opacity: 1,
+        },
+      },
     ];
 
     // Expandable mode: style nodes with hidden children
@@ -382,7 +393,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       maxZoom: 3,
     });
 
-    if (selectedSite || selectedService || searchQuery) {
+    if (selectedSite || selectedService || searchQuery || ipSearch) {
       let siteNodeIds: Set<string> | null = null;
       if (selectedSite) {
         siteNodeIds = new Set<string>();
@@ -429,8 +440,21 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
         });
       }
 
+      let ipNodeIds: Set<string> | null = null;
+      if (ipSearch) {
+        ipNodeIds = new Set<string>();
+        const q = ipSearch.toLowerCase();
+        cy.nodes().forEach((n) => {
+          const mip = (n.data('management_ip') || '').toLowerCase();
+          const lip = (n.data('loopback_ip') || '').toLowerCase();
+          if (mip === q || lip === q) {
+            ipNodeIds!.add(n.id());
+          }
+        });
+      }
+
       let matchedNodeIds: Set<string> | null = null;
-      const sets = [siteNodeIds, serviceNodeIds, searchNodeIds].filter((s): s is Set<string> => s !== null);
+      const sets = [siteNodeIds, serviceNodeIds, searchNodeIds, ipNodeIds].filter((s): s is Set<string> => s !== null);
       for (const set of sets) {
         if (matchedNodeIds === null) {
           matchedNodeIds = set;
@@ -452,9 +476,10 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
           matchedNodeIds!.add(e.target().id());
         });
 
-        cy.nodes().removeClass('highlighted site-highlight').addClass('dimmed');
+        const highlightClass = ipSearch ? 'ip-highlight' : 'site-highlight';
+        cy.nodes().removeClass('highlighted site-highlight ip-highlight').addClass('dimmed');
         cy.edges().addClass('dimmed');
-        cy.nodes().filter((n) => matchedNodeIds!.has(n.id())).removeClass('dimmed').addClass('highlighted site-highlight');
+        cy.nodes().filter((n) => matchedNodeIds!.has(n.id())).removeClass('dimmed').addClass(`highlighted ${highlightClass}`);
         cy.edges().filter((e) => {
           return matchedNodeIds!.has(e.source().id()) && matchedNodeIds!.has(e.target().id());
         }).removeClass('dimmed');
@@ -491,7 +516,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       cy.destroy();
     };
-  }, [topology, selectedService, selectedSite, searchQuery, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick]);
+  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick]);
 
   useEffect(() => {
     const cleanup = buildGraph();

@@ -68,11 +68,14 @@ export interface CI {
   site_type?: string;
   network_layer?: string;
   topology_type?: string;
+  management_ip?: string;
+  loopback_ip?: string;
+  subnet?: string;
   labels: Record<string, string>;
 }
 
 export interface Topology {
-  nodes: Array<{ id: string; name: string; type: string; team?: string; site?: string }>;
+  nodes: Array<{ id: string; name: string; type: string; team?: string; site?: string; management_ip?: string; loopback_ip?: string }>;
   edges: Array<{ source: string; target: string; type: string }>;
 }
 

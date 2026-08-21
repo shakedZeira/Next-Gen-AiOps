@@ -74,7 +74,7 @@ class CMDBRepository:
     async def get_global_topology(self) -> dict:
         ci_result = await self.session.execute(select(CI))
         cis = ci_result.scalars().all()
-        nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned", "site": c.site or "unassigned"} for c in cis]
+        nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned", "site": c.site or "unassigned", "management_ip": str(c.management_ip) if c.management_ip else None, "loopback_ip": str(c.loopback_ip) if c.loopback_ip else None} for c in cis]
 
         rel_result = await self.session.execute(select(Relationship))
         rels = rel_result.scalars().all()
@@ -112,7 +112,7 @@ class CMDBRepository:
             cis = [c for c in cis if c.type in principal_types]
 
         ci_ids = {c.id for c in cis}
-        nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned", "site": c.site} for c in cis]
+        nodes = [{"id": str(c.id), "name": c.name, "type": c.type, "team": c.team or "unassigned", "site": c.site, "management_ip": str(c.management_ip) if c.management_ip else None, "loopback_ip": str(c.loopback_ip) if c.loopback_ip else None} for c in cis]
 
         rel_result = await self.session.execute(
             select(Relationship).where(
@@ -232,6 +232,9 @@ class CMDBRepository:
                 "site_type": ci.site_type,
                 "network_layer": ci.network_layer,
                 "topology_type": ci.topology_type,
+                "management_ip": str(ci.management_ip) if ci.management_ip else None,
+                "loopback_ip": str(ci.loopback_ip) if ci.loopback_ip else None,
+                "subnet": str(ci.subnet) if ci.subnet else None,
                 "labels": ci.labels,
             },
             "neighbors": neighbors,
@@ -292,6 +295,66 @@ class CMDBRepository:
                 "id": str(ci.id), "name": ci.name, "type": ci.type,
                 "provider": ci.provider, "team": ci.team,
                 "network_layer": ci.network_layer,
+                "management_ip": str(ci.management_ip) if ci.management_ip else None,
+                "loopback_ip": str(ci.loopback_ip) if ci.loopback_ip else None,
             }
             for ci in cis
         ]
+
+    async def resolve_ip(self, ip: str) -> dict | None:
+        """Resolve an IP address to a CI. Exact match on management_ip/loopback_ip first, then subnet containment."""
+        # 1. Exact match on management_ip
+        result = await self.session.execute(
+            text("SELECT id FROM ci WHERE management_ip = CAST(:ip AS inet) LIMIT 1"),
+            {"ip": ip},
+        )
+        row = result.first()
+        if row:
+            return {"match_type": "management_ip", "ci_id": str(row[0])}
+
+        # 2. Exact match on loopback_ip
+        result = await self.session.execute(
+            text("SELECT id FROM ci WHERE loopback_ip = CAST(:ip AS inet) LIMIT 1"),
+            {"ip": ip},
+        )
+        row = result.first()
+        if row:
+            return {"match_type": "loopback_ip", "ci_id": str(row[0])}
+
+        # 3. Subnet containment
+        result = await self.session.execute(
+            text("SELECT id FROM ci WHERE subnet >>= CAST(:ip AS cidr) LIMIT 1"),
+            {"ip": ip},
+        )
+        row = result.first()
+        if row:
+            return {"match_type": "subnet", "ci_id": str(row[0])}
+
+        return None
+
+    async def search_by_ip(self, ip: str) -> list[CI]:
+        """Search CIs by IP (exact match on management_ip/loopback_ip or subnet containment)."""
+        # Try exact matches first
+        result = await self.session.execute(
+            text("SELECT id FROM ci WHERE management_ip = CAST(:ip AS inet) OR loopback_ip = CAST(:ip AS inet)"),
+            {"ip": ip},
+        )
+        rows = list(result)
+        if rows:
+            ids = [row[0] for row in rows]
+            result2 = await self.session.execute(select(CI).where(CI.id.in_(ids)))
+            return list(result2.scalars().all())
+
+        # Fall back to subnet containment
+        result = await self.session.execute(
+            text("SELECT id FROM ci WHERE subnet >>= CAST(:ip AS cidr)"),
+            {"ip": ip},
+        )
+        ids = [row[0] for row in result]
+        if ids:
+            result = await self.session.execute(
+                select(CI).where(CI.id.in_(ids))
+            )
+            return list(result.scalars().all())
+
+        return []

@@ -145,6 +145,33 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections }: Pr
                 </div>
               </div>
 
+              {/* IP Addresses */}
+              {(ci as any).management_ip || (ci as any).loopback_ip || (ci as any).subnet ? (
+                <div className="bg-gray-800/50 rounded-lg p-4 mb-4 border border-gray-700/50">
+                  <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">IP Addresses</h4>
+                  <div className="space-y-2 text-sm">
+                    {(ci as any).management_ip && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Management:</span>
+                        <span className="text-cyan-400 font-mono font-medium">{(ci as any).management_ip}</span>
+                      </div>
+                    )}
+                    {(ci as any).loopback_ip && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Loopback:</span>
+                        <span className="text-cyan-400 font-mono font-medium">{(ci as any).loopback_ip}</span>
+                      </div>
+                    )}
+                    {(ci as any).subnet && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Subnet:</span>
+                        <span className="text-cyan-400 font-mono font-medium">{(ci as any).subnet}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : null}
+
               {/* Connected Devices */}
               {neighbors.length > 0 && (
                 <div className="mb-4">

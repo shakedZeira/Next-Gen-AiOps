@@ -142,6 +142,13 @@ export default function Docs() {
               The search is case-insensitive and resets when you change the selected site. The CI list
               shows a "X of Y" count when a search is active.
             </p>
+            <h3 className="text-lg font-semibold text-white mb-2">IP Address Search</h3>
+            <p className="text-gray-200 mb-4">
+              Search CIs by IP address using the dedicated IP search input (cyan border, mono font).
+              Enter an IP to find CIs by management IP, loopback IP, or subnet containment. Matching
+              nodes are highlighted with a cyan border in the topology graph. Non-matching nodes are
+              dimmed. IP search is also available as a query parameter on the CI list API.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">Site Overview</h3>
             <p className="text-gray-200 mb-4">
               High-level view of all 5 sites with aggregate topology. Each site shows key device type
@@ -154,6 +161,15 @@ export default function Docs() {
               (servers, databases, etc.) with animated fade-in. Expanded nodes show a "+N" label
               indicating how many children they have. Click again to collapse. Non-principal nodes
               (servers, databases) appear with a cyan border when expanded.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">IP Address Assignment</h3>
+            <p className="text-gray-200 mb-4">
+              All 105 CIs are automatically assigned IP addresses during seeding using a structured
+              scheme per site: 10.site.x.0/24 where x varies by device type (routers=0,
+              switches=1, firewalls=2, load_balancers=3, servers=10, databases=20, caches=30,
+              message_queues=40, storage=50). Each site gets its own /24 subnet per device type.
+              Routers get both management and loopback IPs. Databases get management and loopback IPs. The IP details panel shows management_ip,
+              loopback_ip, and subnet in cyan mono font.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Geo Map</h3>
             <p className="text-gray-200 mb-4">
@@ -231,6 +247,13 @@ export default function Docs() {
               <li><span className="font-medium text-white">Acknowledge:</span> Mark alert as seen by an operator</li>
               <li><span className="font-medium text-white">Resolve:</span> Mark alert as fixed</li>
             </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Resolve IP Address</h3>
+            <p className="text-gray-200">
+              The "Resolve IP" button in the toolbar opens a modal to look up which CI owns a given
+              IP address. Enter any IP (e.g. 10.0.1.2) and the system checks management_ip, loopback_ip,
+              and subnet containment. Results show the matching CI with its type, team, and site. A
+              "View in CMDB Explorer" link navigates directly to that CI's topology view.
+            </p>
           </section>
 
           {/* === Section 7: AI Chatbot === */}
@@ -322,7 +345,7 @@ export default function Docs() {
             <h2 className="text-2xl font-bold text-white mb-4">Architecture Deep Dive</h2>
             <h3 className="text-lg font-semibold text-white mb-2">Database Schema</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
-              <li><code className="bg-gray-800 px-2 py-1 rounded">ci</code>: 105 configuration items with JSONB labels</li>
+              <li><code className="bg-gray-800 px-2 py-1 rounded">ci</code>: 105 CIs with JSONB labels, management_ip (INET), loopback_ip (INET), subnet (CIDR)</li>
               <li><code className="bg-gray-800 px-2 py-1 rounded">relationship</code>: 123 CI-to-CI relationships with recursive CTE traversal</li>
               <li><code className="bg-gray-800 px-2 py-1 rounded">service</code>: 8 services with SLA tiers</li>
               <li><code className="bg-gray-800 px-2 py-1 rounded">alert</code>: Alert management with severity/status lifecycle</li>
@@ -364,10 +387,11 @@ POST /auth/refresh        - Refresh token
 GET  /auth/me             - Current user info`}</pre>
             
             <h3 className="text-lg font-semibold text-white mb-2">CMDB</h3>
-            <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/cmdb/ci                     - List all CIs
+            <pre className="bg-gray-800 p-3 rounded-xl text-sm text-gray-200 mb-4">{`GET    /api/v1/cmdb/ci                     - List CIs (?ip= search)
 GET    /api/v1/cmdb/ci/{id}                - Get CI by ID
 GET    /api/v1/cmdb/ci/{id}/details        - Get CI with neighbors
 POST   /api/v1/cmdb/ci                     - Create CI
+GET    /api/v1/cmdb/resolve-ip/{ip}        - Resolve IP to CI
 GET    /api/v1/cmdb/sites                  - List sites with counts
 GET    /api/v1/cmdb/sites/locations        - Site coordinates
 GET    /api/v1/cmdb/sites/{name}/map-data  - Site indoor map data

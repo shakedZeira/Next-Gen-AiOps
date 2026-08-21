@@ -13,6 +13,9 @@ class CICreate(BaseModel):
     site_type: str | None = None
     network_layer: str | None = None
     topology_type: str | None = None
+    management_ip: str | None = None
+    loopback_ip: str | None = None
+    subnet: str | None = None
     labels: dict = {}
     properties: dict = {}
 

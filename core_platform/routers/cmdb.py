@@ -23,6 +23,12 @@ from core_platform.cmdb.schemas import (
 router = APIRouter()
 
 
+def _ip_str(val) -> str | None:
+    if val is None:
+        return None
+    return str(val)
+
+
 @router.post("/ci", response_model=CIResponse)
 async def create_ci(data: CICreate, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
@@ -36,7 +42,7 @@ async def get_ci(ci_id: UUID, session=Depends(get_session), _user=Depends(get_cu
     ci = await repo.get_ci(ci_id)
     if not ci:
         return JSONResponse(status_code=404, content={"error": "CI not found"})
-    return CIResponse(id=ci.id, name=ci.name, type=ci.type, provider=ci.provider, environment=ci.environment, team=ci.team, site=ci.site, site_type=ci.site_type, network_layer=ci.network_layer, topology_type=ci.topology_type, labels=ci.labels, properties=ci.properties)
+    return CIResponse(id=ci.id, name=ci.name, type=ci.type, provider=ci.provider, environment=ci.environment, team=ci.team, site=ci.site, site_type=ci.site_type, network_layer=ci.network_layer, topology_type=ci.topology_type, management_ip=_ip_str(ci.management_ip), loopback_ip=_ip_str(ci.loopback_ip), subnet=_ip_str(ci.subnet), labels=ci.labels, properties=ci.properties)
 
 
 @router.get("/ci/{ci_id}/details")
@@ -49,10 +55,13 @@ async def get_ci_details(ci_id: UUID, session=Depends(get_session), _user=Depend
 
 
 @router.get("/ci", response_model=list[CIResponse])
-async def list_cis(skip: int = 0, limit: int = 100, session=Depends(get_session), _user=Depends(get_current_user)):
+async def list_cis(skip: int = 0, limit: int = 100, ip: str | None = None, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
+    if ip:
+        cis = await repo.search_by_ip(ip)
+        return [CIResponse(id=c.id, name=c.name, type=c.type, provider=c.provider, environment=c.environment, team=c.team, site=c.site, site_type=c.site_type, network_layer=c.network_layer, topology_type=c.topology_type, management_ip=_ip_str(c.management_ip), loopback_ip=_ip_str(c.loopback_ip), subnet=_ip_str(c.subnet), labels=c.labels, properties=c.properties) for c in cis]
     cis = await repo.list_cis(skip, limit)
-    return [CIResponse(id=c.id, name=c.name, type=c.type, provider=c.provider, environment=c.environment, team=c.team, site=c.site, site_type=c.site_type, network_layer=c.network_layer, topology_type=c.topology_type, labels=c.labels, properties=c.properties) for c in cis]
+    return [CIResponse(id=c.id, name=c.name, type=c.type, provider=c.provider, environment=c.environment, team=c.team, site=c.site, site_type=c.site_type, network_layer=c.network_layer, topology_type=c.topology_type, management_ip=_ip_str(c.management_ip), loopback_ip=_ip_str(c.loopback_ip), subnet=_ip_str(c.subnet), labels=c.labels, properties=c.properties) for c in cis]
 
 
 @router.post("/relationship", response_model=RelationshipResponse)
@@ -60,6 +69,31 @@ async def create_relationship(data: RelationshipCreate, session=Depends(get_sess
     repo = CMDBRepository(session)
     rel = await repo.create_relationship(data.model_dump())
     return RelationshipResponse(id=rel.id, **data.model_dump())
+
+
+@router.get("/resolve-ip/{ip}")
+async def resolve_ip(ip: str, session=Depends(get_session), _user=Depends(get_current_user)):
+    repo = CMDBRepository(session)
+    result = await repo.resolve_ip(ip)
+    if not result:
+        return JSONResponse(status_code=404, content={"error": f"No CI found for IP {ip}", "ip": ip})
+    ci = await repo.get_ci(UUID(result["ci_id"]))
+    if not ci:
+        return JSONResponse(status_code=404, content={"error": f"CI not found for IP {ip}", "ip": ip})
+    return {
+        "ip": ip,
+        "match_type": result["match_type"],
+        "ci": {
+            "id": str(ci.id),
+            "name": ci.name,
+            "type": ci.type,
+            "team": ci.team,
+            "site": ci.site,
+            "management_ip": ci.management_ip,
+            "loopback_ip": ci.loopback_ip,
+            "subnet": ci.subnet,
+        },
+    }
 
 
 @router.get("/service", response_model=list[ServiceResponse])

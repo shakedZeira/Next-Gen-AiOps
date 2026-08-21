@@ -32,9 +32,10 @@ export const authAPI = {
 };
 
 export const cmdbAPI = {
-  listCI: () => api.get('/cmdb/ci'),
+  listCI: (ip?: string) => api.get('/cmdb/ci', { params: ip ? { ip } : {} }),
   getCI: (id: string) => api.get(`/cmdb/ci/${id}`),
   createCI: (data: any) => api.post('/cmdb/ci', data),
+  resolveIp: (ip: string) => api.get(`/cmdb/resolve-ip/${ip}`),
   listServices: () => api.get('/cmdb/service'),
   getTopology: (serviceId: string) => api.get(`/cmdb/topology/${serviceId}`),
   getGlobalTopology: () => api.get('/cmdb/topology/all'),
