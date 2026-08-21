@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AlertTable from '../components/AlertTable';
 import IncidentDetail from '../components/IncidentDetail';
-import { alertsAPI, simulateAPI, cmdbAPI, chatbotAPI } from '../api/client';
+import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
 import { Alert, IncidentGroup, Scenario } from '../types';
 
 const DEMO_ALERTS: Alert[] = [
@@ -167,22 +167,24 @@ export default function NOCAlerts({ user }: { user: any }) {
 
   const handleSuggestFix = async (inc: IncidentGroup, e: React.MouseEvent) => {
     e.stopPropagation();
-    const threadId = `incident-${inc.incident_id}`;
-    const title = `Fix: ${inc.title.slice(0, 30)}`;
-    try {
-      await chatbotAPI.suggestFix({
-        incident_id: inc.incident_id,
-        title: inc.title,
-        service: inc.service,
-        severity: inc.severity,
-        alert_count: inc.alert_count,
-        alerts: inc.alerts,
-        teams: inc.teams,
-      });
-    } catch {
-      showToast('Suggestion request failed, opening chat anyway', 'error');
-    }
-    navigate('/chatbot', { state: { threadId, title } });
+    const alertLines = inc.alerts.slice(0, 10).map(
+      (a) => `- [${a.severity}] ${a.name} — ${a.description?.slice(0, 100) || ''}`
+    ).join('\n');
+    const prompt =
+      `I need help resolving an incident.\n\n` +
+      `Incident: ${inc.title}\n` +
+      `Service: ${inc.service}\n` +
+      `Severity: ${inc.severity}\n` +
+      `Alerts (${inc.alert_count}):\n${alertLines}\n\n` +
+      `Please analyze the topology and alerts for ${inc.service} and suggest steps to resolve this incident. ` +
+      `Consider service dependencies, related CIs, and common root causes.`;
+    navigate('/chatbot', {
+      state: {
+        prefillMessage: prompt,
+        threadId: `incident-${inc.incident_id}`,
+        title: `Fix: ${inc.title.slice(0, 30)}`,
+      },
+    });
   };
 
   const handleResolveIp = async () => {

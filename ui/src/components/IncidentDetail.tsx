@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { alertsAPI, chatbotAPI } from '../api/client';
+import { alertsAPI } from '../api/client';
 import { IncidentGroup } from '../types';
 
 const severityColors: Record<string, string> = {
@@ -27,7 +27,6 @@ interface Props {
 export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onResolve }: Props) {
   const [incident, setIncident] = useState<IncidentGroup | null>(null);
   const [loading, setLoading] = useState(true);
-  const [suggesting, setSuggesting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,24 +71,24 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
 
   const handleSuggestFix = async () => {
     if (!incident) return;
-    setSuggesting(true);
-    const threadId = `incident-${incident.incident_id}`;
-    const title = `Fix: ${incident.title.slice(0, 30)}`;
-    try {
-      await chatbotAPI.suggestFix({
-        incident_id: incident.incident_id,
-        title: incident.title,
-        service: incident.service,
-        severity: incident.severity,
-        alert_count: incident.alert_count,
-        alerts: incident.alerts,
-        teams: (incident as any).teams,
-      });
-    } catch {
-      // navigate anyway
-    }
-    setSuggesting(false);
-    navigate('/chatbot', { state: { threadId, title } });
+    const alertLines = incident.alerts.slice(0, 10).map(
+      (a) => `- [${a.severity}] ${a.name} — ${a.description?.slice(0, 100) || ''}`
+    ).join('\n');
+    const prompt =
+      `I need help resolving an incident.\n\n` +
+      `Incident: ${incident.title}\n` +
+      `Service: ${incident.service}\n` +
+      `Severity: ${incident.severity}\n` +
+      `Alerts (${incident.alert_count}):\n${alertLines}\n\n` +
+      `Please analyze the topology and alerts for ${incident.service} and suggest steps to resolve this incident. ` +
+      `Consider service dependencies, related CIs, and common root causes.`;
+    navigate('/chatbot', {
+      state: {
+        prefillMessage: prompt,
+        threadId: `incident-${incident.incident_id}`,
+        title: `Fix: ${incident.title.slice(0, 30)}`,
+      },
+    });
   };
 
   if (loading) {
@@ -133,10 +132,9 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
         <div className="flex items-center gap-2">
           <button
             onClick={handleSuggestFix}
-            disabled={suggesting}
-            className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 bg-purple-600 text-white rounded-lg text-xs font-medium hover:bg-purple-700 transition-colors"
           >
-            {suggesting ? 'Analyzing...' : 'Suggest Fix'}
+            Suggest Fix
           </button>
           {hasActive && (
             <button

@@ -120,10 +120,11 @@ export default function ChatBot({ user }: { user: any }) {
     return () => clearInterval(interval);
   }, []);
 
-  // Handle navigation from NOC Alerts (suggest-fix thread switch)
+  // Handle navigation from NOC Alerts (suggest-fix: switch thread + auto-send prompt)
   useEffect(() => {
     if (!prefillThreadId) return;
-    // Ensure the thread exists in the sidebar
+
+    // Ensure the thread exists in sidebar
     setThreads(prev => {
       const exists = prev.find(t => t.id === prefillThreadId);
       if (exists) return prev;
@@ -131,35 +132,16 @@ export default function ChatBot({ user }: { user: any }) {
     });
     setActiveThreadId(prefillThreadId);
 
-    // Try localStorage first, fall back to backend Redis
+    // Load existing messages or show welcome
     const saved = loadMessages(prefillThreadId);
-    if (saved.length > 0) {
-      setMessages(saved);
-    } else {
-      chatbotAPI.getHistory(prefillThreadId)
-        .then((resp) => {
-          const backendMsgs = (resp.data?.messages || []).map((m: any) => ({
-            role: m.role as 'user' | 'assistant',
-            content: m.content,
-            timestamp: new Date(),
-          }));
-          if (backendMsgs.length > 0) {
-            setMessages(backendMsgs);
-            saveMessages(prefillThreadId, backendMsgs);
-          } else {
-            setMessages([WELCOME_MSG]);
-          }
-        })
-        .catch(() => setMessages([WELCOME_MSG]));
-    }
-  }, [prefillThreadId, prefillTitle]);
+    setMessages(saved.length > 0 ? saved : [WELCOME_MSG]);
 
-  // Handle prefill message (auto-send a message on mount)
-  useEffect(() => {
-    if (!prefillMessage || hasSentPrefill.current) return;
-    hasSentPrefill.current = true;
-    setTimeout(() => sendMessage(prefillMessage), 300);
-  }, [prefillMessage]);
+    // Auto-send the prompt if provided (and not already sent)
+    if (prefillMessage && !hasSentPrefill.current) {
+      hasSentPrefill.current = true;
+      setTimeout(() => sendMessage(prefillMessage), 500);
+    }
+  }, [prefillThreadId, prefillMessage, prefillTitle]);
 
   const switchThread = useCallback((threadId: string) => {
     setActiveThreadId(threadId);
