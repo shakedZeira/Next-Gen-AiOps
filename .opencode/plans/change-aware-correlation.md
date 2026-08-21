@@ -1,7 +1,23 @@
-# Plan: Change-Aware Correlation
+# Plan: Change-Aware Correlation ✅ COMPLETED
 
 ## Goal
 Correlate alerts with recent deployments/config changes to identify likely root cause.
+
+## Status
+**COMPLETED** — Commit `a5a7fe2` + `b571966`
+
+### What Was Built
+- `aiops_shared/models/change.py` — SQLAlchemy 2.0 Change model
+- `db/migrations/006_create_changes.sql` — change table with indexes
+- `db/seed_changes.py` — 27 realistic changes across 7 services
+- `core_platform/routers/changes.py` — CRUD + correlation endpoints
+- `core_platform/main.py` — changes router at `/api/v1/changes`
+- `ui/src/components/RecentChanges.tsx` — risk-colored panel with change list, "LIKELY ROOT CAUSE" badge
+- `ui/src/components/AlertDetail.tsx` — alert drill-down with changes
+- `ui/src/components/IncidentDetail.tsx` — incident drill-down with changes
+- `ui/src/api/client.ts` — changesAPI (list/recent/correlate)
+- `plugins/chatbot/tools.py` — get_recent_changes tool + TOOL_MAP entry
+- `ui/src/pages/Docs.tsx` — Change-Aware Correlation section + API Reference
 
 ## Architecture
 - **Changes table**: PostgreSQL `change` table tracking deployments, config updates, infrastructure changes

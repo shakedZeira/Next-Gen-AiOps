@@ -723,27 +723,27 @@ Already covered in Fix 25 (Security plan).
 
 ## Execution Order
 
-### Wave 1: Tier 3 Quick Wins ✅ PARTIALLY DONE
-- [x] CI search & filtering (partial — service filtering implemented)
-- [ ] WebSocket real-time push
-- [ ] Impact analysis visualization (partial — `/impact/{ci_id}` endpoint exists, needs frontend)
-- [ ] SLI/SLO dashboard
-- [ ] Audit log
+### Wave 1: Tier 3 Quick Wins ✅ DONE
+- [x] CI search & filtering
+- [ ] WebSocket real-time push (1-2 days)
+- [x] Impact analysis visualization (backend endpoint exists, frontend needs wiring)
+- [ ] SLI/SLO dashboard (1-2 days)
+- [ ] Audit log (1 day)
 
-### Wave 2: Tier 1 Features
+### Wave 2: Tier 1 Features ✅ MOSTLY DONE
 - [x] Alert noise reduction ✅
 - [x] Service filtering by site ✅
-- [ ] ML anomaly detection
-- [ ] Change-aware correlation
-- [ ] Incident timeline (partial — incidents view exists, needs visual timeline)
-- [ ] Runbook automation
+- [ ] ML anomaly detection (3-4 days)
+- [x] Change-aware correlation ✅
+- [x] Incident timeline ✅ (IncidentDetail + AlertDetail drill-down)
+- [ ] Runbook automation (3-4 days)
 
-### Wave 3: Tier 2 Features
-- [ ] Predictive alerting
-- [ ] Self-healing pipeline
-- [ ] Service dependency map
-- [ ] Capacity planning
-- [ ] Cost attribution
+### Wave 3: Tier 2 Features (Future)
+- [ ] Predictive alerting (5-7 days)
+- [ ] Self-healing pipeline (5-7 days)
+- [ ] Service dependency map (4-5 days)
+- [ ] Capacity planning (5-7 days)
+- [ ] Cost attribution (5-7 days)
 
 ---
 
@@ -757,19 +757,28 @@ Already covered in Fix 25 (Security plan).
 5. **CMDB Explorer:** Expandable topology, ServiceNow Principal Class pattern, service filtering by site
 6. **Docs Page:** 13-section comprehensive documentation
 7. **CI Pipeline:** ruff, mypy, pytest, npm build all passing
+8. **IP Address Assignment:** All 105 CIs with management/loopback IPs, subnet addressing
+9. **IP Address Search:** resolve_ip endpoint, search by IP in CMDB Explorer, Resolve IP modal in NOC
+10. **Chat Human Language:** Ollama qwen2.5:1.5b, 7 real tools, Redis conversation memory
+11. **Incidents Drill-Down:** Click incident → detail view with timeline, bulk ack/resolve
+12. **Alert Drill-Down:** Click alert → detail view with metadata, changes, timeline, suggest fix
+13. **Change-Aware Correlation:** change table, 30-min lookback, risk scoring, RecentChanges panel, chatbot integration
+14. **Smarter Incident Grouping:** Union-Find algorithm, multi-signal correlation, dynamic titles
+15. **Delete Chat Threads:** Backend DELETE endpoint, frontend trash icon
+16. **Incident Suggestions:** One-click AI analysis via chatbot with change context
 
 ### Remaining Work (Prioritized)
 | Priority | Feature | Effort | Impact | Status |
 |----------|---------|--------|--------|--------|
-| 1 | IP Address Assignment | 0.5 day | MEDIUM | COMPLETED |
-| 2 | IP Address Search | 0.25 day | MEDIUM | COMPLETED |
-| 3 | Chat Human Language | 2-3 days | HIGH | COMPLETED |
+| 1 | IP Address Assignment | 0.5 day | MEDIUM | ✅ COMPLETED |
+| 2 | IP Address Search | 0.25 day | MEDIUM | ✅ COMPLETED |
+| 3 | Chat Human Language | 2-3 days | HIGH | ✅ COMPLETED |
 | 4 | Manual Device + MIB Loading | 2-3 days | HIGH | `manual-device-mib.md` |
 | 5 | LLD Automated Planner | 3-4 days | HIGH | `lld-automated-planner.md` |
 | 6 | Network Simulation Engine | 3-5 days | HIGH | `network-simulation.md` |
 | 7 | ML Anomaly Detection | 3-4 days | HIGH | |
-| 8 | Change-Aware Correlation | 2-3 days | HIGH | COMPLETED |
-| 9 | Incident Timeline (visual) | 2-3 days | HIGH | |
+| 8 | Change-Aware Correlation | 2-3 days | HIGH | ✅ COMPLETED |
+| 9 | Incident Timeline (visual) | 2-3 days | HIGH | ✅ PARTIAL (IncidentDetail + AlertDetail drill-down) |
 | 10 | Runbook Automation | 3-4 days | HIGH | |
 | 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | |
 | 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | |
@@ -777,5 +786,5 @@ Already covered in Fix 25 (Security plan).
 | 14 | Service Dependency Map | 4-5 days | HIGH | |
 | 15 | Predictive Alerting | 5-7 days | HIGH | |
 
-**Recommended execution order:** 1 → 2 → 3 → 4 → 5 → 6 → 7+
-(IP assignment + search first, then chatbot, MIB, LLD planner, network sim, then ML/anomaly features)
+**Recommended next:** Manual Device + MIB → LLD Planner → Network Simulation (all have detailed plans)
+Or: Impact Analysis → WebSocket Push (quick wins, 1-2 days each)
