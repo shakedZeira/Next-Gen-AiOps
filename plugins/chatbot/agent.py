@@ -47,7 +47,7 @@ class ChatState(TypedDict):
 
 async def _call_ollama(messages: list[dict], tools: list[dict] | None = None) -> dict:
     """Call Ollama /api/chat with tool support."""
-    async with httpx.AsyncClient(base_url=cfg.OLLAMA_BASE_URL, timeout=120.0) as client:
+    async with httpx.AsyncClient(base_url=cfg.OLLAMA_BASE_URL, timeout=300.0) as client:
         payload: dict[str, Any] = {
             "model": cfg.MODEL_NAME,
             "messages": messages,
