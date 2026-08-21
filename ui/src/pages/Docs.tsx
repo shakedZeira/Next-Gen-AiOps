@@ -237,10 +237,18 @@ export default function Docs() {
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Incidents View</h3>
             <p className="text-gray-200 mb-4">
-              Toggle to "Incidents" to see alerts grouped by incident. Each incident shows severity,
-              service, alert count, and time range. Click any incident to drill into the detail view
-              with a visual timeline showing alert cascade, time deltas between alerts, and individual
-              alert status. Bulk acknowledge or resolve all alerts in an incident from the detail view.
+              Toggle to "Incidents" to see alerts grouped by incident. Incidents are smart-grouped
+              using multiple correlation signals: same service + keyword overlap, cascade timing
+              (alerts within 10 minutes), and normalized name patterns. The Union-Find algorithm
+              transitively merges related groups. Each incident shows severity, affected services,
+              alert count, and time range. Multi-service incidents display a "+N" indicator.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Suggest Fix (AI-Powered)</h3>
+            <p className="text-gray-200 mb-4">
+              Each incident card and the detail view have a purple "Suggest Fix" button. Clicking it
+              sends the full incident context (alerts, service, severity, teams) to the AI chatbot,
+              which analyzes the topology and alert patterns to suggest remediation steps. The chatbot
+              opens in a new thread pre-loaded with the analysis for seamless investigation.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Alert Actions</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
@@ -288,7 +296,16 @@ export default function Docs() {
             <h3 className="text-lg font-semibold text-white mb-2">Conversation Memory</h3>
             <p className="text-gray-200 mb-4">
               Chat history is stored in Redis (1-hour TTL per thread). Thread sidebar shows all
-              previous conversations. Follow-up questions use conversation context automatically.
+              previous conversations. Hover over any thread to reveal the delete (trash) icon.
+              Follow-up questions use conversation context automatically. Click "Clear Chat" to
+              wipe the current thread's messages without deleting it.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Incident Suggestions</h3>
+            <p className="text-gray-200 mb-4">
+              Click "Suggest Fix" on any incident in the NOC Alerts page to send the full incident
+              context to the chatbot. The AI analyzes the affected service's topology and related
+              alerts, then proposes step-by-step remediation. The suggestion opens in its own chat
+              thread for follow-up investigation.
             </p>
             <h3 className="text-lg font-semibold text-white mb-2">Approval Queue</h3>
             <p className="text-gray-200 mb-4">

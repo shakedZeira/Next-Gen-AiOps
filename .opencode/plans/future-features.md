@@ -654,6 +654,46 @@ LLM-powered SRE assistant with real tool calling via Ollama.
 
 ---
 
+### Feature 17: Delete Chat Threads ✅ COMPLETED
+**Impact: LOW | Effort: LOW (0.25 day)** — Implemented and deployed.
+
+#### What Was Built
+- Backend: `DELETE /api/v1/chatbot/history/{thread_id}` — removes Redis key + messages
+- Frontend: trash icon appears on hover for each thread in sidebar
+- Deleting active thread auto-switches to first remaining thread (or creates new one)
+- Deletes both Redis server-side data and localStorage client-side data
+
+---
+
+### Feature 18: Smarter Incident Grouping ✅ COMPLETED
+**Impact: HIGH | Effort: MEDIUM (1 day)** — Implemented and deployed.
+
+Merged related alerts into smaller, more meaningful incident groups using multiple correlation signals.
+
+#### What Was Built
+- **Union-Find algorithm** in `store.py` for transitive merging of related incident groups
+- **Correlation signals**: same service + keyword overlap (≥2 shared words), cascade timing (alerts within 10min on same service with same severity)
+- **Dynamic incident titles**: shows dominant alert pattern, count, and affected services
+- **Multi-service display**: incidents spanning multiple services show "+N" indicator
+- `services[]` field added to IncidentGroup type for frontend
+
+---
+
+### Feature 19: Incident Suggestions (AI-Powered) ✅ COMPLETED
+**Impact: HIGH | Effort: MEDIUM (0.5 day)** — Implemented and deployed.
+
+One-click AI analysis of incidents with topology-aware remediation suggestions.
+
+#### What Was Built
+- Backend: `POST /api/v1/chatbot/suggest-fix` — receives incident context (alerts, service, severity, teams), sends structured prompt to LLM which uses tools to analyze topology and alerts
+- Frontend: purple "Suggest Fix" button on each incident card in NOC Alerts list
+- Frontend: "Suggest Fix" button in IncidentDetail view header
+- Navigates to chatbot with pre-created thread containing AI analysis
+- ChatBot accepts `threadId` and `title` via React Router navigation state
+- Thread auto-created with incident context for seamless investigation flow
+
+---
+
 ### Feature 13: Impact Analysis Visualization
 **Impact: MEDIUM | Effort: LOW (1-2 days)**
 
