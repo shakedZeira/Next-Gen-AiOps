@@ -835,7 +835,7 @@ Audit trail for all user actions.
 | 3 | Chat Human Language | 2-3 days | HIGH | ✅ COMPLETED | `chat-human-language.md` |
 | 4 | Manual Device + MIB Loading | 2-3 days | HIGH | NOT STARTED | `manual-device-mib.md` |
 | 5 | LLD Automated Planner | 3-4 days | HIGH | NOT STARTED | `lld-automated-planner.md` |
-| 6 | Network Simulation Engine | 3-5 days | HIGH | NOT STARTED | `network-simulation.md` |
+| 6 | Network Simulation Engine | 3-5 days | HIGH | ✅ COMPLETED | `network-simulation.md` |
 | 7 | ML Anomaly Detection | 3-4 days | HIGH | NOT STARTED | `ml-anomaly-detection.md` |
 | 8 | Change-Aware Correlation | 2-3 days | HIGH | ✅ COMPLETED | `change-aware-correlation.md` |
 | 9 | Incident Timeline (visual) | 2-3 days | HIGH | ✅ PARTIAL | — |
@@ -846,4 +846,4 @@ Audit trail for all user actions.
 | 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
 | 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
 
-**Recommended next:** Impact Analysis (0.5 day) → WebSocket Push (1-2 days) → then pick from the networking plans (Manual Device, LLD Planner, Network Simulation) which all have detailed plans ready.
+**Recommended next:** Impact Analysis (0.5 day) → WebSocket Push (1-2 days) → then pick from the networking plans (Manual Device, LLD Planner) which all have detailed plans ready.
