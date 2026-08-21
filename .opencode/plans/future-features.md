@@ -631,6 +631,29 @@ Client-side text search in CMDB Explorer for filtering CIs by name, type, team, 
 
 ---
 
+### Feature 5: Chat Human Language ✅ COMPLETED
+**Impact: HIGH | Effort: MEDIUM (2-3 days)** — Implemented and deployed.
+
+LLM-powered SRE assistant with real tool calling via Ollama.
+
+#### What Was Built
+- `plugins/chatbot/agent.py` — Ollama `/api/chat` + tool-calling loop (max 5 rounds), SRE system prompt
+- `plugins/chatbot/tools.py` — 7 real tool implementations (alerts via HTTP, CMDB via direct DB)
+- `plugins/chatbot/config.py` — ALERT_NOC_URL, MODEL_NAME=qwen2.5:1.5b, CONTEXT_WINDOW=20
+- `plugins/chatbot/router.py` — Redis-backed conversation history (1-hour TTL)
+- `docker-compose.yml` — ports mapping, DATABASE_URL for chatbot
+- `ui/src/pages/Docs.tsx` — Updated AI Chatbot section
+- Model: qwen2.5:1.5b (986MB, fits in 4GB WSL RAM)
+
+#### Verified
+- Basic chat → natural language response ✅
+- Tool calling → get_alerts invoked, returned real data ✅
+- Conversation memory → follow-up questions use context ✅
+- History endpoint → Redis persistence ✅
+- Topology queries → get_topology invoked ✅
+
+---
+
 ### Feature 13: Impact Analysis Visualization
 **Impact: MEDIUM | Effort: LOW (1-2 days)**
 
@@ -700,7 +723,7 @@ Already covered in Fix 25 (Security plan).
 |----------|---------|--------|--------|--------|
 | 1 | IP Address Assignment | 0.5 day | MEDIUM | COMPLETED |
 | 2 | IP Address Search | 0.25 day | MEDIUM | COMPLETED |
-| 3 | Chat Human Language | 2-3 days | HIGH | `chat-human-language.md` |
+| 3 | Chat Human Language | 2-3 days | HIGH | COMPLETED |
 | 4 | Manual Device + MIB Loading | 2-3 days | HIGH | `manual-device-mib.md` |
 | 5 | LLD Automated Planner | 3-4 days | HIGH | `lld-automated-planner.md` |
 | 6 | Network Simulation Engine | 3-5 days | HIGH | `network-simulation.md` |

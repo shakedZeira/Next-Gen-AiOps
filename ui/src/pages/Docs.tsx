@@ -259,29 +259,51 @@ export default function Docs() {
           {/* === Section 7: AI Chatbot === */}
           <section id="ai-chatbot">
             <h2 className="text-2xl font-bold text-white mb-4">AiOps Chat</h2>
-            <p className="text-gray-200 mb-4">AI-powered assistant for infrastructure queries.</p>
+            <p className="text-gray-200 mb-4">
+              LLM-powered SRE assistant backed by Ollama (qwen2.5:1.5b) with real tool calling.
+              The chatbot can query the NOC alert store, CMDB database, and topology data to answer
+              natural language questions about your infrastructure.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">How to Use</h3>
             <p className="text-gray-200 mb-2">Type natural language questions about your infrastructure:</p>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
-              <li>"Show me current alerts" → Alert summary</li>
-              <li>"What's the system health status?" → Health overview</li>
-              <li>"Check the network topology" → Topology info</li>
-              <li>"Run diagnostics on Payment Gateway" → Diagnostic report</li>
-              <li>"Show me the CMDB overview" → Service/CI inventory</li>
+              <li>"What alerts are currently active?" → Queries alert-noc, returns filtered alert list</li>
+              <li>"Tell me about hq-core-sw-1" → Looks up CI details, IPs, and connections</li>
+              <li>"Show me the topology of global-hq" → Queries CMDB for site-specific topology</li>
+              <li>"What services are deployed?" → Lists all services with SLA tiers and CI counts</li>
+              <li>"Search for anything on IP 10.0.1.x" → Searches CIs by IP address</li>
+              <li>"What incidents are open?" → Groups related alerts into incidents</li>
             </ul>
-            <h3 className="text-lg font-semibold text-white mb-2">Suggestion Chips</h3>
-            <p className="text-gray-200 mb-4">Quick-start buttons for common queries. Click any to auto-send.</p>
-            <h3 className="text-lg font-semibold text-white mb-2">Thread Management</h3>
-            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
-              <li>Chat history persists in localStorage</li>
-              <li>Create new threads from the sidebar</li>
-              <li>Previous conversations are listed for easy access</li>
-            </ul>
-            <h3 className="text-lg font-semibold text-white mb-2">Approval Queue</h3>
-            <p className="text-gray-200">
-              When the AI suggests a fix, it appears in the approval queue. Review the proposed change.
-              Approve to execute, or Reject to cancel. All actions require human confirmation.
+            <h3 className="text-lg font-semibold text-white mb-2">Tool Calling</h3>
+            <p className="text-gray-200 mb-4">
+              The LLM uses 7 tools to answer queries: <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">get_alerts</code>,{' '}
+              <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">get_incidents</code>,{' '}
+              <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">get_topology</code>,{' '}
+              <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">get_ci_info</code>,{' '}
+              <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">search_cis</code>,{' '}
+              <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">get_services</code>,{' '}
+              <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">get_site_overview</code>.
+              The agent loops up to 5 rounds of tool calls per message to gather data before responding.
             </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Conversation Memory</h3>
+            <p className="text-gray-200 mb-4">
+              Chat history is stored in Redis (1-hour TTL per thread). Thread sidebar shows all
+              previous conversations. Follow-up questions use conversation context automatically.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Approval Queue</h3>
+            <p className="text-gray-200 mb-4">
+              When the AI proposes a remediation action (propose_fix or execute_fix), it creates an
+              approval request. The request appears in the Approval Queue panel on the right.
+              Review the proposed change, then Approve or Reject. All destructive actions require
+              human confirmation.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Backend</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside">
+              <li><span className="font-medium text-white">Model:</span> qwen2.5:1.5b via Ollama (runs locally in Docker)</li>
+              <li><span className="font-medium text-white">Framework:</span> LangGraph state machine with tool-calling loop</li>
+              <li><span className="font-medium text-white">Data Sources:</span> alert-noc HTTP API, PostgreSQL CMDB (direct queries)</li>
+              <li><span className="font-medium text-white">Conversation Store:</span> Redis with TTL-based expiration</li>
+            </ul>
           </section>
 
           {/* === Section 8: DC Explorer === */}

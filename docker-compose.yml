@@ -122,6 +122,8 @@ services:
     build:
       context: .
       dockerfile: plugins/chatbot/Dockerfile
+    ports:
+      - "8004:8004"
     depends_on:
       api-gateway:
         condition: service_healthy
@@ -132,6 +134,7 @@ services:
     environment:
       OLLAMA_BASE_URL: http://ollama:11434
       REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      DATABASE_URL: postgresql+asyncpg://aiops:aiops@postgres:5432/aiops
 
   alert-noc:
     build:

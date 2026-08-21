@@ -1,7 +1,7 @@
 # Plan: Chat Human Language Understanding
 
 **Impact: HIGH | Effort: MEDIUM (2-3 days)**
-**Dependencies: None — standalone**
+**Status: COMPLETED**
 
 ---
 
@@ -187,3 +187,39 @@ Parse natural language into structured API calls:
 - [LangGraph tool calling](https://langchain-ai.github.io/langgraph/how-tos/tool-calling/) — Tool integration pattern
 - [pysnmp/pysnmp](https://github.com/pysnmp/pysnmp) — For future SNMP tool integration
 - [arXiv 2607.00292](https://arxiv.org/html/2607.00292) — LLM-based intent-driven network topology design
+
+---
+
+## What Was Done (COMPLETED)
+
+### Implementation Summary
+
+Replaced rule-based keyword matching with Ollama LLM + real tool calling via LangGraph.
+
+**Model:** `qwen2.5:1.5b` (986MB, fits in 4GB WSL RAM, supports Ollama tool calling)
+
+### Changes Made
+
+| File | Change |
+|------|--------|
+| `plugins/chatbot/agent.py` | Replaced keyword matching with Ollama `/api/chat` + tool-calling loop (max 5 rounds). SRE system prompt with 5-site/8-service context. |
+| `plugins/chatbot/tools.py` | Rewrote 7 tool implementations: get_alerts (alert-noc HTTP), get_incidents, get_topology (direct DB), get_ci_info (direct DB), search_cis (direct DB), get_services (direct DB), get_site_overview (direct DB). Added TOOL_DEFINITIONS for Ollama. |
+| `plugins/chatbot/config.py` | Added ALERT_NOC_URL, CONTEXT_WINDOW (20), CONVERSATION_TTL_S (3600). Changed MODEL_NAME to qwen2.5:1.5b. |
+| `plugins/chatbot/router.py` | Redis-backed conversation history (load/save via `chat:thread:{id}` keys). History endpoint reads from Redis. |
+| `docker-compose.yml` | Added ports mapping (`8004:8004`), DATABASE_URL for direct DB queries. |
+| `ui/src/pages/Docs.tsx` | Updated AI Chatbot section with LLM details, tool calling, conversation memory, backend info. |
+
+### Verification Results
+
+- Health check: `{"status":"healthy"}` ✅
+- Basic chat: "Hello, what can you help me with?" → Natural response ✅
+- Tool calling: "What alerts are currently active?" → get_alerts invoked, returned real data ✅
+- Follow-up: "Tell me more about the first one" → Used conversation context ✅
+- History: `/history/test-1` → Full conversation persisted in Redis ✅
+- Topology: "Show me the topology of global-hq" → get_topology invoked ✅
+
+### Known Limitations
+
+- qwen2.5:1.5b doesn't always call propose_fix tool consistently (smaller model limitation)
+- Emoji rendering shows as `???` in some responses (Unicode encoding in display)
+- LLM inference takes ~5-15s per request on CPU

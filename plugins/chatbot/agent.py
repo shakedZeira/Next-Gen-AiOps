@@ -1,18 +1,42 @@
-from typing import Annotated, TypedDict
+"""LangGraph agent with Ollama LLM + tool calling."""
 
-from langchain_core.messages import AIMessage, HumanMessage
-from langgraph.checkpoint.memory import MemorySaver
+import json
+import logging
+from typing import Annotated, Any, TypedDict
+
+import httpx
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langgraph.graph import END, StateGraph
 
 from plugins.chatbot.approval import approval_manager
-from plugins.chatbot.tools import (
-    get_topology,
-    query_logs,
-    query_metrics,
-    query_traces,
-)
+from plugins.chatbot.config import ChatBotConfig
+from plugins.chatbot.tools import TOOL_DEFINITIONS, TOOL_MAP, TOOLS_REQUIRING_APPROVAL
 
-TOOLS_REQUIRING_APPROVAL = {"propose_fix", "execute_fix"}
+logger = logging.getLogger(__name__)
+cfg = ChatBotConfig()
+
+SRE_SYSTEM_PROMPT = """You are an AI SRE assistant for the Next-Gen-AiOps platform. You help operators manage a multi-site network infrastructure.
+
+Your environment:
+- 5 sites: global-hq (HQ, 55 devices), regional-dc-1 (DC, 17 devices), metro-ring-1 (15 devices), branch-nyc (13 devices), branch-london (5 devices)
+- 8 services: E-Commerce Platform, Payment Gateway, Inventory Service, Notification Service, Order Processing, Analytics Pipeline, Auth Service, Network Infrastructure
+- 105 CIs total with IP addressing: 10.site.x.0/24 per device type
+
+Your capabilities (use the provided tools):
+- Get current alerts and incidents from the NOC
+- Browse the CMDB topology and CI inventory
+- Search for CIs by name, type, team, or IP address
+- Get site overviews and device details
+
+When responding:
+- Be concise and direct — operators need actionable information
+- Use bullet points and bold text for readability
+- When you find an issue, suggest concrete next steps
+- If a user asks about a specific device, use get_ci_info to look it up
+- For general questions about infrastructure, use get_topology or get_services
+- Always cite which data source your information comes from"""
+
+MAX_TOOL_ROUNDS = 5
 
 
 class ChatState(TypedDict):
@@ -21,103 +45,132 @@ class ChatState(TypedDict):
     approval_context: dict | None
 
 
-async def agent_node(state: ChatState):
-    """Main agent reasoning node."""
-    messages = state["messages"]
-    last_message = messages[-1] if messages else None
+async def _call_ollama(messages: list[dict], tools: list[dict] | None = None) -> dict:
+    """Call Ollama /api/chat with tool support."""
+    async with httpx.AsyncClient(base_url=cfg.OLLAMA_BASE_URL, timeout=120.0) as client:
+        payload: dict[str, Any] = {
+            "model": cfg.MODEL_NAME,
+            "messages": messages,
+            "stream": False,
+        }
+        if tools:
+            payload["tools"] = tools
 
-        # Simple rule-based agent for demo (LLM integration via Ollama in production)
-    if last_message and isinstance(last_message, HumanMessage):
-        content = last_message.content.lower()
+        r = await client.post("/api/chat", json=payload)
+        r.raise_for_status()
+        return r.json().get("message", {})
 
-        if any(w in content for w in ["alert", "incident", "warning", "critical"]):
-            return {"messages": messages + [AIMessage(content=(
-                "Let me pull up the current alert status for you.\n\n"
-                "**Active Alerts Summary:**\n"
-                "- **Critical**: 2 alerts (High Latency P99 on Payment Gateway, Connection Timeout on Auth Service)\n"
-                "- **High**: 3 alerts (Error Rate Spike on E-Commerce, Memory Pressure on Analytics, Disk Low on Inventory)\n"
-                "- **Medium**: 4 alerts across 3 services\n"
-                "- **Low**: 2 alerts (SSL cert expiry, DNS TTL warning)\n\n"
-                "The most urgent issue is the **High Latency P99** on Payment Gateway — P99 latency exceeded 2s. "
-                "This is impacting checkout flow. Want me to run an RCA analysis on this?"
-            ))]}
 
-        elif any(w in content for w in ["health", "status", "system", "overview"]):
-            return {"messages": messages + [AIMessage(content=(
-                "Here's the current system health overview:\n\n"
-                "**Infrastructure:**\n"
-                "- **5 sites** online (Global HQ, Regional DC, Metro Ring, NYC Branch, London Branch)\n"
-                "- **105 devices** monitored across all sites\n"
-                "- **8 services** running in production\n\n"
-                "**Health Summary:**\n"
-                "- Overall: **87% healthy**\n"
-                "- 6 services fully healthy\n"
-                "- 1 service degraded (Payment Gateway — high latency)\n"
-                "- 1 service warning (Inventory Service — disk space)\n\n"
-                "The system is mostly stable. The main concern right now is Payment Gateway performance. "
-                "Want me to dig into the metrics or check the topology?"
-            ))]}
+def _messages_for_llm(messages: list) -> list[dict]:
+    """Convert langchain messages to Ollama format."""
+    out = []
+    for msg in messages:
+        if isinstance(msg, SystemMessage):
+            out.append({"role": "system", "content": msg.content})
+        elif isinstance(msg, HumanMessage):
+            out.append({"role": "user", "content": msg.content})
+        elif isinstance(msg, AIMessage):
+            if msg.tool_calls:
+                out.append({
+                    "role": "assistant",
+                    "content": msg.content or "",
+                    "tool_calls": [
+                        {
+                            "id": tc["id"],
+                            "function": {
+                                "name": tc["name"],
+                                "arguments": tc["args"],
+                            },
+                        }
+                        for tc in msg.tool_calls
+                    ],
+                })
+            elif msg.content:
+                out.append({"role": "assistant", "content": msg.content})
+        elif isinstance(msg, ToolMessage):
+            out.append({
+                "role": "tool",
+                "content": msg.content,
+            })
+    return out
 
-        elif any(w in content for w in ["diagnostic", "diagnos", "check", "investigate"]):
-            return {"messages": messages + [AIMessage(content=(
-                "Running diagnostics on **Payment Gateway**...\n\n"
-                "**Diagnostic Results:**\n"
-                "1. **CPU Usage**: 78% (elevated, baseline is 45%)\n"
-                "2. **Memory**: 6.2/8 GB used (77.5%)\n"
-                "3. **Error Rate**: 4.8% (threshold: 5%) — borderline\n"
-                "4. **P99 Latency**: 2.3s (threshold: 2s) — **breached**\n"
-                "5. **Request Rate**: 1,247 req/s (normal range)\n"
-                "6. **Upstream Dependencies**: All healthy\n"
-                "7. **Database Connection Pool**: 45/50 connections (90% — **high**)\n\n"
-                "**Diagnosis:** The database connection pool is nearly saturated, causing request queuing and latency spikes. "
-                "Recommendation: Scale connection pool from 50 to 100, or investigate slow queries.\n\n"
-                "Want me to propose a fix for the connection pool?"
-            ))]}
 
-        elif any(w in content for w in ["cmdb", "service", "dependency", "topology map", "infrastructure"]):
-            return {"messages": messages + [AIMessage(content=(
-                "Here's the CMDB overview:\n\n"
-                "**Sites (5):**\n"
-                "- **global-hq** (HQ, Tier III) — 55 devices, Three-Tier Hierarchical\n"
-                "- **regional-dc-1** (DC, Tier II) — 17 devices, Hub-and-Spoke\n"
-                "- **metro-ring-1** (Large Branch) — 15 devices, ERPS Ring\n"
-                "- **branch-nyc** (Large Branch) — 13 devices, Collapsed Core\n"
-                "- **branch-london** (Small Branch) — 5 devices, Hub-and-Spoke\n\n"
-                "**Services (8):**\n"
-                "- E-Commerce Platform (frontend team)\n"
-                "- Payment Gateway (payments team) — ⚠ degraded\n"
-                "- Inventory Service (data team)\n"
-                "- Notification Service (platform team)\n"
-                "- Order Processing (backend team)\n"
-                "- Analytics Pipeline (data team)\n"
-                "- Auth Service (security team)\n"
-                "- Network Infrastructure (network team)\n\n"
-                "**Total: 105 CIs, 123 relationships, 6 inter-site connections.**\n\n"
-                "Want me to show you the topology for a specific site or service?"
-            ))]}
+async def agent_node(state: ChatState) -> dict:
+    """Main agent node: call Ollama with tools and loop until final answer."""
+    messages = list(state["messages"])
+    llm_messages = _messages_for_llm(messages)
 
-        elif any(w in content for w in ["metric", "latency", "error rate", "cpu", "memory", "throughput"]):
-            result = query_metrics.invoke({"service_name": "ecommerce-api", "metric_type": "latency"})
-            return {"messages": messages + [AIMessage(content=f"Sure thing! Let me pull up the latest metrics for you.\n\n{result}\n\nLet me know if you'd like to dig deeper into any of these numbers or compare against a different time range.")]}
-        elif "log" in content:
-            result = query_logs.invoke({"service_name": "ecommerce-api", "filter_error": True})
-            return {"messages": messages + [AIMessage(content=f"Got it! Here are the recent error logs for ecommerce-api:\n\n{result}\n\nWant me to filter further by severity, time window, or look into a specific error pattern?")]}
-        elif "trace" in content:
-            result = query_traces.invoke({"service_name": "ecommerce-api"})
-            return {"messages": messages + [AIMessage(content=f"Here are the latest distributed traces for ecommerce-api:\n\n{result}\n\nWant me to focus on any particular request path or look at latency breakdowns?")]}
-        elif "topology" in content or "depend" in content:
-            result = get_topology.invoke({"service_name": "ecommerce-api"})
-            return {"messages": messages + [AIMessage(content=f"Here's the current service topology for ecommerce-api:\n\n{result}\n\nWould you like me to highlight any specific dependency chain or check the health of a downstream service?")]}
-        elif "fix" in content or "remediat" in content:
-            return {
-                "messages": messages,
-                "pending_approval": "propose_fix",
-                "approval_context": {"tool": "propose_fix", "args": {"rca_id": "alert-001", "action_type": "restart"}},
-            }
-        else:
-            return {"messages": messages + [AIMessage(content="Hey there! I can help you with metrics, logs, traces, topology, and remediation. Just tell me what you're looking into and I'll dig right in!")]}
+    for _ in range(MAX_TOOL_ROUNDS):
+        try:
+            resp = await _call_ollama(llm_messages, tools=TOOL_DEFINITIONS)
+        except Exception as e:
+            logger.exception("Ollama call failed")
+            return {"messages": messages + [AIMessage(content=f"I encountered an error connecting to the LLM: {e}. Please try again.")]}
 
-    return {"messages": messages}
+        content = resp.get("content", "")
+        tool_calls = resp.get("tool_calls", [])
+
+        if not tool_calls:
+            return {"messages": messages + [AIMessage(content=content)]}
+
+        # Execute tool calls
+        assistant_msg = AIMessage(
+            content=content,
+            tool_calls=[
+                {"id": tc["function"]["name"] + f"-{i}", "name": tc["function"]["name"], "args": tc["function"]["arguments"]}
+                for i, tc in enumerate(tool_calls)
+            ],
+        )
+        messages.append(assistant_msg)
+        llm_messages.append({
+            "role": "assistant",
+            "content": content,
+            "tool_calls": [
+                {
+                    "id": tc["function"]["name"] + f"-{i}",
+                    "function": {
+                        "name": tc["function"]["name"],
+                        "arguments": tc["function"]["arguments"],
+                    },
+                }
+                for i, tc in enumerate(tool_calls)
+            ],
+        })
+
+        # Check if any tool requires approval
+        for tc in tool_calls:
+            fn_name = tc["function"]["name"]
+            if fn_name in TOOLS_REQUIRING_APPROVAL:
+                return {
+                    "messages": messages,
+                    "pending_approval": fn_name,
+                    "approval_context": {"tool": fn_name, "args": tc["function"]["arguments"]},
+                }
+
+        for tc in tool_calls:
+            fn_name = tc["function"]["name"]
+            fn_args = tc["function"]["arguments"]
+            tool_fn = TOOL_MAP.get(fn_name)
+            if tool_fn:
+                try:
+                    if callable(tool_fn) and not isinstance(tool_fn, dict):
+                        import inspect
+                        if inspect.iscoroutinefunction(tool_fn):
+                            result = await tool_fn(**fn_args)
+                        else:
+                            result = tool_fn(**fn_args)
+                    else:
+                        result = str(tool_fn)
+                except Exception as e:
+                    result = f"Error executing {fn_name}: {e}"
+            else:
+                result = f"Unknown tool: {fn_name}"
+
+            tool_msg = ToolMessage(content=str(result), tool_call_id=tc["function"]["name"] + f"-{tool_calls.index(tc)}")
+            messages.append(tool_msg)
+            llm_messages.append({"role": "tool", "content": str(result)})
+
+    return {"messages": messages + [AIMessage(content="I've reached the maximum number of tool call iterations. Let me summarize what I found so far. Please ask a more specific question if you need more details.")]}
 
 
 async def approval_check(state: ChatState):
@@ -136,7 +189,7 @@ async def approval_node(state: ChatState):
 
     return {
         "messages": state["messages"] + [
-            AIMessage(content=f"Heads up — I'd like to run `{tool_name}` for you, but it needs approval first. I've submitted a request (ID: {req.id}). You can approve or reject it in the Approval Queue panel on the right.")
+            AIMessage(content=f"I'd like to run `{tool_name}`, but it needs your approval first. I've submitted a request (ID: {req.id}). You can approve or reject it in the Approval Queue panel.")
         ],
         "pending_approval": None,
         "approval_context": None,
@@ -151,5 +204,6 @@ def create_agent():
     workflow.add_conditional_edges("agent", approval_check, {"approval_needed": "approval", "end": END})
     workflow.add_edge("approval", END)
 
+    from langgraph.checkpoint.memory import MemorySaver
     memory = MemorySaver()
     return workflow.compile(checkpointer=memory)
