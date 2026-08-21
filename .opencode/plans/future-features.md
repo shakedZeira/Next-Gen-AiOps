@@ -696,14 +696,23 @@ Already covered in Fix 25 (Security plan).
 7. **CI Pipeline:** ruff, mypy, pytest, npm build all passing
 
 ### Remaining Work (Prioritized)
-| Priority | Feature | Effort | Impact |
-|----------|---------|--------|--------|
-| 1 | ML Anomaly Detection | 3-4 days | HIGH |
-| 2 | Change-Aware Correlation | 2-3 days | HIGH |
-| 3 | Incident Timeline (visual) | 2-3 days | HIGH |
-| 4 | Runbook Automation | 3-4 days | HIGH |
-| 5 | Impact Analysis Visualization | 1-2 days | MEDIUM |
-| 7 | WebSocket Real-Time Push | 1-2 days | MEDIUM |
-| 8 | SLI/SLO Dashboard | 1-2 days | MEDIUM |
-| 9 | Service Dependency Map | 4-5 days | HIGH |
-| 10 | Predictive Alerting | 5-7 days | HIGH |
+| Priority | Feature | Effort | Impact | Plan |
+|----------|---------|--------|--------|------|
+| 1 | IP Address Assignment | 0.5 day | MEDIUM | `ip-address-assignment.md` |
+| 2 | IP Address Search | 0.25 day | MEDIUM | `ip-address-search.md` |
+| 3 | Chat Human Language | 2-3 days | HIGH | `chat-human-language.md` |
+| 4 | Manual Device + MIB Loading | 2-3 days | HIGH | `manual-device-mib.md` |
+| 5 | LLD Automated Planner | 3-4 days | HIGH | `lld-automated-planner.md` |
+| 6 | Network Simulation Engine | 3-5 days | HIGH | `network-simulation.md` |
+| 7 | ML Anomaly Detection | 3-4 days | HIGH | |
+| 8 | Change-Aware Correlation | 2-3 days | HIGH | |
+| 9 | Incident Timeline (visual) | 2-3 days | HIGH | |
+| 10 | Runbook Automation | 3-4 days | HIGH | |
+| 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | |
+| 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | |
+| 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | |
+| 14 | Service Dependency Map | 4-5 days | HIGH | |
+| 15 | Predictive Alerting | 5-7 days | HIGH | |
+
+**Recommended execution order:** 1 → 2 → 3 → 4 → 5 → 6 → 7+
+(IP assignment + search first, then chatbot, MIB, LLD planner, network sim, then ML/anomaly features)
