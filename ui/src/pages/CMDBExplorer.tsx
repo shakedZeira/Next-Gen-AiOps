@@ -78,7 +78,7 @@ export default function CMDBExplorer() {
   const [selectedService, setSelectedService] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [ipSearch, setIpSearch] = useState('');
-  const [traceroutePath, setTraceroutePath] = useState<string[]>([]);
+  const [traceroutePath, setTraceroutePath] = useState<{ name: string; site: string }[]>([]);
   const [failedLinks, setFailedLinks] = useState<Array<{ a_id: string; b_id: string }>>([]);
 
   useEffect(() => {

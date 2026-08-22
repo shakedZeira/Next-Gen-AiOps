@@ -161,6 +161,20 @@ async def get_link_states():
     return {"links": engine.get_link_states()}
 
 
+@app.get("/api/v1/network-sim/shortest-path")
+async def shortest_path(src_id: str, dst_ip: str):
+    engine = get_engine()
+    path_ids = engine.shortest_path(src_id, dst_ip)
+    if not path_ids:
+        raise HTTPException(status_code=404, detail="No path found")
+    path_devices = []
+    for did in path_ids:
+        dev = engine.get_device(did)
+        if dev:
+            path_devices.append({"id": did, "name": dev.name, "site": dev.site})
+    return {"path": path_devices}
+
+
 @app.get("/api/v1/network-sim/events")
 async def get_events(count: int = 50):
     engine = get_engine()

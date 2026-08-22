@@ -124,6 +124,7 @@ export const networkSimAPI = {
   getLinkStates: () => api.get('/network-sim/link-states'),
   ping: (srcId: string, dstIp: string) => api.post('/network-sim/ping', { src_id: srcId, dst_ip: dstIp }),
   traceroute: (srcId: string, dstIp: string) => api.post('/network-sim/traceroute', { src_id: srcId, dst_ip: dstIp }),
+  shortestPath: (srcId: string, dstIp: string) => api.get('/network-sim/shortest-path', { params: { src_id: srcId, dst_ip: dstIp } }),
   injectFailure: (targetId: string, failureType: string = 'link', interfaceName?: string) =>
     api.post('/network-sim/failure', { target_id: targetId, failure_type: failureType, interface_name: interfaceName || null }),
   recover: (targetId: string, recoveryType: string = 'link', interfaceName?: string) =>

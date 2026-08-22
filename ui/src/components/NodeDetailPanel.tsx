@@ -51,7 +51,7 @@ interface Props {
   ciId: string | null;
   onClose: () => void;
   onViewConnections: (ciId: string, ciName: string, neighbors: CIDetails['neighbors']) => void;
-  onTraceroute?: (deviceNames: string[]) => void;
+  onTraceroute?: (path: { name: string; site: string }[]) => void;
   onClearTraceroute?: () => void;
   onFailureInjected?: () => void;
   onRecovered?: () => void;
@@ -288,8 +288,14 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
         blackhole_detected: d.error?.includes?.('No route') || false,
       });
       if (hops.length > 0) {
-        const path = hops.map((h: any) => h.hostname).filter((name: string) => name && name !== '—');
-        onTraceroute?.(path);
+        let sitePath: { name: string; site: string }[] = [];
+        try {
+          const sp = await networkSimAPI.shortestPath(ciId, traceTarget);
+          sitePath = (sp.data.path || []).map((p: any) => ({ name: p.name, site: p.site || '' }));
+        } catch {
+          sitePath = hops.map((h: any) => ({ name: h.hostname, site: '' }));
+        }
+        onTraceroute?.(sitePath);
       }
     } catch {
       setTraceResult(null);

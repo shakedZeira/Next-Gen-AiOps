@@ -12,7 +12,7 @@ interface Props {
   expandable?: boolean;
   height?: string;
   onNodeClick?: (nodeId: string) => void;
-  traceroutePath?: string[];
+  traceroutePath?: { name: string; site: string }[];
   failedLinks?: Array<{ a_id: string; b_id: string }>;
 }
 
@@ -383,6 +383,15 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
           'line-style': 'solid',
         },
       },
+      {
+        selector: '.cross-site-marker',
+        style: {
+          'border-width': 5,
+          'border-color': '#f59e0b',
+          'border-style': 'dashed',
+          opacity: 1,
+        },
+      },
     ];
 
     // Expandable mode: style nodes with hidden children
@@ -527,19 +536,27 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
     if (traceroutePath && traceroutePath.length > 1) {
       const traceNodeIds: string[] = [];
       const seenIds = new Set<string>();
-      // Match device names to graph node labels
-      for (const deviceName of traceroutePath) {
+      let lastMatchedSite = '';
+      let firstCrossSiteHop: { name: string; site: string } | null = null;
+
+      for (const hop of traceroutePath) {
+        let found = false;
         cy.nodes().forEach((n) => {
-          if (seenIds.has(n.id())) return;
-          const label = (n.data('label') || '').split('\n')[0]; // strip "+N" suffix
-          if (label === deviceName) {
+          if (found || seenIds.has(n.id())) return;
+          const label = (n.data('label') || '').split('\n')[0];
+          if (label === hop.name) {
             traceNodeIds.push(n.id());
             seenIds.add(n.id());
+            lastMatchedSite = hop.site;
+            found = true;
           }
         });
+        if (!found && lastMatchedSite && hop.site && hop.site !== lastMatchedSite && !firstCrossSiteHop) {
+          firstCrossSiteHop = hop;
+        }
       }
 
-      if (traceNodeIds.length > 1) {
+      if (traceNodeIds.length >= 1) {
         cy.nodes().removeClass('dimmed highlighted site-highlight ip-highlight');
         cy.edges().addClass('dimmed');
         cy.nodes().forEach((n) => {
@@ -549,12 +566,17 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
             n.addClass('dimmed');
           }
         });
-        // Highlight edges between consecutive traceroute nodes in order
         for (let i = 0; i < traceNodeIds.length - 1; i++) {
           cy.edges().filter((e) => {
             return (e.source().id() === traceNodeIds[i] && e.target().id() === traceNodeIds[i + 1]) ||
                    (e.source().id() === traceNodeIds[i + 1] && e.target().id() === traceNodeIds[i]);
           }).removeClass('dimmed').addClass('traceroute-edge');
+        }
+        if (firstCrossSiteHop && traceNodeIds.length > 0) {
+          const lastNode = cy.getElementById(traceNodeIds[traceNodeIds.length - 1]);
+          const origLabel = (lastNode.data('label') || '').split('\n')[0];
+          lastNode.data('label', `${origLabel}\n→ ${firstCrossSiteHop.site}`);
+          lastNode.addClass('cross-site-marker');
         }
       }
     }

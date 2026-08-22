@@ -1,4 +1,5 @@
 from __future__ import annotations
+import collections
 import time
 from plugins.network_sim.models import Device, Link, NetworkEvent
 from plugins.network_sim.addressing import build_device_from_ci, assign_interface_ips
@@ -117,7 +118,84 @@ class NetworkEngine:
     def traceroute(self, src_id: str, dst_ip: str) -> dict:
         if not self._built:
             return {"success": False, "error": "Engine not initialized"}
-        return simulate_traceroute(self.devices, self.links, src_id, dst_ip)
+        result = simulate_traceroute(self.devices, self.links, src_id, dst_ip)
+        path = self.shortest_path(src_id, dst_ip)
+        if path and len(path) > len(result.get("hops", [])):
+            result = self._simulate_path(src_id, path)
+        return result
+
+    def shortest_path(self, src_id: str, dst_ip: str) -> list[str]:
+        dst_dev = None
+        for dev in self.devices.values():
+            for iface in dev.interfaces:
+                if iface.ip == dst_ip:
+                    dst_dev = dev
+                    break
+            if dst_dev:
+                break
+        if not dst_dev:
+            for dev in self.devices.values():
+                if dev.id == dst_ip or dev.name == dst_ip:
+                    dst_dev = dev
+                    break
+        if not dst_dev:
+            return []
+        if src_id == dst_dev.id:
+            return [src_id]
+        adj: dict[str, list[str]] = collections.defaultdict(list)
+        for link in self.links:
+            if link.state == "up":
+                adj[link.a_id].append(link.b_id)
+                adj[link.b_id].append(link.a_id)
+        visited = {src_id}
+        queue: list[list[str]] = [[src_id]]
+        while queue:
+            path = queue.pop(0)
+            current = path[-1]
+            for neighbor in adj.get(current, []):
+                if neighbor == dst_dev.id:
+                    return path + [neighbor]
+                if neighbor not in visited:
+                    visited.add(neighbor)
+                    queue.append(path + [neighbor])
+        return []
+
+    def _simulate_path(self, src_id: str, path_ids: list[str]) -> dict:
+        import time as _time
+        start = _time.time()
+        hops = []
+        events = []
+        for i, dev_id in enumerate(path_ids):
+            dev = self.devices.get(dev_id)
+            if not dev:
+                continue
+            ip = ""
+            for iface in dev.interfaces:
+                if iface.up and iface.name != "Loopback0":
+                    ip = iface.ip
+                    break
+            reached = (i == len(path_ids) - 1)
+            hops.append({
+                "device": dev.name,
+                "ip": ip,
+                "latency_ms": 0.5 if i == 0 else 1.0 + (i * 0.3),
+                "reached": reached,
+            })
+            events.append({
+                "timestamp": _time.time() - start,
+                "event_type": "HOP",
+                "src": self.devices.get(src_id, dev).name,
+                "dst": dev.name,
+                "device": dev.name,
+                "detail": f"Hop {i+1}: {dev.name}",
+                "data": {"ttl": 30 - i, "latency_ms": 0.5},
+            })
+        return {
+            "success": True,
+            "hops": hops,
+            "events": events,
+            "rtt_ms": round(_time.time() - start, 3),
+        }
 
     def inject_failure(self, target_id: str, failure_type: str = "link", interface_name: str | None = None) -> dict:
         affected_link_info = None
