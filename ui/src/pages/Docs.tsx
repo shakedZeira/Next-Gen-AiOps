@@ -394,15 +394,25 @@ export default function Docs() {
           <section id="network-sim">
             <h2 className="text-2xl font-bold text-white mb-4">Network Simulation Engine</h2>
             <p className="text-gray-300 mb-4">
-              A pure-Python network simulation plugin built on NetworkX graph algorithms. Models the entire CMDB topology as a packet-switched network with IP addressing, Dijkstra shortest-path routing, ARP resolution, and ping/traceroute simulation.
+              A pure-Python network simulation plugin built on NetworkX graph algorithms, fully integrated into the CMDB Explorer page. Models the entire CMDB topology as a packet-switched network with IP addressing, Dijkstra shortest-path routing, ARP resolution, and ping/traceroute simulation.
             </p>
-            <h3 className="text-lg font-semibold text-white mb-2">Features</h3>
+            <h3 className="text-lg font-semibold text-white mb-2">Integration with CMDB Explorer</h3>
+            <p className="text-gray-300 mb-4">
+              All network simulation features are accessed by clicking any device in the CMDB topology map. The device detail panel includes four tabs:
+            </p>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">Details:</span> CI properties, IP addresses, connected devices, and alerts</li>
+              <li><span className="text-green-400 font-medium">Network:</span> Routing table (Dijkstra SPF), ARP cache, and MAC address table — auto-loaded when selected</li>
+              <li><span className="text-purple-400 font-medium">Ping / Trace:</span> Simulate ICMP ping or traceroute to any destination IP. Traceroute hops are highlighted on the topology map in purple</li>
+              <li><span className="text-red-400 font-medium">Actions:</span> Inject failures (link-down, interface-down, packet-loss, high-latency) or recover — generates correlated alerts on the NOC Alerts page</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Simulation Features</h3>
             <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
               <li><span className="text-blue-400 font-medium">Dijkstra SPF Routing:</span> Computes shortest-path routing tables for all 105 devices. 81 links with simulated cost metrics.</li>
               <li><span className="text-green-400 font-medium">IP Addressing:</span> Assigns /31 transit links, loopback addresses, and management subnets from CMDB data.</li>
               <li><span className="text-yellow-400 font-medium">ARP &amp; MAC Tables:</span> Simulates ARP resolution across L2 flooding domains. Switch MAC learning from frame inspection.</li>
               <li><span className="text-purple-400 font-medium">Ping / Traceroute:</span> Hop-by-hop packet simulation with TTL decrement, latency modeling, loop detection, and blackhole detection.</li>
-              <li><span className="text-red-400 font-medium">Failure Injection:</span> Link-down and node-down failures with automatic routing reconvergence. Events streamed via WebSocket.</li>
+              <li><span className="text-red-400 font-medium">Failure Injection:</span> Link-down and node-down failures with automatic routing reconvergence. Events logged and correlated with alerts.</li>
             </ul>
             <h3 className="text-lg font-semibold text-white mb-2">REST API (port 8013)</h3>
             <div className="overflow-x-auto mb-4">

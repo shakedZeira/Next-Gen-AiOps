@@ -8,7 +8,6 @@ import CMDBExplorer from './pages/CMDBExplorer';
 import DCExplorer from './pages/DCExplorer';
 import AgentMonitor from './pages/AgentMonitor';
 import SystemHealth from './pages/SystemHealth';
-import NetworkSimulation from './pages/NetworkSimulation';
 import Docs from './pages/Docs';
 import Layout from './components/Layout';
 import { User } from './types';
@@ -68,7 +67,6 @@ function App() {
             <Route path="dc-explorer" element={<DCExplorer />} />
             <Route path="agent-monitor" element={<AgentMonitor />} />
             <Route path="system-health" element={<SystemHealth />} />
-            <Route path="network-sim" element={<NetworkSimulation />} />
             <Route path="docs" element={<Docs />} />
           </Route>
         </Routes>

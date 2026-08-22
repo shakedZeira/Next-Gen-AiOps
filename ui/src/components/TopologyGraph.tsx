@@ -12,6 +12,7 @@ interface Props {
   expandable?: boolean;
   height?: string;
   onNodeClick?: (nodeId: string) => void;
+  traceroutePath?: string[];
 }
 
 const NODE_COLORS: Record<string, string> = {
@@ -101,7 +102,7 @@ const NODE_SHAPES: Record<string, string> = {
 
 const PRINCIPAL_TYPES = new Set(['router', 'switch', 'firewall', 'load_balancer']);
 
-export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick }: Props) {
+export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick, traceroutePath }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -346,6 +347,23 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
           opacity: 1,
         },
       },
+      {
+        selector: '.traceroute-node',
+        style: {
+          'border-width': 4,
+          'border-color': '#a855f7',
+          opacity: 1,
+        },
+      },
+      {
+        selector: '.traceroute-edge',
+        style: {
+          'line-color': '#a855f7',
+          'target-arrow-color': '#a855f7',
+          width: 4,
+          'line-style': 'solid',
+        },
+      },
     ];
 
     // Expandable mode: style nodes with hidden children
@@ -486,6 +504,43 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       }
     }
 
+    // Traceroute path highlighting
+    if (traceroutePath && traceroutePath.length > 1) {
+      const traceNodeIds = new Set<string>();
+      // Map traceroute IPs to graph node IDs
+      cy.nodes().forEach((n) => {
+        const mip = n.data('management_ip') || '';
+        const lip = n.data('loopback_ip') || '';
+        const label = n.data('label') || '';
+        for (const ip of traceroutePath) {
+          if (mip === ip || lip === ip || label.includes(ip)) {
+            traceNodeIds.add(n.id());
+            break;
+          }
+        }
+      });
+
+      if (traceNodeIds.size > 1) {
+        cy.nodes().removeClass('dimmed highlighted site-highlight ip-highlight');
+        cy.edges().addClass('dimmed');
+        cy.nodes().forEach((n) => {
+          if (traceNodeIds.has(n.id())) {
+            n.removeClass('dimmed').addClass('traceroute-node');
+          } else {
+            n.addClass('dimmed');
+          }
+        });
+        // Highlight edges between consecutive traceroute nodes
+        const orderedIds = [...traceNodeIds];
+        for (let i = 0; i < orderedIds.length - 1; i++) {
+          cy.edges().filter((e) => {
+            return (e.source().id() === orderedIds[i] && e.target().id() === orderedIds[i + 1]) ||
+                   (e.source().id() === orderedIds[i + 1] && e.target().id() === orderedIds[i]);
+          }).removeClass('dimmed').addClass('traceroute-edge');
+        }
+      }
+    }
+
     let offset = 0;
     const animateEdges = () => {
       offset = (offset + 0.4) % 20;
@@ -516,7 +571,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       cy.destroy();
     };
-  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick]);
+  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick, traceroutePath]);
 
   useEffect(() => {
     const cleanup = buildGraph();

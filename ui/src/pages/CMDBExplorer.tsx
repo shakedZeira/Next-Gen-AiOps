@@ -78,6 +78,7 @@ export default function CMDBExplorer() {
   const [selectedService, setSelectedService] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [ipSearch, setIpSearch] = useState('');
+  const [traceroutePath, setTraceroutePath] = useState<string[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -406,6 +407,7 @@ export default function CMDBExplorer() {
                 expandable={true}
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
+                traceroutePath={traceroutePath}
               />
             )}
           </div>
@@ -435,6 +437,7 @@ export default function CMDBExplorer() {
                 ipSearch={ipSearch || undefined}
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
+                traceroutePath={traceroutePath}
               />
             )}
           </div>
@@ -529,11 +532,13 @@ export default function CMDBExplorer() {
 
       <NodeDetailPanel
         ciId={selectedNodeId}
-        onClose={() => setSelectedNodeId(null)}
+        onClose={() => { setSelectedNodeId(null); setTraceroutePath([]); }}
         onViewConnections={(ciId, ciName, neighbors) => {
           setSelectedNodeId(null);
           setConnectionsData({ ciId, ciName, neighbors });
         }}
+        onTraceroute={(path) => setTraceroutePath(path)}
+        onClearTraceroute={() => setTraceroutePath([])}
       />
 
       {connectionsData && (
