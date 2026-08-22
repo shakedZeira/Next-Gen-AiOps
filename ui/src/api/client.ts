@@ -64,6 +64,8 @@ export const alertsAPI = {
     if (team && team !== 'all') params.team = team;
     return api.get('/alerts', { params });
   },
+  create: (data: { name: string; service: string; severity: string; description: string; team?: string; labels?: Record<string, string> }) =>
+    api.post('/alerts', data),
   groups: () => api.get('/alerts/groups'),
   incidents: (status?: string) => api.get('/alerts/incidents', { params: status ? { status } : {} }),
   incident: (id: string) => api.get(`/alerts/incidents/${id}`),
@@ -118,9 +120,13 @@ export const networkSimAPI = {
   getRoutes: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/routes`),
   getArp: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/arp`),
   getMacTable: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/mac-table`),
+  getInterfaces: (deviceId: string) => api.get(`/network-sim/devices/${deviceId}/interfaces`),
+  getLinkStates: () => api.get('/network-sim/link-states'),
   ping: (srcId: string, dstIp: string) => api.post('/network-sim/ping', { src_id: srcId, dst_ip: dstIp }),
   traceroute: (srcId: string, dstIp: string) => api.post('/network-sim/traceroute', { src_id: srcId, dst_ip: dstIp }),
-  injectFailure: (targetId: string, failureType: string = 'link') => api.post('/network-sim/failure', { target_id: targetId, failure_type: failureType }),
-  recover: (targetId: string, recoveryType: string = 'link') => api.post('/network-sim/recovery', { target_id: targetId, recovery_type: recoveryType }),
+  injectFailure: (targetId: string, failureType: string = 'link', interfaceName?: string) =>
+    api.post('/network-sim/failure', { target_id: targetId, failure_type: failureType, interface_name: interfaceName || null }),
+  recover: (targetId: string, recoveryType: string = 'link', interfaceName?: string) =>
+    api.post('/network-sim/recovery', { target_id: targetId, recovery_type: recoveryType, interface_name: interfaceName || null }),
   getEvents: (count?: number) => api.get('/network-sim/events', { params: count ? { count } : {} }),
 };

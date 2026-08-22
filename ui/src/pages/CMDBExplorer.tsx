@@ -1,10 +1,10 @@
-﻿import { useState, useEffect } from 'react';
+﻿import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import TopologyGraph from '../components/TopologyGraph';
 import NodeDetailPanel from '../components/NodeDetailPanel';
 import ConnectionsMap from '../components/ConnectionsMap';
 import GeoMap from '../components/GeoMap';
-import { cmdbAPI, dcAPI } from '../api/client';
+import { cmdbAPI, dcAPI, networkSimAPI } from '../api/client';
 import { CI, Topology, Service, SiteInfo, CIDeviceNeighbor, SiteLocation, InterSiteConnection, SiteFlow, SiteService } from '../types';
 
 const TEAM_BADGE_COLORS: Record<string, string> = {
@@ -79,6 +79,7 @@ export default function CMDBExplorer() {
   const [searchQuery, setSearchQuery] = useState('');
   const [ipSearch, setIpSearch] = useState('');
   const [traceroutePath, setTraceroutePath] = useState<string[]>([]);
+  const [failedLinks, setFailedLinks] = useState<Array<{ a_id: string; b_id: string }>>([]);
 
   useEffect(() => {
     Promise.all([
@@ -91,6 +92,17 @@ export default function CMDBExplorer() {
       cmdbAPI.getInterSiteFlows().then((r) => setSiteFlows(r.data)).catch(() => {}),
     ]).finally(() => setLoading(false));
   }, []);
+
+  const refreshLinkStates = useCallback(() => {
+    networkSimAPI.getLinkStates()
+      .then((r) => {
+        const down = (r.data.links || []).filter((l: any) => l.state === 'down');
+        setFailedLinks(down.map((l: any) => ({ a_id: l.a_id, b_id: l.b_id })));
+      })
+      .catch(() => setFailedLinks([]));
+  }, []);
+
+  useEffect(() => { refreshLinkStates(); }, [refreshLinkStates]);
 
   useEffect(() => {
     if (viewMode === 'aggregated' && selectedSite === 'all') {
@@ -408,6 +420,7 @@ export default function CMDBExplorer() {
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
                 traceroutePath={traceroutePath}
+                failedLinks={failedLinks}
               />
             )}
           </div>
@@ -438,6 +451,7 @@ export default function CMDBExplorer() {
                 height="h-[700px]"
                 onNodeClick={setSelectedNodeId}
                 traceroutePath={traceroutePath}
+                failedLinks={failedLinks}
               />
             )}
           </div>
@@ -539,6 +553,8 @@ export default function CMDBExplorer() {
         }}
         onTraceroute={(path) => setTraceroutePath(path)}
         onClearTraceroute={() => setTraceroutePath([])}
+        onFailureInjected={() => refreshLinkStates()}
+        onRecovered={() => refreshLinkStates()}
       />
 
       {connectionsData && (

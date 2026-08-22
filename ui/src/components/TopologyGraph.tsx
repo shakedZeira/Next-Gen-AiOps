@@ -13,6 +13,7 @@ interface Props {
   height?: string;
   onNodeClick?: (nodeId: string) => void;
   traceroutePath?: string[];
+  failedLinks?: Array<{ a_id: string; b_id: string }>;
 }
 
 const NODE_COLORS: Record<string, string> = {
@@ -102,7 +103,7 @@ const NODE_SHAPES: Record<string, string> = {
 
 const PRINCIPAL_TYPES = new Set(['router', 'switch', 'firewall', 'load_balancer']);
 
-export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick, traceroutePath }: Props) {
+export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick, traceroutePath, failedLinks }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -364,6 +365,24 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
           'line-style': 'solid',
         },
       },
+      {
+        selector: '.failed-link',
+        style: {
+          'line-color': '#ef4444',
+          'target-arrow-color': '#ef4444',
+          width: 4,
+          'line-style': 'solid',
+        },
+      },
+      {
+        selector: '.recovered-link',
+        style: {
+          'line-color': '#22c55e',
+          'target-arrow-color': '#22c55e',
+          width: 4,
+          'line-style': 'solid',
+        },
+      },
     ];
 
     // Expandable mode: style nodes with hidden children
@@ -504,41 +523,52 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       }
     }
 
-    // Traceroute path highlighting
+    // Traceroute path highlighting — matches device names to node labels
     if (traceroutePath && traceroutePath.length > 1) {
-      const traceNodeIds = new Set<string>();
-      // Map traceroute IPs to graph node IDs
-      cy.nodes().forEach((n) => {
-        const mip = n.data('management_ip') || '';
-        const lip = n.data('loopback_ip') || '';
-        const label = n.data('label') || '';
-        for (const ip of traceroutePath) {
-          if (mip === ip || lip === ip || label.includes(ip)) {
-            traceNodeIds.add(n.id());
-            break;
+      const traceNodeIds: string[] = [];
+      const seenIds = new Set<string>();
+      // Match device names to graph node labels
+      for (const deviceName of traceroutePath) {
+        cy.nodes().forEach((n) => {
+          if (seenIds.has(n.id())) return;
+          const label = (n.data('label') || '').split('\n')[0]; // strip "+N" suffix
+          if (label === deviceName) {
+            traceNodeIds.push(n.id());
+            seenIds.add(n.id());
           }
-        }
-      });
+        });
+      }
 
-      if (traceNodeIds.size > 1) {
+      if (traceNodeIds.length > 1) {
         cy.nodes().removeClass('dimmed highlighted site-highlight ip-highlight');
         cy.edges().addClass('dimmed');
         cy.nodes().forEach((n) => {
-          if (traceNodeIds.has(n.id())) {
+          if (traceNodeIds.includes(n.id())) {
             n.removeClass('dimmed').addClass('traceroute-node');
           } else {
             n.addClass('dimmed');
           }
         });
-        // Highlight edges between consecutive traceroute nodes
-        const orderedIds = [...traceNodeIds];
-        for (let i = 0; i < orderedIds.length - 1; i++) {
+        // Highlight edges between consecutive traceroute nodes in order
+        for (let i = 0; i < traceNodeIds.length - 1; i++) {
           cy.edges().filter((e) => {
-            return (e.source().id() === orderedIds[i] && e.target().id() === orderedIds[i + 1]) ||
-                   (e.source().id() === orderedIds[i + 1] && e.target().id() === orderedIds[i]);
+            return (e.source().id() === traceNodeIds[i] && e.target().id() === traceNodeIds[i + 1]) ||
+                   (e.source().id() === traceNodeIds[i + 1] && e.target().id() === traceNodeIds[i]);
           }).removeClass('dimmed').addClass('traceroute-edge');
         }
       }
+    }
+
+    // Failed link highlighting
+    if (failedLinks && failedLinks.length > 0) {
+      const failedKeys = new Set(failedLinks.map(l => `${l.a_id}-${l.b_id}`));
+      cy.edges().forEach((e) => {
+        const key1 = `${e.source().id()}-${e.target().id()}`;
+        const key2 = `${e.target().id()}-${e.source().id()}`;
+        if (failedKeys.has(key1) || failedKeys.has(key2)) {
+          e.removeClass('dimmed recovered-link').addClass('failed-link');
+        }
+      });
     }
 
     let offset = 0;
@@ -571,7 +601,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       cy.destroy();
     };
-  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick, traceroutePath]);
+  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick, traceroutePath, failedLinks]);
 
   useEffect(() => {
     const cleanup = buildGraph();

@@ -119,17 +119,31 @@ class NetworkEngine:
             return {"success": False, "error": "Engine not initialized"}
         return simulate_traceroute(self.devices, self.links, src_id, dst_ip)
 
-    def inject_failure(self, target_id: str, failure_type: str = "link") -> dict:
+    def inject_failure(self, target_id: str, failure_type: str = "link", interface_name: str | None = None) -> dict:
+        affected_link_info = None
+
         if failure_type == "link":
-            affected_links = [l for l in self.links if l.a_id == target_id or l.b_id == target_id]
-            for link in affected_links:
-                link.state = "down"
-            self.event_log.append(NetworkEvent(
-                timestamp=time.time(),
-                event_type="LINK_DOWN",
-                device=target_id,
-                detail=f"Link failure injected on {len(affected_links)} links",
-            ))
+            if interface_name:
+                link = self._find_link_for_interface(target_id, interface_name)
+                if link:
+                    link.state = "down"
+                    affected_link_info = {"a_id": link.a_id, "b_id": link.b_id, "a_port": link.a_port, "b_port": link.b_port}
+                    self.event_log.append(NetworkEvent(
+                        timestamp=time.time(),
+                        event_type="LINK_DOWN",
+                        device=target_id,
+                        detail=f"Interface {interface_name} link failure injected",
+                    ))
+            else:
+                affected_links = [l for l in self.links if l.a_id == target_id or l.b_id == target_id]
+                for link in affected_links:
+                    link.state = "down"
+                self.event_log.append(NetworkEvent(
+                    timestamp=time.time(),
+                    event_type="LINK_DOWN",
+                    device=target_id,
+                    detail=f"Link failure injected on {len(affected_links)} links",
+                ))
         elif failure_type == "device":
             dev = self.devices.get(target_id)
             if dev:
@@ -145,19 +159,42 @@ class NetworkEngine:
                 ))
 
         build_routing_tables(self.devices, self.links)
-        return {"status": "ok", "affected": target_id, "type": failure_type}
 
-    def recover(self, target_id: str, recovery_type: str = "link") -> dict:
+        dev = self.devices.get(target_id)
+        return {
+            "status": "ok",
+            "affected": target_id,
+            "device_name": dev.name if dev else target_id,
+            "type": failure_type,
+            "interface": interface_name,
+            "affected_link": affected_link_info,
+        }
+
+    def recover(self, target_id: str, recovery_type: str = "link", interface_name: str | None = None) -> dict:
+        recovered_link_info = None
+
         if recovery_type == "link":
-            for link in self.links:
-                if (link.a_id == target_id or link.b_id == target_id) and link.state == "down":
+            if interface_name:
+                link = self._find_link_for_interface(target_id, interface_name)
+                if link and link.state == "down":
                     link.state = "up"
+                    recovered_link_info = {"a_id": link.a_id, "b_id": link.b_id, "a_port": link.a_port, "b_port": link.b_port}
                     self.event_log.append(NetworkEvent(
                         timestamp=time.time(),
                         event_type="LINK_UP",
                         device=target_id,
-                        detail=f"Link recovered on {target_id}",
+                        detail=f"Interface {interface_name} link recovered",
                     ))
+            else:
+                for link in self.links:
+                    if (link.a_id == target_id or link.b_id == target_id) and link.state == "down":
+                        link.state = "up"
+                        self.event_log.append(NetworkEvent(
+                            timestamp=time.time(),
+                            event_type="LINK_UP",
+                            device=target_id,
+                            detail=f"Link recovered on {target_id}",
+                        ))
         elif recovery_type == "device":
             dev = self.devices.get(target_id)
             if dev:
@@ -173,7 +210,7 @@ class NetworkEngine:
                 ))
 
         build_routing_tables(self.devices, self.links)
-        return {"status": "ok", "recovered": target_id, "type": recovery_type}
+        return {"status": "ok", "recovered": target_id, "type": recovery_type, "interface": interface_name, "recovered_link": recovered_link_info}
 
     def get_all_devices_summary(self) -> list[dict]:
         return [
@@ -189,6 +226,42 @@ class NetworkEngine:
             }
             for dev in self.devices.values()
         ]
+
+    def get_interfaces(self, device_id: str) -> list[dict]:
+        dev = self.devices.get(device_id)
+        if not dev:
+            return []
+        return [
+            {
+                "name": iface.name,
+                "ip": iface.ip,
+                "mac": iface.mac,
+                "up": iface.up,
+                "subnet": iface.subnet,
+            }
+            for iface in dev.interfaces
+        ]
+
+    def get_link_states(self) -> list[dict]:
+        return [
+            {
+                "a_id": link.a_id,
+                "b_id": link.b_id,
+                "a_port": link.a_port,
+                "b_port": link.b_port,
+                "state": link.state,
+                "bandwidth": link.bandwidth,
+            }
+            for link in self.links
+        ]
+
+    def _find_link_for_interface(self, device_id: str, interface_name: str) -> Link | None:
+        for link in self.links:
+            if link.a_id == device_id and link.a_port == interface_name:
+                return link
+            if link.b_id == device_id and link.b_port == interface_name:
+                return link
+        return None
 
 
 _engine: NetworkEngine | None = None

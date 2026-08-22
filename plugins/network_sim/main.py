@@ -20,11 +20,13 @@ class TracerouteRequest(BaseModel):
 class FailureRequest(BaseModel):
     target_id: str
     failure_type: str = "link"
+    interface_name: str | None = None
 
 
 class RecoveryRequest(BaseModel):
     target_id: str
     recovery_type: str = "link"
+    interface_name: str | None = None
 
 
 @asynccontextmanager
@@ -135,13 +137,28 @@ async def traceroute(req: TracerouteRequest):
 @app.post("/api/v1/network-sim/failure")
 async def inject_failure(req: FailureRequest):
     engine = get_engine()
-    return engine.inject_failure(req.target_id, req.failure_type)
+    return engine.inject_failure(req.target_id, req.failure_type, req.interface_name)
 
 
 @app.post("/api/v1/network-sim/recovery")
 async def recover(req: RecoveryRequest):
     engine = get_engine()
-    return engine.recover(req.target_id, req.recovery_type)
+    return engine.recover(req.target_id, req.recovery_type, req.interface_name)
+
+
+@app.get("/api/v1/network-sim/devices/{device_id}/interfaces")
+async def get_interfaces(device_id: str):
+    engine = get_engine()
+    dev = engine.get_device(device_id)
+    if not dev:
+        raise HTTPException(status_code=404, detail="Device not found")
+    return {"device_id": device_id, "device_name": dev.name, "interfaces": engine.get_interfaces(device_id)}
+
+
+@app.get("/api/v1/network-sim/link-states")
+async def get_link_states():
+    engine = get_engine()
+    return {"links": engine.get_link_states()}
 
 
 @app.get("/api/v1/network-sim/events")

@@ -2,6 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { cmdbAPI, alertsAPI, networkSimAPI } from '../api/client';
 import { CIDetails, Alert } from '../types';
 
+interface DeviceInterface {
+  name: string;
+  ip: string;
+  mac: string;
+  up: boolean;
+  subnet: string;
+}
+
 interface Route {
   prefix: string;
   next_hop_ip: string;
@@ -43,8 +51,10 @@ interface Props {
   ciId: string | null;
   onClose: () => void;
   onViewConnections: (ciId: string, ciName: string, neighbors: CIDetails['neighbors']) => void;
-  onTraceroute?: (path: string[]) => void;
+  onTraceroute?: (deviceNames: string[]) => void;
   onClearTraceroute?: () => void;
+  onFailureInjected?: () => void;
+  onRecovered?: () => void;
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -84,7 +94,7 @@ const TYPE_ICONS: Record<string, string> = {
 
 type Tab = 'details' | 'network' | 'trace' | 'actions';
 
-export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTraceroute, onClearTraceroute }: Props) {
+export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTraceroute, onClearTraceroute, onFailureInjected, onRecovered }: Props) {
   const [details, setDetails] = useState<CIDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -106,6 +116,9 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
   const [traceLoading, setTraceLoading] = useState(false);
 
   const [failureType, setFailureType] = useState('link');
+  const [selectedInterface, setSelectedInterface] = useState<string>('');
+  const [interfaces, setInterfaces] = useState<DeviceInterface[]>([]);
+  const [interfacesLoading, setInterfacesLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionResult, setActionResult] = useState<string | null>(null);
 
@@ -204,13 +217,29 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     }
   }, [ciId]);
 
+  const loadInterfaces = useCallback(async () => {
+    if (!ciId) return;
+    setInterfacesLoading(true);
+    try {
+      const r = await networkSimAPI.getInterfaces(ciId);
+      setInterfaces(r.data.interfaces || []);
+    } catch {
+      setInterfaces([]);
+    } finally {
+      setInterfacesLoading(false);
+    }
+  }, [ciId]);
+
   useEffect(() => {
     if (tab === 'network' && ciId) {
       loadRoutes();
       loadArp();
       loadMacTable();
     }
-  }, [tab, ciId, loadRoutes, loadArp, loadMacTable]);
+    if (tab === 'actions' && ciId) {
+      loadInterfaces();
+    }
+  }, [tab, ciId, loadRoutes, loadArp, loadMacTable, loadInterfaces]);
 
   const handlePing = async () => {
     if (!ciId || !pingTarget) return;
@@ -259,7 +288,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
         blackhole_detected: d.error?.includes?.('No route') || false,
       });
       if (hops.length > 0) {
-        const path = hops.map((h: any) => h.ip).filter((ip: string) => ip && ip !== '*' && ip !== '—');
+        const path = hops.map((h: any) => h.hostname).filter((name: string) => name && name !== '—');
         onTraceroute?.(path);
       }
     } catch {
@@ -274,8 +303,27 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     setActionLoading(true);
     setActionResult(null);
     try {
-      const r = await networkSimAPI.injectFailure(ciId, failureType);
-      setActionResult(r.data.message || 'Failure injected');
+      const r = await networkSimAPI.injectFailure(ciId, failureType, selectedInterface || undefined);
+      const data = r.data;
+      setActionResult(data.detail || `Failure injected on ${data.device_name}`);
+
+      // Create alert via alert-noc
+      try {
+        const deviceName = data.device_name || ciId;
+        const ifaceLabel = selectedInterface || 'all interfaces';
+        await alertsAPI.create({
+          name: `Network Failure: ${deviceName} - ${ifaceLabel}`,
+          service: deviceName,
+          severity: 'critical',
+          description: `Simulated ${failureType} failure on ${deviceName} (${ifaceLabel})`,
+          team: 'network',
+          labels: { source: 'network-sim', device_id: ciId, interface: ifaceLabel, failure_type: failureType },
+        });
+      } catch {
+        // Alert creation is best-effort
+      }
+
+      onFailureInjected?.();
     } catch (e: any) {
       setActionResult(e.response?.data?.detail || 'Failed to inject failure');
     } finally {
@@ -288,8 +336,9 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     setActionLoading(true);
     setActionResult(null);
     try {
-      const r = await networkSimAPI.recover(ciId, failureType);
-      setActionResult(r.data.message || 'Recovery initiated');
+      const r = await networkSimAPI.recover(ciId, failureType, selectedInterface || undefined);
+      setActionResult(r.data.detail || `Recovery initiated for ${r.data.recovered}`);
+      onRecovered?.();
     } catch (e: any) {
       setActionResult(e.response?.data?.detail || 'Failed to recover');
     } finally {
@@ -656,6 +705,49 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
               {tab === 'actions' && (
                 <div className="space-y-4">
                   <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Interface Selection</h4>
+                    {interfacesLoading ? (
+                      <div className="flex items-center gap-2 text-xs text-gray-400">
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-blue-500 rounded-full" />
+                        Loading interfaces...
+                      </div>
+                    ) : interfaces.length > 0 ? (
+                      <div className="space-y-1 max-h-40 overflow-y-auto">
+                        <label className="flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-700">
+                          <input
+                            type="radio"
+                            name="interface"
+                            value=""
+                            checked={selectedInterface === ''}
+                            onChange={() => setSelectedInterface('')}
+                            className="accent-red-500"
+                          />
+                          <span className="text-yellow-400 font-medium">All Interfaces</span>
+                          <span className="text-gray-500">({interfaces.length})</span>
+                        </label>
+                        {interfaces.map((iface) => (
+                          <label key={iface.name} className="flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-700">
+                            <input
+                              type="radio"
+                              name="interface"
+                              value={iface.name}
+                              checked={selectedInterface === iface.name}
+                              onChange={() => setSelectedInterface(iface.name)}
+                              className="accent-red-500"
+                              disabled={!iface.up}
+                            />
+                            <span className="font-mono text-cyan-400">{iface.name}</span>
+                            <span className="text-gray-500">{iface.ip}</span>
+                            {!iface.up && <span className="text-red-400 text-[10px]">DOWN</span>}
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-gray-500">No interfaces available</p>
+                    )}
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
                     <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Failure Injection</h4>
                     <div className="flex items-center gap-2 mb-3">
                       <select
@@ -664,10 +756,11 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                         className="flex-1 px-3 py-1.5 bg-gray-700 border border-gray-600 rounded-lg text-sm text-white focus:ring-2 focus:ring-orange-500"
                       >
                         <option value="link">Link Down</option>
-                        <option value="interface">Interface Down</option>
-                        <option value="packet_loss">Packet Loss (30%)</option>
-                        <option value="latency">High Latency (500ms)</option>
+                        <option value="device">Device Down</option>
                       </select>
+                    </div>
+                    <div className="text-xs text-gray-400 mb-3">
+                      {selectedInterface ? `Target: ${selectedInterface}` : 'Target: all interfaces on device'}
                     </div>
                     <div className="flex gap-2">
                       <button
@@ -688,11 +781,6 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                     {actionResult && (
                       <div className="mt-3 px-3 py-2 bg-gray-700/50 rounded-lg text-xs text-gray-300">{actionResult}</div>
                     )}
-                  </div>
-
-                  <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Simulated Events</h4>
-                    <p className="text-xs text-gray-500">Events are logged when failures are injected or recovered. Check the NOC Alerts page to see correlated alerts generated by the simulation engine.</p>
                   </div>
                 </div>
               )}
