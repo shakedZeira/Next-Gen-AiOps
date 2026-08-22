@@ -3,10 +3,12 @@ import { cmdbAPI, alertsAPI, networkSimAPI } from '../api/client';
 import { CIDetails, Alert } from '../types';
 
 interface Route {
-  destination: string;
-  gateway: string;
-  interface: string;
+  prefix: string;
+  next_hop_ip: string;
+  out_iface: string;
   metric: number;
+  proto: string;
+  state: string;
 }
 
 interface ArpEntry {
@@ -153,7 +155,8 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     setRoutesLoading(true);
     try {
       const r = await networkSimAPI.getRoutes(ciId);
-      setRoutes(r.data.routes || []);
+      const raw = r.data.routes || {};
+      setRoutes(Array.isArray(raw) ? raw : Object.values(raw));
     } catch {
       setRoutes([]);
     } finally {
@@ -166,7 +169,14 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     setArpLoading(true);
     try {
       const r = await networkSimAPI.getArp(ciId);
-      setArpEntries(r.data.arp_cache || []);
+      const raw = r.data.arp_cache || {};
+      const entries = Array.isArray(raw) ? raw : Object.entries(raw).map(([ip, val]: [string, any]) => ({
+        ip,
+        mac: val.mac || '—',
+        interface: val.interface || val.iface || '—',
+        state: val.state || 'REACHABLE',
+      }));
+      setArpEntries(entries);
     } catch {
       setArpEntries([]);
     } finally {
@@ -179,7 +189,14 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     setMacLoading(true);
     try {
       const r = await networkSimAPI.getMacTable(ciId);
-      setMacEntries(r.data.mac_table || []);
+      const raw = r.data.mac_table || {};
+      const entries = Array.isArray(raw) ? raw : Object.entries(raw).map(([mac, val]: [string, any]) => ({
+        vlan: val.vlan || 1,
+        mac,
+        interface: val.interface || val.iface || '—',
+        type: val.type || 'DYNAMIC',
+      }));
+      setMacEntries(entries);
     } catch {
       setMacEntries([]);
     } finally {
@@ -201,7 +218,18 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     setPingResult(null);
     try {
       const r = await networkSimAPI.ping(ciId, pingTarget);
-      setPingResult(r.data);
+      const d = r.data;
+      setPingResult({
+        reachable: d.success,
+        hops: (d.hops || []).map((h: any, i: number) => ({
+          hop: i + 1,
+          ip: h.ip || '—',
+          hostname: h.device || '—',
+          rtt_ms: h.latency_ms ?? null,
+        })),
+        avg_rtt_ms: d.rtt_ms ?? null,
+        packet_loss: d.success ? 0 : 100,
+      });
     } catch {
       setPingResult(null);
     } finally {
@@ -213,12 +241,25 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     if (!ciId || !traceTarget) return;
     setTraceLoading(true);
     setTraceResult(null);
+    onClearTraceroute?.();
     try {
       const r = await networkSimAPI.traceroute(ciId, traceTarget);
-      const result = r.data;
-      setTraceResult(result);
-      if (result.hops && result.hops.length > 0) {
-        const path = result.hops.map((h: any) => h.ip).filter((ip: string) => ip && ip !== '*');
+      const d = r.data;
+      const hops = (d.hops || []).map((h: any, i: number) => ({
+        hop: i + 1,
+        ip: h.ip || '—',
+        hostname: h.device || '—',
+        rtt_ms: h.latency_ms ?? null,
+        interface: h.interface || h.iface || '—',
+      }));
+      setTraceResult({
+        reachable: d.success,
+        hops,
+        loop_detected: d.error?.includes?.('loop') || false,
+        blackhole_detected: d.error?.includes?.('No route') || false,
+      });
+      if (hops.length > 0) {
+        const path = hops.map((h: any) => h.ip).filter((ip: string) => ip && ip !== '*' && ip !== '—');
         onTraceroute?.(path);
       }
     } catch {
@@ -421,26 +462,28 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                     </div>
                     {routes.length > 0 ? (
                       <div className="overflow-x-auto">
-                        <table className="w-full text-xs">
-                          <thead>
-                            <tr className="text-gray-400 border-b border-gray-700">
-                              <th className="text-left py-1 pr-2">Destination</th>
-                              <th className="text-left py-1 pr-2">Gateway</th>
-                              <th className="text-left py-1 pr-2">Iface</th>
-                              <th className="text-right py-1">Metric</th>
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="text-gray-400 border-b border-gray-700">
+                            <th className="text-left py-1 pr-2">Prefix</th>
+                            <th className="text-left py-1 pr-2">Next Hop</th>
+                            <th className="text-left py-1 pr-2">Iface</th>
+                            <th className="text-left py-1 pr-2">Proto</th>
+                            <th className="text-right py-1">Metric</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {routes.map((r, i) => (
+                            <tr key={i} className="border-b border-gray-700/50">
+                              <td className="py-1 pr-2 font-mono text-cyan-400">{r.prefix}</td>
+                              <td className="py-1 pr-2 font-mono text-gray-300">{r.next_hop_ip}</td>
+                              <td className="py-1 pr-2 text-gray-400">{r.out_iface}</td>
+                              <td className="py-1 pr-2 text-gray-400">{r.proto}</td>
+                              <td className="py-1 text-right text-gray-400">{r.metric}</td>
                             </tr>
-                          </thead>
-                          <tbody>
-                            {routes.map((r, i) => (
-                              <tr key={i} className="border-b border-gray-700/50">
-                                <td className="py-1 pr-2 font-mono text-cyan-400">{r.destination}</td>
-                                <td className="py-1 pr-2 font-mono text-gray-300">{r.gateway}</td>
-                                <td className="py-1 pr-2 text-gray-400">{r.interface}</td>
-                                <td className="py-1 text-right text-gray-400">{r.metric}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                          ))}
+                        </tbody>
+                      </table>
                       </div>
                     ) : (
                       <p className="text-xs text-gray-500">{routesLoading ? 'Loading...' : 'No routes'}</p>
@@ -549,17 +592,17 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                           <span className={pingResult.reachable ? 'text-green-400' : 'text-red-400'}>
                             {pingResult.reachable ? '✓ Reachable' : '✗ Unreachable'}
                           </span>
-                          {pingResult.avg_rtt_ms !== null && (
-                            <span className="text-gray-400">avg {pingResult.avg_rtt_ms.toFixed(1)}ms</span>
+                          {pingResult.avg_rtt_ms != null && (
+                            <span className="text-gray-400">avg {Number(pingResult.avg_rtt_ms).toFixed(1)}ms</span>
                           )}
                           <span className="text-gray-400">{pingResult.packet_loss}% loss</span>
                         </div>
-                        {pingResult.hops.map((h, i) => (
+                        {pingResult.hops.map((h: { hop: number; ip: string; hostname: string; rtt_ms: number | null }, i: number) => (
                           <div key={i} className="flex items-center gap-3 text-gray-300">
                             <span className="text-gray-500 w-4">{h.hop}</span>
                             <span className="font-mono text-cyan-400">{h.ip}</span>
                             <span className="text-gray-400">{h.hostname}</span>
-                            {h.rtt_ms !== null && <span className="text-gray-400">{h.rtt_ms.toFixed(1)}ms</span>}
+                            {h.rtt_ms != null && <span className="text-gray-400">{Number(h.rtt_ms).toFixed(1)}ms</span>}
                           </div>
                         ))}
                       </div>
@@ -594,13 +637,13 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                           {traceResult.loop_detected && <span className="px-2 py-0.5 bg-red-500/20 text-red-400 rounded">LOOP DETECTED</span>}
                           {traceResult.blackhole_detected && <span className="px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded">BLACKHOLE</span>}
                         </div>
-                        {traceResult.hops.map((h, i) => (
+                        {traceResult.hops.map((h: { hop: number; ip: string; hostname: string; rtt_ms: number | null; interface: string }, i: number) => (
                           <div key={i} className="flex items-center gap-3 text-gray-300">
                             <span className="text-gray-500 w-4">{h.hop}</span>
                             <span className="font-mono text-cyan-400">{h.ip}</span>
                             <span className="text-gray-400">{h.hostname}</span>
                             <span className="text-gray-500 text-[10px]">{h.interface}</span>
-                            {h.rtt_ms !== null && <span className="text-gray-400 ml-auto">{h.rtt_ms.toFixed(1)}ms</span>}
+                            {h.rtt_ms != null && <span className="text-gray-400 ml-auto">{Number(h.rtt_ms).toFixed(1)}ms</span>}
                           </div>
                         ))}
                       </div>
