@@ -55,21 +55,21 @@ class CMDBRepository:
             text("SELECT * FROM get_upstream_dependencies(:ci_id)"),
             {"ci_id": str(ci_id)},
         )
-        return [dict(row) for row in result]
+        return [dict(row._mapping) for row in result]
 
     async def get_downstream_impact(self, ci_id: uuid.UUID) -> list[dict]:
         result = await self.session.execute(
             text("SELECT * FROM get_downstream_impact(:ci_id)"),
             {"ci_id": str(ci_id)},
         )
-        return [dict(row) for row in result]
+        return [dict(row._mapping) for row in result]
 
     async def get_service_topology(self, service_id: uuid.UUID) -> list[dict]:
         result = await self.session.execute(
             text("SELECT * FROM get_service_topology(:service_id)"),
             {"service_id": str(service_id)},
         )
-        return [dict(row) for row in result]
+        return [dict(row._mapping) for row in result]
 
     async def get_global_topology(self) -> dict:
         ci_result = await self.session.execute(select(CI))

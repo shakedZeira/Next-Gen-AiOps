@@ -1,4 +1,4 @@
-client.ts:44  GET http://127.0.0.1/api/v1/cmdb/topology/inter-site 422 (Unprocessable Entity)
+client.ts:49  GET http://127.0.0.1/api/v1/cmdb/topology/inter-site 422 (Unprocessable Entity)
 (anonymous) @ xhr.js:226
 (anonymous) @ xhr.js:17
 (anonymous) @ dispatchRequest.js:46
@@ -7,8 +7,8 @@ _request @ Axios.js:198
 request @ Axios.js:41
 (anonymous) @ Axios.js:264
 (anonymous) @ bind.js:12
-(anonymous) @ client.ts:44
-(anonymous) @ CMDBExplorer.tsx:85
+(anonymous) @ client.ts:49
+(anonymous) @ CMDBExplorer.tsx:93
 Qj @ react-dom.production.min.js:243
 Hk @ react-dom.production.min.js:285
 (anonymous) @ react-dom.production.min.js:281
@@ -28,7 +28,7 @@ fl @ react-dom.production.min.js:307
 (anonymous) @ react-dom.production.min.js:309
 (anonymous) @ main.tsx:6
 settle.js:19 Uncaught (in promise) AxiosError: Request failed with status code 422
-    at HP (settle.js:19:12
+    at UP (settle.js:19:12
     at XMLHttpRequest.y (xhr.js:63:9)
 (anonymous) @ settle.js:19
 onloadend @ xhr.js:63
@@ -41,8 +41,8 @@ _request @ Axios.js:198
 request @ Axios.js:41
 (anonymous) @ Axios.js:264
 (anonymous) @ bind.js:12
-(anonymous) @ client.ts:44
-(anonymous) @ CMDBExplorer.tsx:85
+(anonymous) @ client.ts:49
+(anonymous) @ CMDBExplorer.tsx:93
 Qj @ react-dom.production.min.js:243
 Hk @ react-dom.production.min.js:285
 (anonymous) @ react-dom.production.min.js:281
@@ -61,3 +61,132 @@ gi @ react-dom.production.min.js:265
 fl @ react-dom.production.min.js:307
 (anonymous) @ react-dom.production.min.js:309
 (anonymous) @ main.tsx:6
+TopologyGraph.tsx:461 The selector `node[expanded = true]`is invalid
+(anonymous) @ cytoscape.esm.mjs:1521
+(anonymous) @ cytoscape.esm.mjs:9997
+(anonymous) @ cytoscape.esm.mjs:10415
+(anonymous) @ cytoscape.esm.mjs:19182
+(anonymous) @ cytoscape.esm.mjs:17069
+(anonymous) @ cytoscape.esm.mjs:19252
+(anonymous) @ cytoscape.esm.mjs:20005
+(anonymous) @ cytoscape.esm.mjs:19960
+(anonymous) @ cytoscape.esm.mjs:19999
+(anonymous) @ cytoscape.esm.mjs:35678
+(anonymous) @ TopologyGraph.tsx:461
+(anonymous) @ TopologyGraph.tsx:683
+Qj @ react-dom.production.min.js:243
+Hk @ react-dom.production.min.js:285
+Wk @ react-dom.production.min.js:282
+Pk @ react-dom.production.min.js:280
+Ek @ react-dom.production.min.js:272
+jg @ react-dom.production.min.js:127
+Rk @ react-dom.production.min.js:273
+Jb @ react-dom.production.min.js:52
+hd @ react-dom.production.min.js:109
+fd @ react-dom.production.min.js:74
+ed @ react-dom.production.min.js:73
+handleMouseUp_ @ (unknown)
+TopologyGraph.tsx:461 The selector `node[expanded = true]`is invalid
+(anonymous) @ cytoscape.esm.mjs:1521
+(anonymous) @ cytoscape.esm.mjs:9997
+(anonymous) @ cytoscape.esm.mjs:10415
+(anonymous) @ cytoscape.esm.mjs:19182
+(anonymous) @ cytoscape.esm.mjs:17069
+(anonymous) @ cytoscape.esm.mjs:19252
+(anonymous) @ cytoscape.esm.mjs:20005
+(anonymous) @ cytoscape.esm.mjs:19960
+(anonymous) @ cytoscape.esm.mjs:19999
+(anonymous) @ cytoscape.esm.mjs:35678
+(anonymous) @ TopologyGraph.tsx:461
+(anonymous) @ TopologyGraph.tsx:683
+Qj @ react-dom.production.min.js:243
+Hk @ react-dom.production.min.js:285
+(anonymous) @ react-dom.production.min.js:281
+J @ scheduler.production.min.js:13
+R @ scheduler.production.min.js:14
+postMessage
+(anonymous) @ scheduler.production.min.js:14
+I @ scheduler.production.min.js:14
+(anonymous) @ scheduler.production.min.js:18
+Fk @ react-dom.production.min.js:296
+Dk @ react-dom.production.min.js:266
+gi @ react-dom.production.min.js:265
+ii @ react-dom.production.min.js:174
+(anonymous) @ CMDBExplorer.tsx:118
+Promise.then
+(anonymous) @ CMDBExplorer.tsx:118
+Qj @ react-dom.production.min.js:243
+Hk @ react-dom.production.min.js:285
+Wk @ react-dom.production.min.js:282
+Pk @ react-dom.production.min.js:280
+Ek @ react-dom.production.min.js:272
+jg @ react-dom.production.min.js:127
+Rk @ react-dom.production.min.js:273
+Jb @ react-dom.production.min.js:52
+hd @ react-dom.production.min.js:109
+fd @ react-dom.production.min.js:74
+ed @ react-dom.production.min.js:73
+handleMouseUp_ @ (unknown)
+TopologyGraph.tsx:461 The selector `node[expanded = true]`is invalid
+(anonymous) @ cytoscape.esm.mjs:1521
+(anonymous) @ cytoscape.esm.mjs:9997
+(anonymous) @ cytoscape.esm.mjs:10415
+(anonymous) @ cytoscape.esm.mjs:19182
+(anonymous) @ cytoscape.esm.mjs:17069
+(anonymous) @ cytoscape.esm.mjs:19252
+(anonymous) @ cytoscape.esm.mjs:20005
+(anonymous) @ cytoscape.esm.mjs:19960
+(anonymous) @ cytoscape.esm.mjs:19999
+(anonymous) @ cytoscape.esm.mjs:35678
+(anonymous) @ TopologyGraph.tsx:461
+(anonymous) @ TopologyGraph.tsx:683
+Qj @ react-dom.production.min.js:243
+Hk @ react-dom.production.min.js:285
+(anonymous) @ react-dom.production.min.js:281
+J @ scheduler.production.min.js:13
+R @ scheduler.production.min.js:14
+postMessage
+(anonymous) @ scheduler.production.min.js:14
+I @ scheduler.production.min.js:14
+(anonymous) @ scheduler.production.min.js:18
+Fk @ react-dom.production.min.js:296
+Dk @ react-dom.production.min.js:266
+gi @ react-dom.production.min.js:265
+ii @ react-dom.production.min.js:174
+(anonymous) @ CMDBExplorer.tsx:118
+Promise.then
+(anonymous) @ CMDBExplorer.tsx:118
+Qj @ react-dom.production.min.js:243
+Hk @ react-dom.production.min.js:285
+Wk @ react-dom.production.min.js:282
+Pk @ react-dom.production.min.js:280
+Ek @ react-dom.production.min.js:272
+jg @ react-dom.production.min.js:127
+Rk @ react-dom.production.min.js:273
+Jb @ react-dom.production.min.js:52
+hd @ react-dom.production.min.js:109
+fd @ react-dom.production.min.js:74
+ed @ react-dom.production.min.js:73
+handleMouseUp_ @ (unknown)
+client.ts:42  GET http://127.0.0.1/api/v1/cmdb/impact/a121a48f-8cc6-4c94-87e1-e7b93f9d2df2 500 (Internal Server Error)
+(anonymous) @ xhr.js:226
+(anonymous) @ xhr.js:17
+(anonymous) @ dispatchRequest.js:46
+Promise.then
+_request @ Axios.js:198
+request @ Axios.js:41
+(anonymous) @ Axios.js:264
+(anonymous) @ bind.js:12
+(anonymous) @ client.ts:42
+(anonymous) @ NodeDetailPanel.tsx:369
+Nb @ react-dom.production.min.js:54
+Tb @ react-dom.production.min.js:54
+Ub @ react-dom.production.min.js:55
+nf @ react-dom.production.min.js:105
+se @ react-dom.production.min.js:106
+(anonymous) @ react-dom.production.min.js:117
+Qk @ react-dom.production.min.js:273
+Jb @ react-dom.production.min.js:52
+hd @ react-dom.production.min.js:109
+fd @ react-dom.production.min.js:74
+ed @ react-dom.production.min.js:73
