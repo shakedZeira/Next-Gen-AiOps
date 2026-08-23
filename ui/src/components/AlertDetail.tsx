@@ -1,6 +1,8 @@
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert } from '../types';
 import { RecentChanges } from './RecentChanges';
+import { snmpAPI } from '../api/client';
 
 const severityColors: Record<string, string> = {
   critical: 'bg-red-100 text-red-800 border-red-300',
@@ -25,6 +27,18 @@ interface Props {
 
 export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }: Props) {
   const navigate = useNavigate();
+  const [snmpTraps, setSnmpTraps] = useState<any[]>([]);
+  const [loadingTraps, setLoadingTraps] = useState(false);
+
+  useEffect(() => {
+    if (alert.labels?.source === 'snmp-trap' && alert.labels?.['source.ip']) {
+      setLoadingTraps(true);
+      snmpAPI.getTraps({ source_ip: alert.labels['source.ip'], limit: 10 })
+        .then((resp) => setSnmpTraps(resp.data || []))
+        .catch(() => setSnmpTraps([]))
+        .finally(() => setLoadingTraps(false));
+    }
+  }, [alert]);
 
   const handleSuggestFix = () => {
     const prompt =
@@ -115,11 +129,119 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
         <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{alert.description || 'No description provided.'}</p>
       </div>
 
+      {/* Source Details (SNMP/Syslog) */}
+      {(alert.labels?.source === 'snmp-trap' || alert.labels?.source === 'syslog') && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Source Details</h3>
+          <div className="bg-gray-50 p-3 rounded-lg">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div>
+                <p className="text-xs text-gray-500">Source Type</p>
+                <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                  {alert.labels?.source === 'snmp-trap' ? (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-violet-500" />
+                      SNMP Trap
+                    </>
+                  ) : (
+                    <>
+                      <span className="w-2 h-2 rounded-full bg-teal-500" />
+                      Syslog
+                    </>
+                  )}
+                </p>
+              </div>
+              {alert.labels?.['source.ip'] && (
+                <div>
+                  <p className="text-xs text-gray-500">Source IP</p>
+                  <p className="text-sm font-medium text-gray-900 font-mono">{alert.labels['source.ip']}</p>
+                </div>
+              )}
+              {alert.labels?.oid && (
+                <div>
+                  <p className="text-xs text-gray-500">Trap OID</p>
+                  <p className="text-sm font-medium text-gray-900 font-mono truncate" title={alert.labels.oid}>{alert.labels.oid}</p>
+                </div>
+              )}
+              {alert.labels?.hostname && (
+                <div>
+                  <p className="text-xs text-gray-500">Hostname</p>
+                  <p className="text-sm font-medium text-gray-900">{alert.labels.hostname}</p>
+                </div>
+              )}
+              {alert.labels?.['device.name'] && (
+                <div>
+                  <p className="text-xs text-gray-500">Device</p>
+                  <p className="text-sm font-medium text-gray-900">{alert.labels['device.name']}</p>
+                </div>
+              )}
+              {alert.labels?.['device.type'] && (
+                <div>
+                  <p className="text-xs text-gray-500">Device Type</p>
+                  <p className="text-sm font-medium text-gray-900">{alert.labels['device.type']}</p>
+                </div>
+              )}
+              {alert.labels?.['alert.trigger'] && (
+                <div>
+                  <p className="text-xs text-gray-500">Trigger</p>
+                  <p className="text-sm font-medium text-gray-900">{alert.labels['alert.trigger']}</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Recent Changes */}
       <div className="mb-6">
         <h3 className="text-sm font-semibold text-gray-900 mb-2">Change Correlation</h3>
         <RecentChanges service={alert.service} />
       </div>
+
+      {/* SNMP Trap History */}
+      {alert.labels?.source === 'snmp-trap' && (
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Recent Traps from This Source</h3>
+          {loadingTraps ? (
+            <div className="text-sm text-gray-500">Loading trap history...</div>
+          ) : snmpTraps.length === 0 ? (
+            <div className="text-sm text-gray-500">No recent traps from this source IP</div>
+          ) : (
+            <div className="bg-gray-50 rounded-lg overflow-hidden">
+              <table className="min-w-full text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Time</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Trap</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Severity</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Version</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {snmpTraps.map((trap, idx) => (
+                    <tr key={idx} className="hover:bg-gray-100">
+                      <td className="px-3 py-2 text-gray-600">{new Date(trap.timestamp).toLocaleTimeString()}</td>
+                      <td className="px-3 py-2 font-medium text-gray-900">{trap.trap_name}</td>
+                      <td className="px-3 py-2">
+                        <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${severityColors[trap.severity] || ''}`}>
+                          {trap.severity}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-gray-500 font-mono text-xs">{trap.snmp_version}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+          <button
+            onClick={() => navigate('/snmp')}
+            className="mt-2 text-xs text-violet-600 hover:text-violet-800 font-medium"
+          >
+            View all SNMP traps →
+          </button>
+        </div>
+      )}
 
       {/* Timeline */}
       <div>

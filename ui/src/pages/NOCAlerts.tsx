@@ -27,6 +27,7 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [alerts, setAlerts] = useState<Alert[]>(DEMO_ALERTS);
   const [filter, setFilter] = useState<string>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
+  const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [teams, setTeams] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -117,10 +118,11 @@ export default function NOCAlerts({ user }: { user: any }) {
     const filtered = allAlerts.filter((a) => {
       const matchStatus = filter === 'all' || a.status === filter;
       const matchTeam = teamFilter === 'all' || a.team === teamFilter;
-      return matchStatus && matchTeam;
+      const matchSource = sourceFilter === 'all' || a.labels?.source === sourceFilter;
+      return matchStatus && matchTeam && matchSource;
     });
     setAlerts(filtered);
-  }, [allAlerts, filter, teamFilter]);
+  }, [allAlerts, filter, teamFilter, sourceFilter]);
 
   useEffect(() => {
     const allTeams = [...new Set(allAlerts.map((a) => a.team).filter(Boolean))];
@@ -276,6 +278,22 @@ export default function NOCAlerts({ user }: { user: any }) {
               {teams.map((t) => (
                 <option key={t} value={t}>{t.charAt(0).toUpperCase() + t.slice(1)}</option>
               ))}
+            </select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-500">Source:</label>
+            <select
+              value={sourceFilter}
+              onChange={(e) => setSourceFilter(e.target.value)}
+              className="px-3 py-1 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="all">All Sources</option>
+              <option value="snmp-trap">SNMP Traps</option>
+              <option value="syslog">Syslog</option>
+              <option value="synthetic-generator">Synthetic</option>
+              <option value="infra-simulator">Infra Simulator</option>
+              <option value="scenario-simulator">Scenario</option>
             </select>
           </div>
 
