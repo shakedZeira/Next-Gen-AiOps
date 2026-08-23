@@ -773,11 +773,21 @@ Highlight downstream blast radius on topology.
 
 ---
 
-### Feature 14: SLI/SLO Dashboard
-**Impact: MEDIUM | Effort: LOW (1-2 days)**
+### Feature 14: SLI/SLO Dashboard ✅ COMPLETED
+**Impact: MEDIUM | Effort: LOW-MEDIUM (1-2 days)** — Implemented and deployed.
 
-Service Level Indicators and Objectives dashboard.
-**Plan:** Not yet created
+Service Level Indicators and Objectives dashboard with real-time error budget tracking.
+
+#### What Was Built
+- `core_platform/routers/slo.py` — 8 services × 3 SLIs (availability, latency P99, error rate), real-time computation from live alert data via alert-noc HTTP
+- Error budget: 30-day window, alert-based consumption, 4 statuses (healthy/warning/critical/exhausted)
+- `ui/src/pages/SLODashboard.tsx` — gauge rings, error budget bars, tier badges, status indicators
+- Dashboard service cards clickable → `/slo?service=X` drill-down with highlighted card
+- Sidebar: SLI/SLO nav entry with chart-bar icon
+- Docs page: SLI/SLO Dashboard section
+
+#### Commits
+- `171d1ed` — SLI/SLO Dashboard implementation
 
 ---
 
@@ -795,7 +805,7 @@ Audit trail for all user actions.
 - [x] CI search & filtering
 - [x] WebSocket real-time push ✅
 - [x] Impact analysis visualization ✅
-- [ ] SLI/SLO dashboard (1-2 days) → `sli-slo-dashboard.md`
+- [x] SLI/SLO dashboard ✅
 - [ ] Audit log (1 day) → `audit-log.md`
 
 ### Wave 2: Tier 1 Features ✅ MOSTLY DONE
@@ -842,6 +852,7 @@ Audit trail for all user actions.
 16. **Incident Suggestions:** One-click AI analysis via chatbot with change context
 17. **Impact Analysis Visualization:** Blast radius highlighting on CMDB topology with depth labels
 18. **WebSocket Real-Time Push:** Redis pub/sub + WS endpoint, auto-reconnect hook, no more polling
+19. **SLI/SLO Dashboard:** 8 services, 3 SLIs each, real-time error budget, Dashboard drill-down
 
 ### Remaining Work (Prioritized)
 | Priority | Feature | Effort | Impact | Status | Plan |
@@ -858,8 +869,8 @@ Audit trail for all user actions.
 | 10 | Runbook Automation | 3-4 days | HIGH | NOT STARTED | `runbook-automation.md` |
 | 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | ✅ COMPLETED | `impact-analysis-visualization.md` |
 | 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | ✅ COMPLETED | `websocket-realtime-push.md` |
-| 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | NOT STARTED | `sli-slo-dashboard.md` |
+| 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | ✅ COMPLETED | `sli-slo-dashboard.md` |
 | 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
 | 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
 
-**Recommended next:** SLI/SLO Dashboard (1-2 days) → ML Anomaly Detection (3-4 days) → Runbook Automation (3-4 days) → then Tier 2 features.
+**Recommended next:** Audit Log (1 day) → ML Anomaly Detection (3-4 days) → Runbook Automation (3-4 days) → then Tier 2 features.

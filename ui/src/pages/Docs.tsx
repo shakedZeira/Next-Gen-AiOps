@@ -11,6 +11,7 @@ const SECTIONS = [
   { id: 'dc-explorer', title: 'DC Explorer' },
   { id: 'agent-monitor', title: 'Agent Monitor' },
   { id: 'system-health', title: 'System Health' },
+  { id: 'slo-dashboard', title: 'SLI / SLO Dashboard' },
   { id: 'network-sim', title: 'Network Simulation' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
@@ -403,7 +404,38 @@ export default function Docs() {
             </ul>
           </section>
 
-          {/* === Section 11: Network Simulation === */}
+          {/* === Section 11: SLI/SLO Dashboard === */}
+          <section id="slo-dashboard">
+            <h2 className="text-2xl font-bold text-white mb-4">SLI / SLO Dashboard</h2>
+            <p className="text-gray-300 mb-4">
+              Service Level Indicators (SLIs) and Service Level Objectives (SLOs) for all 8 services, with real-time error budget tracking computed from live alert data.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">SLI Metrics</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="font-medium text-white">Availability:</span> Uptime percentage over 30-day window. Target varies by tier (gold: 99.95%, silver: 99.9%, bronze: 99.5%)</li>
+              <li><span className="font-medium text-white">Latency P99:</span> 99th percentile request latency in milliseconds. Lower is better</li>
+              <li><span className="font-medium text-white">Error Rate:</span> Percentage of failed requests. Calculated from active alerts affecting the service</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Error Budget</h3>
+            <p className="text-gray-300 mb-4">
+              Monthly error budget = (1 - SLO target) × 30 days in minutes. Active alerts consume budget at 2.5 minutes per alert.
+              Status: <span className="text-green-400">healthy</span> (&gt;50%), <span className="text-yellow-400">warning</span> (25-50%), <span className="text-orange-400">critical</span> (&lt;25%), <span className="text-red-400">exhausted</span> (0%).
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Dashboard Integration</h3>
+            <p className="text-gray-300 mb-4">
+              Each service card on the Dashboard is clickable — clicking navigates to the SLO Dashboard filtered to that service with a highlighted card and drill-down banner.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">API Endpoints</h3>
+            <table className="w-full text-sm text-gray-300 mb-4">
+              <thead><tr className="border-b border-gray-700 text-left"><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr></thead>
+              <tbody>
+                <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/slo</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">All service SLOs with SLI values and error budgets</td></tr>
+                <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/slo/{'{service}'}</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">SLO for a specific service</td></tr>
+              </tbody>
+            </table>
+          </section>
+
+          {/* === Section 12: Network Simulation === */}
           <section id="network-sim">
             <h2 className="text-2xl font-bold text-white mb-4">Network Simulation Engine</h2>
             <p className="text-gray-300 mb-4">
