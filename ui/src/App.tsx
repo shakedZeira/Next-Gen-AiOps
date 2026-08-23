@@ -9,6 +9,7 @@ import DCExplorer from './pages/DCExplorer';
 import AgentMonitor from './pages/AgentMonitor';
 import SystemHealth from './pages/SystemHealth';
 import SLODashboard from './pages/SLODashboard';
+import SyslogViewer from './pages/SyslogViewer';
 import Docs from './pages/Docs';
 import Layout from './components/Layout';
 import { User } from './types';
@@ -69,6 +70,7 @@ function App() {
             <Route path="agent-monitor" element={<AgentMonitor />} />
             <Route path="system-health" element={<SystemHealth />} />
             <Route path="slo" element={<SLODashboard />} />
+            <Route path="syslog" element={<SyslogViewer />} />
             <Route path="docs" element={<Docs />} />
           </Route>
         </Routes>

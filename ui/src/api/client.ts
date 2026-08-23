@@ -136,3 +136,13 @@ export const sloAPI = {
   list: () => api.get('/slo'),
   get: (service: string) => api.get(`/slo/${encodeURIComponent(service)}`),
 };
+
+export const syslogAPI = {
+  stats: () => api.get('/syslog/stats'),
+  messages: (hostname?: string, severity?: string) => {
+    const params: Record<string, string> = {};
+    if (hostname) params.hostname = hostname;
+    if (severity) params.severity = severity;
+    return api.get('/syslog/messages', { params });
+  },
+};

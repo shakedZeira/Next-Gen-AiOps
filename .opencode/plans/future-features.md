@@ -981,7 +981,7 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 - [ ] Backup and Restore (1-2 days) → `backup-restore.md`
 
 ### Wave 4: Feature Matrix Tier 1 (Data Collection + Processing)
-- [ ] Syslog Collection (2-3 days) → `syslog-collection.md`
+- [x] Syslog Collection (2-3 days) → `syslog-collection.md` ✅
 - [ ] SNMP Trap Receiver (3-4 days) → `snmp-trap-receiver.md`
 - [ ] Alert Suppression (1 day) → `alert-suppression.md`
 - [ ] Storm Management (2-3 days) → `storm-management.md` (depends on Suppression)
@@ -1034,6 +1034,7 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 17. **Impact Analysis Visualization:** Blast radius highlighting on CMDB topology with depth labels
 18. **WebSocket Real-Time Push:** Redis pub/sub + WS endpoint, auto-reconnect hook, no more polling
 19. **SLI/SLO Dashboard:** 8 services, 3 SLIs each, real-time error budget, Dashboard drill-down
+20. **Syslog Collection:** RFC 3164/5424 receiver, 16+ alert patterns, CI auto-mapping, SyslogViewer page
 
 ### Remaining Work (Prioritized)
 | Priority | Feature | Effort | Impact | Status | Plan |
@@ -1053,7 +1054,7 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 | 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | ✅ COMPLETED | `sli-slo-dashboard.md` |
 | 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
 | 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
-| 16 | Syslog Collection | 2-3 days | HIGH | NOT STARTED | `syslog-collection.md` |
+| 16 | Syslog Collection | 2-3 days | HIGH | ✅ COMPLETED | `syslog-collection.md` |
 | 17 | SNMP Trap Receiver | 3-4 days | HIGH | NOT STARTED | `snmp-trap-receiver.md` |
 | 18 | Alert Suppression | 1 day | MEDIUM | NOT STARTED | `alert-suppression.md` |
 | 19 | Storm Management | 2-3 days | MEDIUM | NOT STARTED | `storm-management.md` |
@@ -1084,4 +1085,4 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 | 44 | Certificate Management | 1-2 days | LOW | NOT STARTED | `certificate-management.md` |
 | 45 | LDAP / SSO | 2-3 days | MEDIUM | NOT STARTED | `ldap-sso.md` |
 
-**Recommended next:** Syslog Collection (2-3 days) → SNMP Trap Receiver (3-4 days) → Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days) → then Tier 2 integrations.
+**Recommended next:** SNMP Trap Receiver (3-4 days) → Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days) → then Tier 2 integrations.

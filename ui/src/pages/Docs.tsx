@@ -13,6 +13,7 @@ const SECTIONS = [
   { id: 'system-health', title: 'System Health' },
   { id: 'slo-dashboard', title: 'SLI / SLO Dashboard' },
   { id: 'network-sim', title: 'Network Simulation' },
+  { id: 'syslog', title: 'Syslog Collection' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -482,6 +483,51 @@ export default function Docs() {
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">Docker Service</h3>
             <p className="text-gray-300 mb-2">Runs as <code className="bg-gray-800 px-2 py-1 rounded">network-sim</code> container on port 8013. Reads CMDB directly from PostgreSQL (bypasses auth-gated API gateway for topology bootstrap). Proxied via API gateway at <code className="bg-gray-800 px-2 py-1 rounded">/api/v1/network-sim/*</code>.</p>
+          </section>
+
+          {/* === Section: Syslog Collection === */}
+          <section id="syslog">
+            <h2 className="text-2xl font-bold text-white mb-4">Syslog Collection</h2>
+            <p className="text-gray-300 mb-4">
+              The syslog receiver collects RFC 3164 (BSD) and RFC 5424 syslog messages from network devices, servers, and applications, automatically matching them to alert patterns and creating alerts in the NOC console.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Architecture</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">UDP Listener:</span> Port 1514 (mapped from container 514) for standard syslog UDP</li>
+              <li><span className="text-green-400 font-medium">TCP Listener:</span> Port 1515 (mapped from container 514) for reliable syslog TCP</li>
+              <li><span className="text-yellow-400 font-medium">Pattern Matching:</span> 16+ regex patterns for Cisco/Juniper/generic device alerts</li>
+              <li><span className="text-purple-400 font-medium">CI Mapping:</span> Automatic hostname-to-CI resolution via CMDB with Redis caching</li>
+              <li><span className="text-red-400 font-medium">Alert Generation:</span> Matched messages create alerts with severity, service, and team auto-assigned</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Severity Mapping</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Syslog Priority</th><th className="px-4 py-2">Level</th><th className="px-4 py-2">Alert Severity</th></tr>
+                </thead>
+                <tbody className="text-gray-300">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2">0-2</td><td className="px-4 py-2">Emergency, Alert, Critical</td><td className="px-4 py-2"><span className="text-red-400">critical</span></td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2">3-4</td><td className="px-4 py-2">Error, Warning</td><td className="px-4 py-2"><span className="text-orange-400">high</span></td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2">5-6</td><td className="px-4 py-2">Notice, Info</td><td className="px-4 py-2"><span className="text-yellow-400">medium</span></td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2">7</td><td className="px-4 py-2">Debug</td><td className="px-4 py-2"><span className="text-blue-400">low</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">Test Command</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto mb-4"><code>{`echo "<13>Aug 23 12:00:00 hq-core-sw-1 %LINK-3-UPDOWN: Interface GigabitEthernet0/1, changed state to up" | nc -u localhost 1514`}</code></pre>
+            <h3 className="text-lg font-semibold text-white mb-2">REST API</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-300">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/health</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Receiver health and uptime</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/syslog/stats</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Messages received, alerts generated, errors</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/syslog/messages</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Recent messages (filter by hostname, severity)</td></tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* === Section 12: Architecture === */}
