@@ -55,6 +55,8 @@ interface Props {
   onClearTraceroute?: () => void;
   onFailureInjected?: () => void;
   onRecovered?: () => void;
+  onShowImpact?: (downstream: { ci_id: string; ci_name: string; ci_type: string; depth: number }[]) => void;
+  onClearImpact?: () => void;
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -94,7 +96,7 @@ const TYPE_ICONS: Record<string, string> = {
 
 type Tab = 'details' | 'network' | 'trace' | 'actions';
 
-export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTraceroute, onClearTraceroute, onFailureInjected, onRecovered }: Props) {
+export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTraceroute, onClearTraceroute, onFailureInjected, onRecovered, onShowImpact, onClearImpact }: Props) {
   const [details, setDetails] = useState<CIDetails | null>(null);
   const [loading, setLoading] = useState(false);
   const [alerts, setAlerts] = useState<Alert[]>([]);
@@ -121,6 +123,9 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
   const [interfacesLoading, setInterfacesLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
   const [actionResult, setActionResult] = useState<string | null>(null);
+
+  const [impactLoading, setImpactLoading] = useState(false);
+  const [impactActive, setImpactActive] = useState(false);
 
   useEffect(() => {
     if (!ciId) {
@@ -349,6 +354,26 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
       setActionResult(e.response?.data?.detail || 'Failed to recover');
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleShowImpact = async () => {
+    if (!ciId) return;
+    if (impactActive) {
+      setImpactActive(false);
+      onClearImpact?.();
+      return;
+    }
+    setImpactLoading(true);
+    try {
+      const r = await cmdbAPI.getImpact(ciId);
+      const downstream = r.data.downstream || [];
+      setImpactActive(true);
+      onShowImpact?.(downstream);
+    } catch {
+      setImpactActive(false);
+    } finally {
+      setImpactLoading(false);
     }
   };
 
@@ -787,6 +812,22 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                     {actionResult && (
                       <div className="mt-3 px-3 py-2 bg-gray-700/50 rounded-lg text-xs text-gray-300">{actionResult}</div>
                     )}
+                  </div>
+
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Impact Analysis</h4>
+                    <p className="text-xs text-gray-500 mb-3">Highlight downstream CIs affected if this device fails.</p>
+                    <button
+                      onClick={handleShowImpact}
+                      disabled={impactLoading}
+                      className={`w-full px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        impactActive
+                          ? 'bg-amber-600 hover:bg-amber-500 text-white'
+                          : 'bg-purple-600 hover:bg-purple-500 text-white'
+                      } disabled:bg-gray-600`}
+                    >
+                      {impactLoading ? '...' : impactActive ? '✕ Clear Impact' : '💥 Show Impact'}
+                    </button>
                   </div>
                 </div>
               )}

@@ -80,6 +80,8 @@ export default function CMDBExplorer() {
   const [ipSearch, setIpSearch] = useState('');
   const [traceroutePath, setTraceroutePath] = useState<{ name: string; site: string }[]>([]);
   const [failedLinks, setFailedLinks] = useState<Array<{ a_id: string; b_id: string }>>([]);
+  const [impactNodes, setImpactNodes] = useState<Array<{ ci_id: string; ci_name: string; ci_type: string; depth: number }>>([]);
+  const [impactSourceId, setImpactSourceId] = useState<string | null>(null);
 
   useEffect(() => {
     Promise.all([
@@ -421,6 +423,8 @@ export default function CMDBExplorer() {
                 onNodeClick={setSelectedNodeId}
                 traceroutePath={traceroutePath}
                 failedLinks={failedLinks}
+                impactNodes={impactNodes}
+                highlightedNodeId={impactSourceId}
               />
             )}
           </div>
@@ -452,6 +456,8 @@ export default function CMDBExplorer() {
                 onNodeClick={setSelectedNodeId}
                 traceroutePath={traceroutePath}
                 failedLinks={failedLinks}
+                impactNodes={impactNodes}
+                highlightedNodeId={impactSourceId}
               />
             )}
           </div>
@@ -546,7 +552,7 @@ export default function CMDBExplorer() {
 
       <NodeDetailPanel
         ciId={selectedNodeId}
-        onClose={() => { setSelectedNodeId(null); setTraceroutePath([]); }}
+        onClose={() => { setSelectedNodeId(null); setTraceroutePath([]); setImpactNodes([]); setImpactSourceId(null); }}
         onViewConnections={(ciId, ciName, neighbors) => {
           setSelectedNodeId(null);
           setConnectionsData({ ciId, ciName, neighbors });
@@ -555,6 +561,8 @@ export default function CMDBExplorer() {
         onClearTraceroute={() => setTraceroutePath([])}
         onFailureInjected={() => refreshLinkStates()}
         onRecovered={() => refreshLinkStates()}
+        onShowImpact={(downstream) => { setImpactNodes(downstream); setImpactSourceId(selectedNodeId); }}
+        onClearImpact={() => { setImpactNodes([]); setImpactSourceId(null); }}
       />
 
       {connectionsData && (

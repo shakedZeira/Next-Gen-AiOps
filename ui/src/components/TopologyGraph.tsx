@@ -14,6 +14,8 @@ interface Props {
   onNodeClick?: (nodeId: string) => void;
   traceroutePath?: { name: string; site: string }[];
   failedLinks?: Array<{ a_id: string; b_id: string }>;
+  impactNodes?: Array<{ ci_id: string; ci_name: string; ci_type: string; depth: number }>;
+  highlightedNodeId?: string | null;
 }
 
 const NODE_COLORS: Record<string, string> = {
@@ -103,7 +105,7 @@ const NODE_SHAPES: Record<string, string> = {
 
 const PRINCIPAL_TYPES = new Set(['router', 'switch', 'firewall', 'load_balancer']);
 
-export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick, traceroutePath, failedLinks }: Props) {
+export default function TopologyGraph({ topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate = false, expandable = false, height = 'h-[500px]', onNodeClick, traceroutePath, failedLinks, impactNodes, highlightedNodeId }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
   const animFrameRef = useRef<number | null>(null);
@@ -392,6 +394,32 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
           opacity: 1,
         },
       },
+      {
+        selector: '.impact-node',
+        style: {
+          'border-width': 4,
+          'border-color': '#ef4444',
+          opacity: 1,
+          'background-color': '#ef4444',
+        },
+      },
+      {
+        selector: '.impact-source',
+        style: {
+          'border-width': 5,
+          'border-color': '#f59e0b',
+          opacity: 1,
+        },
+      },
+      {
+        selector: '.impact-edge',
+        style: {
+          'line-color': '#ef4444',
+          'target-arrow-color': '#ef4444',
+          width: 3,
+          'line-style': 'dashed',
+        },
+      },
     ];
 
     // Expandable mode: style nodes with hidden children
@@ -593,6 +621,32 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       });
     }
 
+    // Impact analysis highlighting
+    if (impactNodes && impactNodes.length > 0 && highlightedNodeId) {
+      const impactIds = new Set(impactNodes.map(n => n.ci_id));
+      cy.nodes().forEach((n) => {
+        if (n.id() === highlightedNodeId) {
+          n.removeClass('dimmed').addClass('impact-source');
+        } else if (impactIds.has(n.id())) {
+          n.removeClass('dimmed').addClass('impact-node');
+          const depth = impactNodes.find(n2 => n2.ci_id === n.id())?.depth || 0;
+          const origLabel = (n.data('label') || '').split('\n')[0];
+          n.data('label', `${origLabel}\n⬇ depth ${depth}`);
+        } else {
+          n.addClass('dimmed');
+        }
+      });
+      cy.edges().forEach((e) => {
+        const src = e.source().id();
+        const tgt = e.target().id();
+        if ((src === highlightedNodeId && impactIds.has(tgt)) || (impactIds.has(src) && tgt === highlightedNodeId) || (impactIds.has(src) && impactIds.has(tgt))) {
+          e.removeClass('dimmed').addClass('impact-edge');
+        } else {
+          e.addClass('dimmed');
+        }
+      });
+    }
+
     let offset = 0;
     const animateEdges = () => {
       offset = (offset + 0.4) % 20;
@@ -623,7 +677,7 @@ export default function TopologyGraph({ topology, selectedService, selectedSite,
       if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
       cy.destroy();
     };
-  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick, traceroutePath, failedLinks]);
+  }, [topology, selectedService, selectedSite, searchQuery, ipSearch, siteAggregate, expandable, expandedNodes, toggleExpand, onNodeClick, traceroutePath, failedLinks, impactNodes, highlightedNodeId]);
 
   useEffect(() => {
     const cleanup = buildGraph();

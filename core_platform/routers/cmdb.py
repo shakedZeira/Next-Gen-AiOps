@@ -150,7 +150,14 @@ async def get_topology(service_id: UUID, session=Depends(get_session), _user=Dep
 async def get_impact(ci_id: UUID, session=Depends(get_session), _user=Depends(get_current_user)):
     repo = CMDBRepository(session)
     downstream = await repo.get_downstream_impact(ci_id)
-    return ImpactResponse(ci_id=ci_id, ci_name="", ci_type="", depth=0, downstream=downstream)
+    seen = set()
+    unique = []
+    for d in downstream:
+        cid = str(d["ci_id"])
+        if cid not in seen:
+            seen.add(cid)
+            unique.append(d)
+    return ImpactResponse(ci_id=ci_id, ci_name="", ci_type="", depth=0, downstream=unique)
 
 
 @router.get("/sites/locations")
