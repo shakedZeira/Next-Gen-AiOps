@@ -1,3 +1,5 @@
+import asyncio
+import json
 import uuid
 from datetime import datetime
 
@@ -7,12 +9,25 @@ from plugins.alert_noc.config import AlertNOCConfig
 from plugins.alert_noc.dedup import AlertDeduplicator
 from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
 
+ALERTS_CHANNEL = "alerts:events"
+
 
 class AlertStore:
     def __init__(self):
         config = AlertNOCConfig()
         self.redis = aioredis.from_url(config.REDIS_URL)
         self.dedup = AlertDeduplicator(self.redis)
+        self._ws_clients: set = set()
+
+    async def _publish(self, event_type: str, alert: AlertResponse):
+        event = {"type": event_type, "alert": alert.model_dump(mode="json")}
+        await self.redis.publish(ALERTS_CHANNEL, json.dumps(event))
+
+    def add_ws_client(self, ws):
+        self._ws_clients.add(ws)
+
+    def remove_ws_client(self, ws):
+        self._ws_clients.discard(ws)
 
     async def create_alert(self, data: AlertCreate) -> AlertResponse:
         normalized = self.dedup.normalize_name(data.name)
@@ -25,6 +40,7 @@ class AlertStore:
                 existing.last_seen = datetime.utcnow()
                 await self.redis.hset("alerts", existing_id, existing.model_dump_json())
                 await self.dedup.increment_stats("deduplicated")
+                await self._publish("alert.repeat", existing)
                 return existing
 
         incident_id = await self.dedup.find_or_create_incident(data.service, normalized)
@@ -45,6 +61,7 @@ class AlertStore:
         await self.redis.sadd("alerts:active", alert_id)
         await self.dedup.register_dedup(data.service, normalized, alert_id)
         await self.dedup.increment_stats("total_created")
+        await self._publish("alert.created", alert)
         return alert
 
     async def get_alert(self, alert_id: str) -> AlertResponse | None:
@@ -292,6 +309,7 @@ class AlertStore:
         await self.redis.hset("alerts", alert_id, alert.model_dump_json())
         await self.redis.srem("alerts:active", alert_id)
         await self.redis.sadd("alerts:acknowledged", alert_id)
+        await self._publish("alert.acknowledged", alert)
         return True
 
     async def resolve(self, alert_id: str) -> bool:
@@ -304,6 +322,7 @@ class AlertStore:
         await self.redis.srem("alerts:active", alert_id)
         await self.redis.srem("alerts:acknowledged", alert_id)
         await self.redis.sadd("alerts:resolved", alert_id)
+        await self._publish("alert.resolved", alert)
         return True
 
     async def get_alert_groups(self) -> list[dict]:

@@ -4,6 +4,7 @@ import AlertTable from '../components/AlertTable';
 import AlertDetail from '../components/AlertDetail';
 import IncidentDetail from '../components/IncidentDetail';
 import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
+import { useAlertsWebSocket } from '../hooks/useAlertsWebSocket';
 import { Alert, IncidentGroup, Scenario } from '../types';
 
 const DEMO_ALERTS: Alert[] = [
@@ -36,7 +37,6 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string>('');
   const [simulating, setSimulating] = useState(false);
-  const [refreshInterval, setRefreshInterval] = useState<ReturnType<typeof setInterval> | null>(null);
   const [selectedIncidentId, setSelectedIncidentId] = useState<string | null>(null);
   const [selectedAlert, setSelectedAlert] = useState<Alert | null>(null);
   const [showResolveIp, setShowResolveIp] = useState(false);
@@ -83,6 +83,29 @@ export default function NOCAlerts({ user }: { user: any }) {
     }
   }, []);
 
+  const handleAlertEvent = useCallback((event: { type: string; alert: Alert }) => {
+    const { type, alert } = event;
+    setAllAlerts((prev) => {
+      if (type === 'alert.created') {
+        if (prev.some((a) => a.id === alert.id)) return prev;
+        fetchStats();
+        return [alert, ...prev];
+      }
+      if (type === 'alert.repeat') {
+        return prev.map((a) => a.id === alert.id ? { ...a, repeat_count: alert.repeat_count, last_seen: alert.last_seen } : a);
+      }
+      if (type === 'alert.acknowledged') {
+        return prev.map((a) => a.id === alert.id ? { ...a, status: 'acknowledged' as const, acknowledged_by: alert.acknowledged_by } : a);
+      }
+      if (type === 'alert.resolved') {
+        return prev.map((a) => a.id === alert.id ? { ...a, status: 'resolved' as const } : a);
+      }
+      return prev;
+    });
+  }, [fetchStats]);
+
+  const { connected } = useAlertsWebSocket(handleAlertEvent);
+
   useEffect(() => {
     fetchAlerts();
     fetchIncidents();
@@ -103,12 +126,6 @@ export default function NOCAlerts({ user }: { user: any }) {
     const allTeams = [...new Set(allAlerts.map((a) => a.team).filter(Boolean))];
     setTeams(allTeams.sort());
   }, [allAlerts]);
-
-  useEffect(() => {
-    return () => {
-      if (refreshInterval) clearInterval(refreshInterval);
-    };
-  }, [refreshInterval]);
 
   const showToast = (message: string, type: 'success' | 'error') => {
     setToast({ message, type });
@@ -145,22 +162,7 @@ export default function NOCAlerts({ user }: { user: any }) {
       await simulateAPI.run(selectedScenario);
       const scenario = scenarios.find(s => s.id === selectedScenario);
       showToast(`Scenario started: ${scenario?.name || selectedScenario}`, 'success');
-
-      const interval = setInterval(async () => {
-        await fetchAlerts();
-        await fetchIncidents();
-        await fetchStats();
-      }, 2000);
-      setRefreshInterval(interval);
-
-      setTimeout(() => {
-        clearInterval(interval);
-        setRefreshInterval(null);
-        setSimulating(false);
-        fetchAlerts();
-        fetchIncidents();
-        fetchStats();
-      }, 60000);
+      setTimeout(() => setSimulating(false), 5000);
     } catch {
       showToast('Failed to start scenario', 'error');
       setSimulating(false);
@@ -219,6 +221,8 @@ export default function NOCAlerts({ user }: { user: any }) {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
           <h1 className="text-2xl font-bold text-gray-900">NOC Alert Console</h1>
+          <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}
+            title={connected ? 'WebSocket connected' : 'WebSocket disconnected'} />
           {stats && (
             <div className="flex items-center gap-3 text-xs text-gray-500">
               <span className="bg-gray-100 px-2 py-1 rounded">Created: {stats.total_created}</span>
