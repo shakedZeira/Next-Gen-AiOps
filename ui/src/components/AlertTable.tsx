@@ -5,6 +5,9 @@ interface Props {
   onAcknowledge: (id: string) => void;
   onResolve: (id: string) => void;
   onAlertClick?: (alert: Alert) => void;
+  showSuppressed?: boolean;
+  onToggleSuppressed?: () => void;
+  suppressedCount?: number;
 }
 
 const severityColors: Record<string, string> = {
@@ -33,9 +36,31 @@ const teamColors: Record<string, string> = {
   unassigned: 'bg-gray-100 text-gray-600',
 };
 
-export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertClick }: Props) {
+export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertClick, showSuppressed, onToggleSuppressed, suppressedCount }: Props) {
   return (
     <div className="overflow-x-auto">
+      {onToggleSuppressed && (
+        <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-3">
+          <button
+            onClick={onToggleSuppressed}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              showSuppressed
+                ? 'bg-violet-100 text-violet-700 border border-violet-300'
+                : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+            }`}
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={showSuppressed ? "M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" : "M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"} />
+            </svg>
+            {showSuppressed ? 'Hide Suppressed' : 'Show Suppressed'}
+            {(suppressedCount ?? 0) > 0 && (
+              <span className="px-1.5 py-0.5 rounded-full text-xs font-bold bg-violet-500 text-white">
+                {suppressedCount}
+              </span>
+            )}
+          </button>
+        </div>
+      )}
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
           <tr>
@@ -64,6 +89,11 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
               <td className="px-4 py-3 text-sm font-medium text-gray-900">
                 <span className="flex items-center gap-2">
                   {alert.name}
+                  {alert.suppressed && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200" title={`Suppressed by alert ${alert.suppressed_by?.slice(0, 8) || 'unknown'}`}>
+                      SUPPRESSED
+                    </span>
+                  )}
                   {alert.labels?.source === 'syslog' && (
                     <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200" title={`Syslog from ${alert.labels?.hostname || 'device'}`}>
                       SYSLOG

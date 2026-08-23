@@ -41,6 +41,9 @@ class AlertResponse(AlertCreate):
     last_seen: datetime | None = None
     incident_id: str | None = None
     normalized_name: str | None = None
+    suppressed: bool = False
+    suppressed_by: str | None = None
+    suppressed_at: datetime | None = None
 
 
 class AlertAcknowledge(BaseModel):

@@ -18,8 +18,8 @@ async def create_alert(data: AlertCreate):
 
 
 @router.get("/alerts", response_model=list[dict])
-async def list_alerts(status: str | None = None, team: str | None = None):
-    alerts = await alert_store.list_alerts(status, team)
+async def list_alerts(status: str | None = None, team: str | None = None, suppressed: bool | None = None):
+    alerts = await alert_store.list_alerts(status, team, suppressed)
     return [a.model_dump() for a in alerts]
 
 
@@ -55,7 +55,9 @@ async def resolve_incident(incident_id: str):
 
 @router.get("/alerts/stats")
 async def alert_stats():
-    return await alert_store.dedup.get_stats()
+    stats = await alert_store.dedup.get_stats()
+    stats["suppressed"] = await alert_store.suppressor.get_suppressed_count()
+    return stats
 
 
 @router.get("/alerts/{alert_id}")

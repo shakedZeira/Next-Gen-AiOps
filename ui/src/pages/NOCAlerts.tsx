@@ -28,6 +28,7 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [filter, setFilter] = useState<string>('all');
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
+  const [showSuppressed, setShowSuppressed] = useState(false);
   const [teams, setTeams] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -119,10 +120,11 @@ export default function NOCAlerts({ user }: { user: any }) {
       const matchStatus = filter === 'all' || a.status === filter;
       const matchTeam = teamFilter === 'all' || a.team === teamFilter;
       const matchSource = sourceFilter === 'all' || a.labels?.source === sourceFilter;
-      return matchStatus && matchTeam && matchSource;
+      const matchSuppressed = showSuppressed || !a.suppressed;
+      return matchStatus && matchTeam && matchSource && matchSuppressed;
     });
     setAlerts(filtered);
-  }, [allAlerts, filter, teamFilter, sourceFilter]);
+  }, [allAlerts, filter, teamFilter, sourceFilter, showSuppressed]);
 
   useEffect(() => {
     const allTeams = [...new Set(allAlerts.map((a) => a.team).filter(Boolean))];
@@ -229,9 +231,12 @@ export default function NOCAlerts({ user }: { user: any }) {
             <div className="flex items-center gap-3 text-xs text-gray-500">
               <span className="bg-gray-100 px-2 py-1 rounded">Created: {stats.total_created}</span>
               <span className="bg-green-100 text-green-700 px-2 py-1 rounded">Deduped: {stats.deduplicated}</span>
+              {(stats.suppressed ?? 0) > 0 && (
+                <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded">Suppressed: {stats.suppressed}</span>
+              )}
               {stats.total_created > 0 && (
                 <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  {Math.round((stats.deduplicated / stats.total_created) * 100)}% reduced
+                  {Math.round(((stats.deduplicated + (stats.suppressed ?? 0)) / stats.total_created) * 100)}% reduced
                 </span>
               )}
             </div>
@@ -346,7 +351,15 @@ export default function NOCAlerts({ user }: { user: any }) {
             onResolve={handleResolve}
           />
         ) : viewMode === 'alerts' ? (
-          <AlertTable alerts={alerts} onAcknowledge={handleAcknowledge} onResolve={handleResolve} onAlertClick={setSelectedAlert} />
+          <AlertTable
+            alerts={alerts}
+            onAcknowledge={handleAcknowledge}
+            onResolve={handleResolve}
+            onAlertClick={setSelectedAlert}
+            showSuppressed={showSuppressed}
+            onToggleSuppressed={() => setShowSuppressed(!showSuppressed)}
+            suppressedCount={stats?.suppressed}
+          />
         ) : (
           <div className="divide-y divide-gray-200">
             {incidents.length === 0 ? (

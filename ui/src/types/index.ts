@@ -22,6 +22,9 @@ export interface Alert {
   last_seen?: string;
   incident_id?: string;
   labels?: Record<string, string>;
+  suppressed?: boolean;
+  suppressed_by?: string;
+  suppressed_at?: string;
 }
 
 export interface AlertGroup {
@@ -49,6 +52,7 @@ export interface AlertStats {
   total_created: number;
   deduplicated: number;
   incidents_formed: number;
+  suppressed?: number;
 }
 
 export interface SLIValue {

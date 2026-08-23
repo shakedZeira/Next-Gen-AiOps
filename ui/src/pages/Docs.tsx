@@ -15,6 +15,7 @@ const SECTIONS = [
   { id: 'network-sim', title: 'Network Simulation' },
   { id: 'syslog', title: 'Syslog Collection' },
   { id: 'snmp', title: 'SNMP Collection' },
+  { id: 'suppression', title: 'Alert Suppression' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -601,6 +602,53 @@ curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
             <p className="text-gray-300">
               Proxied through nginx at <code className="bg-gray-800 px-2 py-1 rounded">/api/v1/snmp/*</code>; dev server proxies the same path to <code className="bg-gray-800 px-2 py-1 rounded">localhost:8016</code>.
             </p>
+          </section>
+
+          {/* === Section: Alert Suppression === */}
+          <section id="suppression">
+            <h2 className="text-2xl font-bold text-white mb-4">Alert Suppression</h2>
+            <p className="text-gray-300 mb-4">
+              Alert Suppression reduces noise by hiding secondary symptoms when a primary (root cause) alert exists.
+              When a critical alert fires for a service, lower-severity alerts for the same service within a 5-minute window
+              are automatically suppressed and hidden from the default alert list.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">How It Works</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">Service Cascade Rule:</span> If a higher-severity alert exists for the same service within 5 minutes, the lower-severity alert is suppressed</li>
+              <li><span className="text-blue-400 font-medium">Auto-Expire:</span> Suppressed alerts auto-expire after 10 minutes and become visible again if the primary alert is resolved</li>
+              <li><span className="text-blue-400 font-medium">Visibility Toggle:</span> Use the "Show Suppressed" button in the NOC Alerts tab to view suppressed alerts</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Example</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto mb-4"><code>{`1. "Payment Gateway Down" (critical) fires → visible in NOC
+2. "High Latency Payment Gateway" (high) fires → SUPPRESSED (hidden)
+3. "Disk Space Low Payment Gateway" (medium) fires → SUPPRESSED (hidden)
+4. After 10 min or primary resolved → suppressed alerts reappear`}</code></pre>
+            <h3 className="text-lg font-semibold text-white mb-2">Suppressed Alert Fields</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Field</th><th className="px-4 py-2">Type</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-200">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">suppressed</td><td className="px-4 py-2">boolean</td><td className="px-4 py-2">Whether this alert is currently suppressed</td></tr>
+                  <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2 font-mono text-xs">suppressed_by</td><td className="px-4 py-2">string</td><td className="px-4 py-2">ID of the primary alert causing suppression</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs">suppressed_at</td><td className="px-4 py-2">datetime</td><td className="px-4 py-2">When suppression was applied</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">REST API</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-200">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts?suppressed=false</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List non-suppressed alerts (default)</td></tr>
+                  <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts?suppressed=true</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List only suppressed alerts</td></tr>
+                  <tr><td className="px-4 py-2"><code>/api/v1/alerts/stats</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Returns suppressed count in stats</td></tr>
+                </tbody>
+              </table>
+            </div>
           </section>
 
           {/* === Section 12: Architecture === */}

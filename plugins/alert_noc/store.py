@@ -1,13 +1,17 @@
 import asyncio
 import json
+import logging
 import uuid
 from datetime import datetime
 
 import redis.asyncio as aioredis
 
+logger = logging.getLogger("alert_noc.store")
+
 from plugins.alert_noc.config import AlertNOCConfig
 from plugins.alert_noc.dedup import AlertDeduplicator
 from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
+from plugins.alert_noc.suppression import AlertSuppressor
 
 ALERTS_CHANNEL = "alerts:events"
 
@@ -17,6 +21,7 @@ class AlertStore:
         config = AlertNOCConfig()
         self.redis = aioredis.from_url(config.REDIS_URL)
         self.dedup = AlertDeduplicator(self.redis)
+        self.suppressor = AlertSuppressor(self.redis)
         self._ws_clients: set = set()
 
     async def _publish(self, event_type: str, alert: AlertResponse):
@@ -57,10 +62,25 @@ class AlertStore:
             incident_id=incident_id,
             normalized_name=normalized,
         )
+
+        suppressed, primary_id = await self.suppressor.check_suppress(alert)
+        if suppressed:
+            alert.suppressed = True
+            alert.suppressed_by = primary_id
+            alert.suppressed_at = now
+            await self.redis.hset("alerts", alert_id, alert.model_dump_json())
+            await self.redis.sadd("alerts:active", alert_id)
+            await self.suppressor.register_alert(alert)
+            await self.dedup.increment_stats("total_created")
+            await self.dedup.increment_stats("suppressed")
+            logger.info("Alert suppressed: %s by %s", alert.name, primary_id)
+            return alert
+
         await self.redis.hset("alerts", alert_id, alert.model_dump_json())
         await self.redis.sadd("alerts:active", alert_id)
         await self.dedup.register_dedup(data.service, normalized, alert_id)
         await self.dedup.increment_stats("total_created")
+        await self.suppressor.register_alert(alert)
         await self._publish("alert.created", alert)
         return alert
 
@@ -73,7 +93,7 @@ class AlertStore:
                 return None
         return None
 
-    async def list_alerts(self, status: str | None = None, team: str | None = None) -> list[AlertResponse]:
+    async def list_alerts(self, status: str | None = None, team: str | None = None, suppressed: bool | None = None) -> list[AlertResponse]:
         if status:
             ids = await self.redis.smembers(f"alerts:{status}")
         else:
@@ -83,6 +103,11 @@ class AlertStore:
             alert = await self.get_alert(alert_id.decode() if isinstance(alert_id, bytes) else alert_id)
             if alert:
                 if team and alert.team != team:
+                    continue
+                if suppressed is not None:
+                    if alert.suppressed != suppressed:
+                        continue
+                elif alert.suppressed:
                     continue
                 alerts.append(alert)
         return sorted(alerts, key=lambda a: a.created_at, reverse=True)
