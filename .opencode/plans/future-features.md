@@ -793,9 +793,43 @@ Service Level Indicators and Objectives dashboard with real-time error budget tr
 
 ### Feature 15: Audit Log
 **Impact: MEDIUM | Effort: LOW (1 day)**
-
 Audit trail for all user actions.
-**Plan:** Not yet created
+**Plan:** `audit-trail.md`
+
+### Feature 20: Dark Mode
+**Impact: MEDIUM | Effort: LOW (1-2 days)**
+Dark theme for NOC environments.
+**Plan:** `dark-mode.md`
+
+### Feature 21: Alert Suppression
+**Impact: MEDIUM | Effort: LOW (1 day)**
+Hide secondary alerts when primary (root cause) alert exists.
+**Plan:** `alert-suppression.md`
+
+### Feature 22: Maintenance Windows
+**Impact: MEDIUM | Effort: LOW-MEDIUM (1-2 days)**
+Mute alerts during planned maintenance windows.
+**Plan:** `maintenance-windows.md`
+
+### Feature 23: Alert Escalation
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Auto-escalate unhandled alerts after configurable timeouts.
+**Plan:** `alert-escalation.md`
+
+### Feature 24: Storm Management
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Detect and intelligently manage alert storms.
+**Plan:** `storm-management.md`
+
+### Feature 25: Syslog Collection
+**Impact: HIGH | Effort: LOW-MEDIUM (2-3 days)**
+Receive and process syslog messages from devices as alert sources.
+**Plan:** `syslog-collection.md`
+
+### Feature 26: SNMP Trap Receiver
+**Impact: HIGH | Effort: MEDIUM (3-4 days)**
+Receive and process SNMP traps from network devices.
+**Plan:** `snmp-trap-receiver.md`
 
 ---
 
@@ -822,6 +856,16 @@ Audit trail for all user actions.
 - [ ] Service dependency map (4-5 days) → `service-dependency-map.md`
 - [ ] Capacity planning (5-7 days) → `capacity-planning.md`
 - [ ] Cost attribution (5-7 days) → `cost-attribution.md`
+
+### Wave 4: Feature Matrix Tier 1 (Data Collection + Processing)
+- [ ] Syslog Collection (2-3 days) → `syslog-collection.md`
+- [ ] SNMP Trap Receiver (3-4 days) → `snmp-trap-receiver.md`
+- [ ] Alert Suppression (1 day) → `alert-suppression.md`
+- [ ] Storm Management (2-3 days) → `storm-management.md` (depends on Suppression)
+- [ ] Maintenance Windows (1-2 days) → `maintenance-windows.md`
+- [ ] Alert Escalation (2-3 days) → `alert-escalation.md`
+- [ ] Audit Trail (1 day) → `audit-trail.md`
+- [ ] Dark Mode (1-2 days) → `dark-mode.md`
 
 ### SRE Waves (Production Readiness)
 - [ ] SRE Performance (3-4 days) → `sre-performance.md`
@@ -872,5 +916,13 @@ Audit trail for all user actions.
 | 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | ✅ COMPLETED | `sli-slo-dashboard.md` |
 | 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
 | 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
+| 16 | Syslog Collection | 2-3 days | HIGH | NOT STARTED | `syslog-collection.md` |
+| 17 | SNMP Trap Receiver | 3-4 days | HIGH | NOT STARTED | `snmp-trap-receiver.md` |
+| 18 | Alert Suppression | 1 day | MEDIUM | NOT STARTED | `alert-suppression.md` |
+| 19 | Storm Management | 2-3 days | MEDIUM | NOT STARTED | `storm-management.md` |
+| 20 | Maintenance Windows | 1-2 days | MEDIUM | NOT STARTED | `maintenance-windows.md` |
+| 21 | Alert Escalation | 2-3 days | MEDIUM | NOT STARTED | `alert-escalation.md` |
+| 22 | Audit Trail | 1 day | MEDIUM | NOT STARTED | `audit-trail.md` |
+| 23 | Dark Mode | 1-2 days | MEDIUM | NOT STARTED | `dark-mode.md` |
 
-**Recommended next:** Audit Log (1 day) → ML Anomaly Detection (3-4 days) → Runbook Automation (3-4 days) → then Tier 2 features.
+**Recommended next:** Syslog Collection (2-3 days) → SNMP Trap Receiver (3-4 days) → Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days).
