@@ -51,6 +51,33 @@ export interface AlertStats {
   incidents_formed: number;
 }
 
+export interface SLIValue {
+  name: string;
+  value: number;
+  target: number;
+  unit: string;
+  met: boolean;
+}
+
+export interface ErrorBudget {
+  total_minutes: number;
+  remaining_minutes: number;
+  remaining_pct: number;
+  status: 'healthy' | 'warning' | 'critical' | 'exhausted';
+}
+
+export interface ServiceSLO {
+  service: string;
+  tier: string;
+  slis: {
+    availability: SLIValue;
+    latency_p99: SLIValue;
+    error_rate: SLIValue;
+  };
+  error_budget: ErrorBudget;
+  active_alerts: number;
+}
+
 export interface Scenario {
   id: string;
   name: string;

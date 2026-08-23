@@ -131,3 +131,8 @@ export const networkSimAPI = {
     api.post('/network-sim/recovery', { target_id: targetId, recovery_type: recoveryType, interface_name: interfaceName || null }),
   getEvents: (count?: number) => api.get('/network-sim/events', { params: count ? { count } : {} }),
 };
+
+export const sloAPI = {
+  list: () => api.get('/slo'),
+  get: (service: string) => api.get(`/slo/${encodeURIComponent(service)}`),
+};

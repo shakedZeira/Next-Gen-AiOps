@@ -4,6 +4,7 @@ interface Props {
   latency: number;
   errorRate: number;
   throughput: number;
+  onClick?: () => void;
 }
 
 const statusColors = {
@@ -12,9 +13,12 @@ const statusColors = {
   down: 'bg-red-100 text-red-800 border-red-200',
 };
 
-export default function ServiceHealthCard({ name, status, latency, errorRate, throughput }: Props) {
+export default function ServiceHealthCard({ name, status, latency, errorRate, throughput, onClick }: Props) {
   return (
-    <div className={`p-4 rounded-xl border-2 ${statusColors[status]} transition-all hover:shadow-md`}>
+    <div
+      onClick={onClick}
+      className={`p-4 rounded-xl border-2 ${statusColors[status]} transition-all hover:shadow-md ${onClick ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <h3 className="font-semibold text-gray-900">{name}</h3>
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[status]}`}>
