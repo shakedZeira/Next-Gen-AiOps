@@ -236,6 +236,19 @@ export default function Docs() {
               database-failover) and click "Run" to generate a burst of realistic alerts.
               Auto-refreshes every 2 seconds during simulation.
             </p>
+            <h3 className="text-lg font-semibold text-white mb-2">WebSocket Real-Time Push</h3>
+            <p className="text-gray-200 mb-4">
+              Alerts are pushed in real-time via WebSocket — no more polling. A persistent WebSocket
+              connection to <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">/api/v1/alerts/ws</code> delivers
+              events instantly: <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">alert.created</code>,
+              <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">alert.repeat</code>,
+              <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">alert.acknowledged</code>, and
+              <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">alert.resolved</code>. The connection
+              auto-reconnects with exponential backoff on disconnect. A green/red dot in the header shows connection status.
+              Backend: Redis pub/sub in <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">store.py</code> publishes
+              to <code className="bg-gray-800 px-1.5 py-0.5 rounded text-green-300 text-sm">alerts:events</code> channel on every
+              mutation. Nginx proxies WebSocket with upgrade headers directly to alert-noc:8005.
+            </p>
             <h3 className="text-lg font-semibold text-white mb-2">Incidents View</h3>
             <p className="text-gray-200 mb-4">
               Toggle to "Incidents" to see alerts grouped by incident. Incidents are smart-grouped

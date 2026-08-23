@@ -655,11 +655,21 @@ Map infrastructure costs to services/teams.
 
 ## Tier 3 — Medium Impact, Low Effort (Quick Wins)
 
-### Feature 11: WebSocket Real-Time Push
-**Impact: MEDIUM | Effort: LOW (1-2 days)**
+### Feature 11: WebSocket Real-Time Push ✅ COMPLETED
+**Impact: MEDIUM | Effort: LOW (1-2 days)** — Implemented and deployed.
 
 Real-time alert push via WebSocket instead of polling.
-**Plan:** Not yet created
+
+#### What Was Built
+- `plugins/alert_noc/store.py` — Redis pub/sub `_publish()` method, calls on create/repeat/acknowledge/resolve
+- `plugins/alert_noc/main.py` — WebSocket endpoint `/api/v1/alerts/ws` with Redis subscriber per client
+- `ui/nginx.conf` — dedicated `/api/v1/alerts/ws` location with WebSocket upgrade headers
+- `ui/vite.config.ts` — `ws: true` proxy for dev mode
+- `ui/src/hooks/useAlertsWebSocket.ts` — custom hook with auto-reconnect, exponential backoff
+- `ui/src/pages/NOCAlerts.tsx` — WebSocket handler replaces 2s polling; connection status indicator (green/red dot)
+
+#### Commits
+- `3e466bc` — WebSocket real-time push implementation
 
 ---
 
@@ -744,12 +754,16 @@ One-click AI analysis of incidents with topology-aware remediation suggestions.
 
 ---
 
-### Feature 13: Impact Analysis Visualization
-**Impact: MEDIUM | Effort: LOW (1-2 days)**
+### Feature 13: Impact Analysis Visualization ✅ COMPLETED
+**Impact: MEDIUM | Effort: LOW (1-2 days)** — Implemented and deployed.
 
 Highlight downstream blast radius on topology.
-**Status:** Backend endpoint exists (`/cmdb/impact/{ci_id}`), needs frontend wiring
-**Plan:** Not yet created
+
+#### What Was Built
+- Backend: `get_downstream_impact()` PostgreSQL recursive CTE, deduplication in `cmdb/repository.py`
+- Frontend: "Show Impact" / "Clear Impact" toggle in NodeDetailPanel Actions tab
+- TopologyGraph: `impactNodes` + `highlightedNodeId` props — red fill for impacted nodes, amber border for source, dashed red edges, depth labels
+- Non-impact nodes dimmed to focus on blast radius
 
 #### Design
 - "Show Impact" button on NodeDetailPanel
@@ -779,8 +793,8 @@ Audit trail for all user actions.
 
 ### Wave 1: Tier 3 Quick Wins ✅ MOSTLY DONE
 - [x] CI search & filtering
-- [ ] WebSocket real-time push (1-2 days) → `websocket-realtime-push.md`
-- [x] Impact analysis visualization (backend done, needs frontend wiring — 0.5 day) → `impact-analysis-visualization.md`
+- [x] WebSocket real-time push ✅
+- [x] Impact analysis visualization ✅
 - [ ] SLI/SLO dashboard (1-2 days) → `sli-slo-dashboard.md`
 - [ ] Audit log (1 day) → `audit-log.md`
 
@@ -826,6 +840,8 @@ Audit trail for all user actions.
 14. **Smarter Incident Grouping:** Union-Find algorithm, multi-signal correlation, dynamic titles
 15. **Delete Chat Threads:** Backend DELETE endpoint, frontend trash icon
 16. **Incident Suggestions:** One-click AI analysis via chatbot with change context
+17. **Impact Analysis Visualization:** Blast radius highlighting on CMDB topology with depth labels
+18. **WebSocket Real-Time Push:** Redis pub/sub + WS endpoint, auto-reconnect hook, no more polling
 
 ### Remaining Work (Prioritized)
 | Priority | Feature | Effort | Impact | Status | Plan |
@@ -840,10 +856,10 @@ Audit trail for all user actions.
 | 8 | Change-Aware Correlation | 2-3 days | HIGH | ✅ COMPLETED | `change-aware-correlation.md` |
 | 9 | Incident Timeline (visual) | 2-3 days | HIGH | ✅ PARTIAL | — |
 | 10 | Runbook Automation | 3-4 days | HIGH | NOT STARTED | `runbook-automation.md` |
-| 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | NOT STARTED | `impact-analysis-visualization.md` |
-| 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | NOT STARTED | `websocket-realtime-push.md` |
+| 11 | Impact Analysis Visualization | 1-2 days | MEDIUM | ✅ COMPLETED | `impact-analysis-visualization.md` |
+| 12 | WebSocket Real-Time Push | 1-2 days | MEDIUM | ✅ COMPLETED | `websocket-realtime-push.md` |
 | 13 | SLI/SLO Dashboard | 1-2 days | MEDIUM | NOT STARTED | `sli-slo-dashboard.md` |
 | 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
 | 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
 
-**Recommended next:** Impact Analysis (0.5 day) → WebSocket Push (1-2 days) → then pick from the networking plans (Manual Device, LLD Planner) which all have detailed plans ready.
+**Recommended next:** SLI/SLO Dashboard (1-2 days) → ML Anomaly Detection (3-4 days) → Runbook Automation (3-4 days) → then Tier 2 features.
