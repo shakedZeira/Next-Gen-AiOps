@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { cmdbAPI, alertsAPI, networkSimAPI } from '../api/client';
+import { cmdbAPI, alertsAPI, networkSimAPI, syslogAPI } from '../api/client';
 import { CIDetails, Alert } from '../types';
 
 interface DeviceInterface {
@@ -94,7 +94,7 @@ const TYPE_ICONS: Record<string, string> = {
   storage: '📁',
 };
 
-type Tab = 'details' | 'network' | 'trace' | 'actions';
+type Tab = 'details' | 'network' | 'trace' | 'logs' | 'actions';
 
 export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTraceroute, onClearTraceroute, onFailureInjected, onRecovered, onShowImpact, onClearImpact }: Props) {
   const [details, setDetails] = useState<CIDetails | null>(null);
@@ -126,6 +126,9 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
 
   const [impactLoading, setImpactLoading] = useState(false);
   const [impactActive, setImpactActive] = useState(false);
+
+  const [syslogMessages, setSyslogMessages] = useState<any[]>([]);
+  const [syslogLoading, setSyslogLoading] = useState(false);
 
   useEffect(() => {
     if (!ciId) {
@@ -235,6 +238,20 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     }
   }, [ciId]);
 
+  const loadSyslog = useCallback(async () => {
+    if (!ciId || !details?.ci) return;
+    setSyslogLoading(true);
+    try {
+      const hostname = details.ci.name;
+      const r = await syslogAPI.messages(hostname);
+      setSyslogMessages(r.data || []);
+    } catch {
+      setSyslogMessages([]);
+    } finally {
+      setSyslogLoading(false);
+    }
+  }, [ciId, details?.ci]);
+
   useEffect(() => {
     if (tab === 'network' && ciId) {
       loadRoutes();
@@ -244,7 +261,10 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     if (tab === 'actions' && ciId) {
       loadInterfaces();
     }
-  }, [tab, ciId, loadRoutes, loadArp, loadMacTable, loadInterfaces]);
+    if (tab === 'logs' && ciId) {
+      loadSyslog();
+    }
+  }, [tab, ciId, loadRoutes, loadArp, loadMacTable, loadInterfaces, loadSyslog]);
 
   const handlePing = async () => {
     if (!ciId || !pingTarget) return;
@@ -386,6 +406,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
     { key: 'details', label: 'Details', icon: '📋' },
     { key: 'network', label: 'Network', icon: '🌐' },
     { key: 'trace', label: 'Ping / Trace', icon: '📡' },
+    { key: 'logs', label: 'Logs', icon: '📜' },
     { key: 'actions', label: 'Actions', icon: '⚡' },
   ];
 
@@ -524,7 +545,10 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                     >
                       View Connections
                     </button>
-                    <button className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors">
+                    <button
+                      onClick={() => setTab('logs')}
+                      className="flex-1 px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors"
+                    >
                       View Logs
                     </button>
                   </div>
@@ -724,6 +748,74 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                             <span className="text-gray-400">{h.hostname}</span>
                             <span className="text-gray-500 text-[10px]">{h.interface}</span>
                             {h.rtt_ms != null && <span className="text-gray-400 ml-auto">{Number(h.rtt_ms).toFixed(1)}ms</span>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Logs Tab */}
+              {tab === 'logs' && (
+                <div className="space-y-4">
+                  <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                        Syslog — {details?.ci?.name || 'Device'}
+                      </h4>
+                      <button
+                        onClick={loadSyslog}
+                        disabled={syslogLoading}
+                        className="text-xs text-gray-400 hover:text-white transition-colors"
+                      >
+                        {syslogLoading ? '...' : '↻ Refresh'}
+                      </button>
+                    </div>
+                    {syslogLoading && syslogMessages.length === 0 ? (
+                      <div className="flex items-center gap-2 text-xs text-gray-400 py-4">
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-blue-500 rounded-full" />
+                        Loading syslog messages...
+                      </div>
+                    ) : syslogMessages.length === 0 ? (
+                      <div className="text-center py-6">
+                        <div className="text-2xl mb-2">📭</div>
+                        <p className="text-xs text-gray-500">No syslog messages for this device</p>
+                        <p className="text-[10px] text-gray-600 mt-1">
+                          Send: <code className="bg-gray-700 px-1 rounded">echo "&lt;13&gt;..." | nc -u localhost 1514</code>
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-1 max-h-[400px] overflow-y-auto">
+                        {syslogMessages.map((msg, idx) => (
+                          <div
+                            key={idx}
+                            className={`px-3 py-2 rounded-lg text-xs font-mono border ${
+                              msg.alert_generated
+                                ? 'bg-red-500/10 border-red-500/30'
+                                : 'bg-gray-700/30 border-gray-700/50'
+                            }`}
+                          >
+                            <div className="flex items-start gap-2">
+                              <span className="text-gray-500 shrink-0 w-16">
+                                {new Date(msg.timestamp).toLocaleTimeString()}
+                              </span>
+                              <span className={`px-1 py-0.5 rounded text-[10px] font-medium shrink-0 ${
+                                msg.severity === 'critical' ? 'bg-red-500/20 text-red-400' :
+                                msg.severity === 'high' ? 'bg-orange-500/20 text-orange-400' :
+                                msg.severity === 'medium' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-blue-500/20 text-blue-400'
+                              }`}>
+                                {msg.severity}
+                              </span>
+                              <span className="text-gray-400 shrink-0">{msg.facility}</span>
+                              <span className="text-gray-300 flex-1 break-all">{msg.message}</span>
+                              {msg.alert_generated && (
+                                <span className="shrink-0 px-1 py-0.5 bg-red-500 text-white text-[10px] font-bold rounded">
+                                  ALERT
+                                </span>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
