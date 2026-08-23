@@ -34,7 +34,7 @@ export default function NOCAlerts({ user }: { user: any }) {
 
   const [viewMode, setViewMode] = useState<'alerts' | 'incidents'>('alerts');
   const [incidents, setIncidents] = useState<IncidentGroup[]>([]);
-  const [stats, setStats] = useState<{ total_created: number; deduplicated: number } | null>(null);
+  const [stats, setStats] = useState<{ total_created: number; deduplicated: number; suppressed?: number } | null>(null);
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string>('');
