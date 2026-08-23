@@ -7,7 +7,7 @@ from datetime import datetime
 logger = logging.getLogger("syslog_receiver")
 
 RFC3164_PATTERN = re.compile(
-    r"<(\d{1,3})>([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.*?)(?:\:\s*(.*))?$"
+    r"<(\d{1,3})>([A-Z][a-z]{2}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2})\s+(\S+)\s+(.*)$"
 )
 
 RFC5424_PATTERN = re.compile(
@@ -43,8 +43,9 @@ def parse_rfc3164(raw: str) -> SyslogMessage | None:
     priority = int(match.group(1))
     ts_str = match.group(2)
     hostname = match.group(3)
-    app_msg = match.group(4)
-    msg = match.group(5) or app_msg
+    msg = match.group(4)
+
+    app_name = msg.split(":")[0] if ":" in msg else msg
 
     try:
         now = datetime.utcnow()
@@ -62,7 +63,7 @@ def parse_rfc3164(raw: str) -> SyslogMessage | None:
         priority=priority,
         timestamp=parsed,
         hostname=hostname,
-        app_name=app_msg.split(":")[0] if ":" in app_msg else app_msg,
+        app_name=app_name,
         message=msg,
         facility=FACILITY_MAP.get(facility_num, f"facility-{facility_num}"),
         severity=SEVERITY_MAP.get(level_num, "medium"),

@@ -146,3 +146,10 @@ export const syslogAPI = {
     return api.get('/syslog/messages', { params });
   },
 };
+
+export const snmpAPI = {
+  getStats: () => api.get('/snmp/stats'),
+  getTraps: (params?: { limit?: number; severity?: string; source_ip?: string }) =>
+    api.get('/snmp/traps', { params }),
+  getHealth: () => api.get('/snmp/health'),
+};

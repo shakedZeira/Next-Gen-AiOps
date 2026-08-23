@@ -214,6 +214,35 @@ services:
       timeout: 5s
       retries: 5
 
+  snmp-receiver:
+    build:
+      context: .
+      dockerfile: plugins/snmp_receiver/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "1162:162/udp"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      alert-noc:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      REDIS_URL: redis://:${REDIS_PASSWORD:-changeme}@redis:6379/0
+      CORE_API_URL: http://api-gateway:8000
+      ALERT_NOC_URL: http://alert-noc:8005
+      SNMP_COMMUNITIES: ${SNMP_COMMUNITIES:-public}
+      SNMP_V3_USER: ${SNMP_V3_USER:-}
+      SNMP_V3_AUTH_KEY: ${SNMP_V3_AUTH_KEY:-}
+      SNMP_V3_PRIV_KEY: ${SNMP_V3_PRIV_KEY:-}
+      SNMP_V3_ENGINE_ID: ${SNMP_V3_ENGINE_ID:-}
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8016/health')\""]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
   ui:
     build:
       context: ./ui

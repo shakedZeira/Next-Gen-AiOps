@@ -10,6 +10,7 @@ import AgentMonitor from './pages/AgentMonitor';
 import SystemHealth from './pages/SystemHealth';
 import SLODashboard from './pages/SLODashboard';
 import SyslogViewer from './pages/SyslogViewer';
+import SNMPTrapLog from './pages/SNMPTrapLog';
 import Docs from './pages/Docs';
 import Layout from './components/Layout';
 import { User } from './types';
@@ -71,6 +72,7 @@ function App() {
             <Route path="system-health" element={<SystemHealth />} />
             <Route path="slo" element={<SLODashboard />} />
             <Route path="syslog" element={<SyslogViewer />} />
+            <Route path="snmp" element={<SNMPTrapLog />} />
             <Route path="docs" element={<Docs />} />
           </Route>
         </Routes>

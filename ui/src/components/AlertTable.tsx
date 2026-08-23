@@ -69,6 +69,11 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
                       SYSLOG
                     </span>
                   )}
+                  {alert.labels?.source === 'snmp-trap' && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-violet-100 text-violet-700 border border-violet-200" title={`SNMP trap ${alert.labels?.oid || ''} from ${alert.labels?.['source.ip'] || 'device'}`}>
+                      SNMP
+                    </span>
+                  )}
                   {(alert.repeat_count ?? 1) > 1 && (
                     <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
                       x{alert.repeat_count}

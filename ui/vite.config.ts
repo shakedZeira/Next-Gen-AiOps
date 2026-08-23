@@ -16,6 +16,10 @@ export default defineConfig({
         target: 'http://localhost:8014',
         changeOrigin: true,
       },
+      '/api/v1/snmp': {
+        target: 'http://localhost:8016',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:8000',
         changeOrigin: true,

@@ -982,7 +982,7 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 
 ### Wave 4: Feature Matrix Tier 1 (Data Collection + Processing)
 - [x] Syslog Collection (2-3 days) → `syslog-collection.md` ✅
-- [ ] SNMP Trap Receiver (3-4 days) → `snmp-trap-receiver.md`
+- [x] SNMP Trap Receiver (3-4 days) → `snmp-trap-receiver.md` ✅
 - [ ] Alert Suppression (1 day) → `alert-suppression.md`
 - [ ] Storm Management (2-3 days) → `storm-management.md` (depends on Suppression)
 - [ ] Maintenance Windows (1-2 days) → `maintenance-windows.md`
@@ -1055,7 +1055,7 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 | 14 | Service Dependency Map | 4-5 days | HIGH | NOT STARTED | `service-dependency-map.md` |
 | 15 | Predictive Alerting | 5-7 days | HIGH | NOT STARTED | `predictive-alerting.md` |
 | 16 | Syslog Collection | 2-3 days | HIGH | ✅ COMPLETED | `syslog-collection.md` |
-| 17 | SNMP Trap Receiver | 3-4 days | HIGH | NOT STARTED | `snmp-trap-receiver.md` |
+| 17 | SNMP Trap Receiver | 3-4 days | HIGH | ✅ COMPLETED | `snmp-trap-receiver.md` |
 | 18 | Alert Suppression | 1 day | MEDIUM | NOT STARTED | `alert-suppression.md` |
 | 19 | Storm Management | 2-3 days | MEDIUM | NOT STARTED | `storm-management.md` |
 | 20 | Maintenance Windows | 1-2 days | MEDIUM | NOT STARTED | `maintenance-windows.md` |
@@ -1085,4 +1085,4 @@ Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
 | 44 | Certificate Management | 1-2 days | LOW | NOT STARTED | `certificate-management.md` |
 | 45 | LDAP / SSO | 2-3 days | MEDIUM | NOT STARTED | `ldap-sso.md` |
 
-**Recommended next:** SNMP Trap Receiver (3-4 days) → Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days) → then Tier 2 integrations.
+**Recommended next:** Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days) → then Tier 2 integrations. *(SNMP Trap Receiver ✅ completed)*

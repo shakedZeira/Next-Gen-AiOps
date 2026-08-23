@@ -11,12 +11,12 @@ class AlertPattern:
 
 PATTERNS: list[AlertPattern] = [
     AlertPattern(
-        re.compile(r"%LINK-(?:UP|DOWN)", re.IGNORECASE),
+        re.compile(r"%LINK-\d+-(?:UP|DOWN|UPDOWN)", re.IGNORECASE),
         "Interface State Change",
         "medium",
     ),
     AlertPattern(
-        re.compile(r"%LINEPROTO-(?:UP|DOWN)", re.IGNORECASE),
+        re.compile(r"%LINEPROTO-\d+-(?:UP|DOWN|UPDOWN)", re.IGNORECASE),
         "Line Protocol State Change",
         "medium",
     ),
@@ -31,12 +31,12 @@ PATTERNS: list[AlertPattern] = [
         "medium",
     ),
     AlertPattern(
-        re.compile(r"%CPU|cpu.*utilization.*(?:exceed|high|threshold)", re.IGNORECASE),
+        re.compile(r"%CPU-\d+|cpu.*utilization.*(?:exceed|high|threshold)", re.IGNORECASE),
         "High CPU Usage",
         "high",
     ),
     AlertPattern(
-        re.compile(r"%MEMORY|memory.*(?:exceed|high|threshold|low)", re.IGNORECASE),
+        re.compile(r"%MEMORY-\d+|memory.*(?:exceed|high|threshold|low)", re.IGNORECASE),
         "High Memory Usage",
         "high",
     ),
@@ -51,7 +51,7 @@ PATTERNS: list[AlertPattern] = [
         "critical",
     ),
     AlertPattern(
-        re.compile(r"%TEMP|temperature.*(?:exceed|high|threshold)", re.IGNORECASE),
+        re.compile(r"%TEMP-\d+|temperature.*(?:exceed|high|threshold)", re.IGNORECASE),
         "Temperature Alert",
         "high",
     ),
@@ -61,7 +61,7 @@ PATTERNS: list[AlertPattern] = [
         "critical",
     ),
     AlertPattern(
-        re.compile(r"%BGP|bgp.*(?:down|establish|flap)", re.IGNORECASE),
+        re.compile(r"%BGP-\d+|bgp.*(?:down|establish|flap)", re.IGNORECASE),
         "BGP State Change",
         "high",
     ),

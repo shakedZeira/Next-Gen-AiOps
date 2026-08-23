@@ -14,6 +14,7 @@ const SECTIONS = [
   { id: 'slo-dashboard', title: 'SLI / SLO Dashboard' },
   { id: 'network-sim', title: 'Network Simulation' },
   { id: 'syslog', title: 'Syslog Collection' },
+  { id: 'snmp', title: 'SNMP Collection' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -528,6 +529,78 @@ export default function Docs() {
                 </tbody>
               </table>
             </div>
+          </section>
+
+          {/* === Section: SNMP Collection === */}
+          <section id="snmp">
+            <h2 className="text-2xl font-bold text-white mb-4">SNMP Trap Collection</h2>
+            <p className="text-gray-300 mb-4">
+              The SNMP trap receiver collects v1, v2c, and v3 traps from network devices via a pysnmp-based UDP listener,
+              maps trap OIDs to alert metadata, resolves the source IP to a CMDB CI, and publishes alerts to the NOC console.
+              Traps are viewable in real time on the SNMP Trap Log page.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Supported SNMP Versions</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">SNMPv1:</span> Community string based (legacy traps)</li>
+              <li><span className="text-green-400 font-medium">SNMPv2c:</span> Community string based with standardized trap OIDs (recommended default)</li>
+              <li><span className="text-purple-400 font-medium">SNMPv3:</span> USM authentication (MD5/SHA family) and privacy (DES/3DES/AES family) — configure via <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">SNMP_V3_USER</code>, <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">SNMP_V3_AUTH_KEY</code>, and <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">SNMP_V3_PRIV_KEY</code></li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Architecture</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">UDP Listener:</span> Port 162 inside the container (host port 1162)</li>
+              <li><span className="text-green-400 font-medium">OID Mapping:</span> Standard + Cisco enterprise OIDs mapped to names, severities, and descriptions</li>
+              <li><span className="text-yellow-400 font-medium">CI Mapping:</span> Source IP resolved to CMDB device with Redis caching; unmatched IPs fall back to the raw address</li>
+              <li><span className="text-purple-400 font-medium">Trap History:</span> Last 1000 traps buffered in Redis for the UI stream</li>
+              <li><span className="text-red-400 font-medium">Alert Generation:</span> Each trap creates an alert in alert-noc labeled <code className="bg-gray-800 px-2 py-1 rounded text-primary-400">source=snmp-trap</code> (violet SNMP badge in the alerts table)</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">OID Mapping Table</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">OID</th><th className="px-4 py-2">Trap Name</th><th className="px-4 py-2">Severity</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-300">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.6.3.1.1.5.3</td><td className="px-4 py-2">linkDown</td><td className="px-4 py-2"><span className="text-red-400">critical</span></td><td className="px-4 py-2">Interface operational state changed to down</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.6.3.1.1.5.4</td><td className="px-4 py-2">linkUp</td><td className="px-4 py-2"><span className="text-gray-400">info</span></td><td className="px-4 py-2">Interface operational state changed to up</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.6.3.1.1.5.5</td><td className="px-4 py-2">authFailure</td><td className="px-4 py-2"><span className="text-orange-400">high</span></td><td className="px-4 py-2">SNMP authentication failure detected</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.4.1.9.9.109.2.0.1</td><td className="px-4 py-2">cpmCPUHighThreshold</td><td className="px-4 py-2"><span className="text-orange-400">high</span></td><td className="px-4 py-2">CPU utilization exceeded the high threshold (Cisco)</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.4.1.9.9.221.2.0.1</td><td className="px-4 py-2">cpmMemoryThreshold</td><td className="px-4 py-2"><span className="text-orange-400">high</span></td><td className="px-4 py-2">Memory pool usage exceeded threshold (Cisco)</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.4.1.9.9.13.3.0.3</td><td className="px-4 py-2">ciscoEnvMonTemperatureState</td><td className="px-4 py-2"><span className="text-red-400">critical</span></td><td className="px-4 py-2">Environmental temperature alarm state (Cisco)</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.2.1.14.16.2.2</td><td className="px-4 py-2">ospfNbrStateChange</td><td className="px-4 py-2"><span className="text-yellow-400">medium</span></td><td className="px-4 py-2">OSPF neighbor state changed</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2 font-mono text-xs">1.3.6.1.2.1.17.0.1</td><td className="px-4 py-2">rootBridgeChange</td><td className="px-4 py-2"><span className="text-yellow-400">medium</span></td><td className="px-4 py-2">Spanning tree elected a new root bridge</td></tr>
+                  <tr><td className="px-4 py-2 font-mono text-xs">(any unmapped OID)</td><td className="px-4 py-2">snmpTrap</td><td className="px-4 py-2"><span className="text-blue-400">low</span></td><td className="px-4 py-2">Unmapped SNMP trap received</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <h3 className="text-lg font-semibold text-white mb-2">Docker Port Mapping</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto mb-4"><code>{`# docker-compose.yml
+snmp-receiver:
+  ports:
+    - "1162:162/udp"   # host 1162 -> container 162 (SNMP trap port)`}</code></pre>
+            <h3 className="text-lg font-semibold text-white mb-2">Test Commands</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto mb-2"><code>{`# Send a v2c linkDown trap to the host-mapped port
+snmptrap -v 2c -c public localhost:1162 '' 1.3.6.1.6.3.1.1.5.3 \\
+  1.3.6.1.2.1.2.2.1.1.2 i 2 1.3.6.1.2.1.2.2.1.8 i 2`}</code></pre>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto mb-4"><code>{`# Or inject a synthetic trap via REST (no snmp tools required)
+curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
+  -d '{"source_ip":"10.0.1.2","trap_name":"linkDown","varbinds":[{"oid":"1.3.6.1.2.1.2.2.1.1.2","value":"GigabitEthernet0/1"}]}'`}</code></pre>
+            <h3 className="text-lg font-semibold text-white mb-2">REST API (port 8016)</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-300">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/snmp/health</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Listener status, UDP port, uptime</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/snmp/stats</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Traps received, alerts published, breakdowns by severity / source / trap type</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/snmp/traps?severity=&amp;source_ip=&amp;limit=</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Recent trap history with varbinds and CI match info</td></tr>
+                  <tr><td className="px-4 py-2"><code>/trap</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Inject a synthetic trap for testing</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p className="text-gray-300">
+              Proxied through nginx at <code className="bg-gray-800 px-2 py-1 rounded">/api/v1/snmp/*</code>; dev server proxies the same path to <code className="bg-gray-800 px-2 py-1 rounded">localhost:8016</code>.
+            </p>
           </section>
 
           {/* === Section 12: Architecture === */}
