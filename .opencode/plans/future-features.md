@@ -833,6 +833,124 @@ Receive and process SNMP traps from network devices.
 
 ---
 
+## Tier 2 — Medium Priority, Low-Medium Effort
+
+### Feature 27: Ticketing Integration (Jira)
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Create and link Jira tickets from alerts/incidents for formal incident management.
+**Plan:** `ticketing-integration.md`
+
+### Feature 28: Notifications (Email/Chat)
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Send alert notifications via email, Slack, Teams, Discord.
+**Plan:** `notifications.md`
+
+### Feature 29: ITSM Integration (ServiceNow)
+**Impact: MEDIUM | Effort: MEDIUM (3-4 days)**
+Bidirectional integration with ServiceNow for incident management, CI sync, and change correlation.
+**Plan:** `itsm-integration.md`
+
+### Feature 30: Prometheus Integration
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Scrape Prometheus metrics to enrich SLI calculations and display live metrics.
+**Plan:** `prometheus-integration.md`
+
+### Feature 31: Northbound Data Transfer
+**Impact: LOW-MEDIUM | Effort: LOW (1-2 days)**
+Forward alerts and events to external systems via webhooks or REST APIs.
+**Plan:** `northbound-data-transfer.md`
+
+### Feature 32: Automation Tools (Ansible)
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Trigger Ansible playbooks from alerts/incidents for automated remediation.
+**Plan:** `automation-tools.md`
+
+### Feature 33: Custom Scripts
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2 days)**
+User-extensible Python/Shell scripts for custom alert enrichment, remediation, and reporting.
+**Plan:** `custom-scripts.md`
+
+### Feature 34: Data Retention
+**Impact: LOW | Effort: LOW (1 day)**
+Configurable history retention policy for alerts, events, audit logs, and metrics.
+**Plan:** `data-retention.md`
+
+### Feature 35: Horizontal Scalability
+**Impact: MEDIUM | Effort: MEDIUM (3-4 days)**
+Support adding servers to increase capacity with load balancing and connection pooling.
+**Plan:** `horizontal-scalability.md`
+
+### Feature 36: Backup and Restore
+**Impact: LOW | Effort: LOW-MEDIUM (1-2 days)**
+Backup and restore platform data (PostgreSQL, Redis, configuration) for disaster recovery.
+**Plan:** `backup-restore.md`
+
+---
+
+## Tier 3 — Low Priority / External System Integration
+
+### Feature 37: Multi-domain / Tenants
+**Impact: LOW | Effort: HIGH (5+ days)**
+Multiple independent organizational domains within a single deployment.
+**Plan:** `multi-tenancy.md`
+
+### Feature 38: Active/Active Deployment
+**Impact: LOW | Effort: HIGH (5+ days)**
+Multiple active instances across availability zones for high throughput.
+**Plan:** `active-active.md`
+
+### Feature 39: Multi-site (Disaster Recovery)
+**Impact: LOW | Effort: HIGH (5+ days)**
+Deploy across multiple physical sites with automatic failover.
+**Plan:** `multi-site-dr.md`
+
+### Feature 40: High Availability (HA)
+**Impact: LOW | Effort: HIGH (5+ days)**
+Eliminate single points of failure for 99.99% uptime SLA.
+**Plan:** `high-availability.md`
+
+### Feature 41: Kubernetes Integration
+**Impact: MEDIUM | Effort: MEDIUM (3-4 days)**
+Deploy on K8s with Helm chart and K8s cluster state visibility in CMDB.
+**Plan:** `kubernetes-integration.md`
+
+### Feature 42: Argo CD Integration
+**Impact: LOW | Effort: LOW-MEDIUM (2 days)**
+Display Argo CD application status and correlate deployments with alerts.
+**Plan:** `argocd-integration.md`
+
+### Feature 43: CI/CD Integrations (BitBucket, JFrog, WoodPecker)
+**Impact: LOW | Effort: LOW-MEDIUM (2 days)**
+Integrate with CI/CD platforms to correlate code changes and artifacts with operational events.
+**Plan:** `cicd-integrations.md`
+
+### Feature 44: External Systems Integration (DCIM, SolarWinds, SCOM, Splunk, LiveAction, FNT)
+**Impact: MEDIUM | Effort: MEDIUM (2-3 days per system)**
+Bidirectional integration with external monitoring and management systems.
+**Plan:** `external-systems-integration.md`
+
+### Feature 45: ABAC Permissions
+**Impact: LOW | Effort: MEDIUM (3-4 days)**
+Attribute-Based Access Control for fine-grained authorization beyond RBAC.
+**Plan:** `abac-permissions.md`
+
+### Feature 46: Tenant Isolation
+**Impact: LOW | Effort: MEDIUM (3-4 days)**
+Strict data isolation between tenants at database, cache, and network levels.
+**Plan:** `tenant-isolation.md`
+
+### Feature 47: Certificate Management
+**Impact: LOW | Effort: LOW-MEDIUM (1-2 days)**
+Track SSL/TLS certificates across services and devices, monitor expiration.
+**Plan:** `certificate-management.md`
+
+### Feature 48: LDAP / SSO Integration
+**Impact: MEDIUM | Effort: LOW-MEDIUM (2-3 days)**
+Enterprise authentication via LDAP/AD and SSO (SAML 2.0 / OIDC).
+**Plan:** `ldap-sso.md`
+
+---
+
 ## Execution Order
 
 ### Wave 1: Tier 3 Quick Wins ✅ MOSTLY DONE
@@ -851,11 +969,16 @@ Receive and process SNMP traps from network devices.
 - [ ] Runbook automation (3-4 days) → `runbook-automation.md`
 
 ### Wave 3: Tier 2 Features (Future)
-- [ ] Predictive alerting (5-7 days) → `predictive-alerting.md`
-- [ ] Self-healing pipeline (5-7 days) → `self-healing-pipeline.md`
-- [ ] Service dependency map (4-5 days) → `service-dependency-map.md`
-- [ ] Capacity planning (5-7 days) → `capacity-planning.md`
-- [ ] Cost attribution (5-7 days) → `cost-attribution.md`
+- [ ] Ticketing Integration / Jira (2-3 days) → `ticketing-integration.md`
+- [ ] Notifications / Email / Chat (2-3 days) → `notifications.md`
+- [ ] ITSM Integration / ServiceNow (3-4 days) → `itsm-integration.md`
+- [ ] Prometheus Integration (2-3 days) → `prometheus-integration.md`
+- [ ] Northbound Data Transfer (1-2 days) → `northbound-data-transfer.md`
+- [ ] Automation Tools / Ansible (2-3 days) → `automation-tools.md`
+- [ ] Custom Scripts (2 days) → `custom-scripts.md`
+- [ ] Data Retention (1 day) → `data-retention.md`
+- [ ] Horizontal Scalability (3-4 days) → `horizontal-scalability.md`
+- [ ] Backup and Restore (1-2 days) → `backup-restore.md`
 
 ### Wave 4: Feature Matrix Tier 1 (Data Collection + Processing)
 - [ ] Syslog Collection (2-3 days) → `syslog-collection.md`
@@ -866,6 +989,20 @@ Receive and process SNMP traps from network devices.
 - [ ] Alert Escalation (2-3 days) → `alert-escalation.md`
 - [ ] Audit Trail (1 day) → `audit-trail.md`
 - [ ] Dark Mode (1-2 days) → `dark-mode.md`
+
+### Wave 5: Tier 3 Features (Future)
+- [ ] Multi-domain / Tenants (5+ days) → `multi-tenancy.md`
+- [ ] Active/Active Deployment (5+ days) → `active-active.md`
+- [ ] Multi-site / DR (5+ days) → `multi-site-dr.md`
+- [ ] High Availability / HA (5+ days) → `high-availability.md`
+- [ ] Kubernetes Integration (3-4 days) → `kubernetes-integration.md`
+- [ ] Argo CD Integration (2 days) → `argocd-integration.md`
+- [ ] CI/CD Integrations (2 days) → `cicd-integrations.md`
+- [ ] External Systems Integration (2-3 days per system) → `external-systems-integration.md`
+- [ ] ABAC Permissions (3-4 days) → `abac-permissions.md`
+- [ ] Tenant Isolation (3-4 days) → `tenant-isolation.md`
+- [ ] Certificate Management (1-2 days) → `certificate-management.md`
+- [ ] LDAP / SSO (2-3 days) → `ldap-sso.md`
 
 ### SRE Waves (Production Readiness)
 - [ ] SRE Performance (3-4 days) → `sre-performance.md`
@@ -924,5 +1061,27 @@ Receive and process SNMP traps from network devices.
 | 21 | Alert Escalation | 2-3 days | MEDIUM | NOT STARTED | `alert-escalation.md` |
 | 22 | Audit Trail | 1 day | MEDIUM | NOT STARTED | `audit-trail.md` |
 | 23 | Dark Mode | 1-2 days | MEDIUM | NOT STARTED | `dark-mode.md` |
+| 24 | Ticketing Integration (Jira) | 2-3 days | MEDIUM | NOT STARTED | `ticketing-integration.md` |
+| 25 | Notifications (Email/Chat) | 2-3 days | MEDIUM | NOT STARTED | `notifications.md` |
+| 26 | ITSM Integration (ServiceNow) | 3-4 days | MEDIUM | NOT STARTED | `itsm-integration.md` |
+| 27 | Prometheus Integration | 2-3 days | MEDIUM | NOT STARTED | `prometheus-integration.md` |
+| 28 | Northbound Data Transfer | 1-2 days | LOW-MED | NOT STARTED | `northbound-data-transfer.md` |
+| 29 | Automation Tools (Ansible) | 2-3 days | MEDIUM | NOT STARTED | `automation-tools.md` |
+| 30 | Custom Scripts | 2 days | MEDIUM | NOT STARTED | `custom-scripts.md` |
+| 31 | Data Retention | 1 day | LOW | NOT STARTED | `data-retention.md` |
+| 32 | Horizontal Scalability | 3-4 days | MEDIUM | NOT STARTED | `horizontal-scalability.md` |
+| 33 | Backup and Restore | 1-2 days | LOW | NOT STARTED | `backup-restore.md` |
+| 34 | Multi-domain / Tenants | 5+ days | LOW | NOT STARTED | `multi-tenancy.md` |
+| 35 | Active/Active Deployment | 5+ days | LOW | NOT STARTED | `active-active.md` |
+| 36 | Multi-site / DR | 5+ days | LOW | NOT STARTED | `multi-site-dr.md` |
+| 37 | High Availability (HA) | 5+ days | LOW | NOT STARTED | `high-availability.md` |
+| 38 | Kubernetes Integration | 3-4 days | MEDIUM | NOT STARTED | `kubernetes-integration.md` |
+| 39 | Argo CD Integration | 2 days | LOW | NOT STARTED | `argocd-integration.md` |
+| 40 | CI/CD Integrations | 2 days | LOW | NOT STARTED | `cicd-integrations.md` |
+| 41 | External Systems Integration | 2-3 days/sys | MEDIUM | NOT STARTED | `external-systems-integration.md` |
+| 42 | ABAC Permissions | 3-4 days | LOW | NOT STARTED | `abac-permissions.md` |
+| 43 | Tenant Isolation | 3-4 days | LOW | NOT STARTED | `tenant-isolation.md` |
+| 44 | Certificate Management | 1-2 days | LOW | NOT STARTED | `certificate-management.md` |
+| 45 | LDAP / SSO | 2-3 days | MEDIUM | NOT STARTED | `ldap-sso.md` |
 
-**Recommended next:** Syslog Collection (2-3 days) → SNMP Trap Receiver (3-4 days) → Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days).
+**Recommended next:** Syslog Collection (2-3 days) → SNMP Trap Receiver (3-4 days) → Alert Suppression (1 day) → Storm Management (2-3 days) → Maintenance Windows (1-2 days) → Escalation (2-3 days) → Audit Trail (1 day) → Dark Mode (1-2 days) → then Tier 2 integrations.
