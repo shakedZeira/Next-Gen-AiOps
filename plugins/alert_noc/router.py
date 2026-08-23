@@ -18,8 +18,8 @@ async def create_alert(data: AlertCreate):
 
 
 @router.get("/alerts", response_model=list[dict])
-async def list_alerts(status: str | None = None, team: str | None = None, suppressed: bool | None = None):
-    alerts = await alert_store.list_alerts(status, team, suppressed)
+async def list_alerts(status: str | None = None, team: str | None = None, suppressed: bool | None = None, throttled: bool | None = None):
+    alerts = await alert_store.list_alerts(status, team, suppressed, throttled)
     return [a.model_dump() for a in alerts]
 
 
@@ -57,7 +57,31 @@ async def resolve_incident(incident_id: str):
 async def alert_stats():
     stats = await alert_store.dedup.get_stats()
     stats["suppressed"] = await alert_store.suppressor.get_suppressed_count()
+    active_storm = await alert_store.storm.get_active_storm()
+    stats["storm_active"] = active_storm is not None
+    stats["throttled"] = (await alert_store.dedup.get_stats()).get("throttled", 0)
     return stats
+
+
+@router.get("/alerts/storms")
+async def list_storms(limit: int = 20):
+    return await alert_store.storm.get_storms(limit)
+
+
+@router.get("/alerts/storms/active")
+async def get_active_storm():
+    storm = await alert_store.storm.get_active_storm()
+    if not storm:
+        return None
+    return storm.to_dict()
+
+
+@router.post("/alerts/storms/{storm_id}/clear")
+async def clear_storm(storm_id: str):
+    storm = await alert_store.storm.clear_storm(storm_id)
+    if not storm:
+        return {"error": "Storm not found or already cleared"}
+    return storm.to_dict()
 
 
 @router.get("/alerts/{alert_id}")

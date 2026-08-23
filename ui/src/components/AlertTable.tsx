@@ -94,6 +94,11 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
                       SUPPRESSED
                     </span>
                   )}
+                  {alert.throttled && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 border border-red-200" title="Throttled during alert storm">
+                      THROTTLED
+                    </span>
+                  )}
                   {alert.labels?.source === 'syslog' && (
                     <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200" title={`Syslog from ${alert.labels?.hostname || 'device'}`}>
                       SYSLOG

@@ -76,6 +76,12 @@ export const alertsAPI = {
   resolve: (id: string) => api.post(`/alerts/${id}/resolve`),
 };
 
+export const stormAPI = {
+  active: () => api.get('/alerts/storms/active'),
+  list: (limit?: number) => api.get('/alerts/storms', { params: limit ? { limit } : {} }),
+  clear: (id: string) => api.post(`/alerts/storms/${id}/clear`),
+};
+
 export const simulateAPI = {
   scenarios: () => api.get('/simulate/scenarios'),
   run: (scenario: string) => api.post('/simulate/scenario', { scenario }),

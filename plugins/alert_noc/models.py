@@ -44,6 +44,8 @@ class AlertResponse(AlertCreate):
     suppressed: bool = False
     suppressed_by: str | None = None
     suppressed_at: datetime | None = None
+    storm_id: str | None = None
+    throttled: bool = False
 
 
 class AlertAcknowledge(BaseModel):

@@ -16,6 +16,7 @@ const SECTIONS = [
   { id: 'syslog', title: 'Syslog Collection' },
   { id: 'snmp', title: 'SNMP Collection' },
   { id: 'suppression', title: 'Alert Suppression' },
+  { id: 'storm', title: 'Storm Management' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -646,6 +647,39 @@ curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
                   <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts?suppressed=false</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List non-suppressed alerts (default)</td></tr>
                   <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts?suppressed=true</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List only suppressed alerts</td></tr>
                   <tr><td className="px-4 py-2"><code>/api/v1/alerts/stats</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Returns suppressed count in stats</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* === Section: Storm Management === */}
+          <section id="storm">
+            <h2 className="text-2xl font-bold text-white mb-4">Storm Management</h2>
+            <p className="text-gray-300 mb-4">
+              Alert Storm Management detects bursts of alerts that overwhelm operators and automatically
+              throttles non-root-cause alerts, showing a single storm summary instead of 50+ individual alerts.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">Storm Detection Rules</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">Volume Threshold:</span> &gt;10 active alerts within 60 seconds</li>
+              <li><span className="text-blue-400 font-medium">Service Spread:</span> &gt;5 services affected within 2 minutes</li>
+              <li><span className="text-blue-400 font-medium">Auto-Clear:</span> Storm clears after 5 minutes without new alerts</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">Storm Response Flow</h3>
+            <pre className="bg-gray-900 text-green-400 p-4 rounded-lg text-sm overflow-x-auto mb-4"><code>{`1. Detection: Threshold exceeded → StormEvent created
+2. Throttling: Only root-cause alert visible, symptoms hidden
+3. Summary: StormSummary card shows affected services + count
+4. Recovery: 5 min no new alerts → storm clears, all alerts reappear`}</code></pre>
+            <h3 className="text-lg font-semibold text-white mb-2">REST API</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-200">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts/storms/active</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Current active storm (or null)</td></tr>
+                  <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts/storms</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List recent storms (last 7 days)</td></tr>
+                  <tr><td className="px-4 py-2"><code>/api/v1/alerts/storms/{'{id}'}/clear</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Manually clear a storm</td></tr>
                 </tbody>
               </table>
             </div>

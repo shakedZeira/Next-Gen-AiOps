@@ -25,6 +25,8 @@ export interface Alert {
   suppressed?: boolean;
   suppressed_by?: string;
   suppressed_at?: string;
+  storm_id?: string;
+  throttled?: boolean;
 }
 
 export interface AlertGroup {
@@ -53,6 +55,8 @@ export interface AlertStats {
   deduplicated: number;
   incidents_formed: number;
   suppressed?: number;
+  throttled?: number;
+  storm_active?: boolean;
 }
 
 export interface SLIValue {
@@ -87,6 +91,17 @@ export interface Scenario {
   name: string;
   description: string;
   alert_count: number;
+}
+
+export interface StormEvent {
+  id: string;
+  detected_at: string;
+  cleared_at?: string;
+  alert_count: number;
+  affected_services: string[];
+  root_cause_alert_id: string;
+  status: 'active' | 'cleared';
+  throttled: boolean;
 }
 
 export interface CI {

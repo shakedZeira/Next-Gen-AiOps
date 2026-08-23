@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import AlertTable from '../components/AlertTable';
 import AlertDetail from '../components/AlertDetail';
 import IncidentDetail from '../components/IncidentDetail';
+import StormSummary from '../components/StormSummary';
 import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
 import { useAlertsWebSocket } from '../hooks/useAlertsWebSocket';
 import { Alert, IncidentGroup, Scenario } from '../types';
@@ -34,7 +35,7 @@ export default function NOCAlerts({ user }: { user: any }) {
 
   const [viewMode, setViewMode] = useState<'alerts' | 'incidents'>('alerts');
   const [incidents, setIncidents] = useState<IncidentGroup[]>([]);
-  const [stats, setStats] = useState<{ total_created: number; deduplicated: number; suppressed?: number } | null>(null);
+  const [stats, setStats] = useState<{ total_created: number; deduplicated: number; suppressed?: number; throttled?: number; storm_active?: boolean } | null>(null);
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string>('');
@@ -234,9 +235,15 @@ export default function NOCAlerts({ user }: { user: any }) {
               {(stats.suppressed ?? 0) > 0 && (
                 <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded">Suppressed: {stats.suppressed}</span>
               )}
+              {(stats.throttled ?? 0) > 0 && (
+                <span className="bg-red-100 text-red-700 px-2 py-1 rounded">Throttled: {stats.throttled}</span>
+              )}
+              {stats.storm_active && (
+                <span className="bg-red-500 text-white px-2 py-1 rounded animate-pulse">STORM ACTIVE</span>
+              )}
               {stats.total_created > 0 && (
                 <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  {Math.round(((stats.deduplicated + (stats.suppressed ?? 0)) / stats.total_created) * 100)}% reduced
+                  {Math.round(((stats.deduplicated + (stats.suppressed ?? 0) + (stats.throttled ?? 0)) / stats.total_created) * 100)}% reduced
                 </span>
               )}
             </div>
@@ -351,15 +358,18 @@ export default function NOCAlerts({ user }: { user: any }) {
             onResolve={handleResolve}
           />
         ) : viewMode === 'alerts' ? (
-          <AlertTable
-            alerts={alerts}
-            onAcknowledge={handleAcknowledge}
-            onResolve={handleResolve}
-            onAlertClick={setSelectedAlert}
-            showSuppressed={showSuppressed}
-            onToggleSuppressed={() => setShowSuppressed(!showSuppressed)}
-            suppressedCount={stats?.suppressed}
-          />
+          <>
+            <StormSummary onClear={() => fetchStats()} />
+            <AlertTable
+              alerts={alerts}
+              onAcknowledge={handleAcknowledge}
+              onResolve={handleResolve}
+              onAlertClick={setSelectedAlert}
+              showSuppressed={showSuppressed}
+              onToggleSuppressed={() => setShowSuppressed(!showSuppressed)}
+              suppressedCount={stats?.suppressed}
+            />
+          </>
         ) : (
           <div className="divide-y divide-gray-200">
             {incidents.length === 0 ? (

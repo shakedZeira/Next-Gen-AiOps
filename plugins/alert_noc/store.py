@@ -12,6 +12,7 @@ from plugins.alert_noc.config import AlertNOCConfig
 from plugins.alert_noc.dedup import AlertDeduplicator
 from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
 from plugins.alert_noc.suppression import AlertSuppressor
+from plugins.alert_noc.storm import StormDetector
 
 ALERTS_CHANNEL = "alerts:events"
 
@@ -22,6 +23,7 @@ class AlertStore:
         self.redis = aioredis.from_url(config.REDIS_URL)
         self.dedup = AlertDeduplicator(self.redis)
         self.suppressor = AlertSuppressor(self.redis)
+        self.storm = StormDetector(self.redis)
         self._ws_clients: set = set()
 
     async def _publish(self, event_type: str, alert: AlertResponse):
@@ -76,6 +78,24 @@ class AlertStore:
             logger.info("Alert suppressed: %s by %s", alert.name, primary_id)
             return alert
 
+        await self.storm.record_alert(alert_id, data.service, data.severity, now)
+
+        storm = await self.storm.check_storm()
+        if storm and storm.throttled:
+            root_cause_id = await self.storm.get_root_cause_alert()
+            if alert_id != root_cause_id:
+                alert.throttled = True
+                alert.storm_id = storm.id
+                await self.redis.hset("alerts", alert_id, alert.model_dump_json())
+                await self.redis.sadd("alerts:active", alert_id)
+                await self.dedup.increment_stats("total_created")
+                await self.dedup.increment_stats("throttled")
+                await self.suppressor.register_alert(alert)
+                logger.info("Alert throttled in storm %s: %s", storm.id, alert.name)
+                return alert
+            else:
+                alert.storm_id = storm.id
+
         await self.redis.hset("alerts", alert_id, alert.model_dump_json())
         await self.redis.sadd("alerts:active", alert_id)
         await self.dedup.register_dedup(data.service, normalized, alert_id)
@@ -93,7 +113,7 @@ class AlertStore:
                 return None
         return None
 
-    async def list_alerts(self, status: str | None = None, team: str | None = None, suppressed: bool | None = None) -> list[AlertResponse]:
+    async def list_alerts(self, status: str | None = None, team: str | None = None, suppressed: bool | None = None, throttled: bool | None = None) -> list[AlertResponse]:
         if status:
             ids = await self.redis.smembers(f"alerts:{status}")
         else:
@@ -109,6 +129,9 @@ class AlertStore:
                         continue
                 elif alert.suppressed:
                     continue
+                if throttled is not None:
+                    if alert.throttled != throttled:
+                        continue
                 alerts.append(alert)
         return sorted(alerts, key=lambda a: a.created_at, reverse=True)
 
