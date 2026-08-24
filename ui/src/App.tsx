@@ -11,6 +11,7 @@ import SystemHealth from './pages/SystemHealth';
 import SLODashboard from './pages/SLODashboard';
 import SyslogViewer from './pages/SyslogViewer';
 import SNMPTrapLog from './pages/SNMPTrapLog';
+import AuditLog from './pages/AuditLog';
 import Docs from './pages/Docs';
 import Layout from './components/Layout';
 import { User } from './types';
@@ -73,6 +74,7 @@ function App() {
             <Route path="slo" element={<SLODashboard />} />
             <Route path="syslog" element={<SyslogViewer />} />
             <Route path="snmp" element={<SNMPTrapLog />} />
+            <Route path="audit" element={<AuditLog />} />
             <Route path="docs" element={<Docs />} />
           </Route>
         </Routes>

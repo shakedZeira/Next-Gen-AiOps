@@ -19,6 +19,7 @@ const SECTIONS = [
   { id: 'storm', title: 'Storm Management' },
   { id: 'maintenance', title: 'Maintenance Windows' },
   { id: 'escalation', title: 'Alert Escalation' },
+  { id: 'audit', title: 'Audit Trail' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -758,6 +759,52 @@ curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
                     <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts/escalation/rules</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List escalation rules</td></tr>
                     <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts/{'{id}'}/escalation</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Get escalation history</td></tr>
                     <tr><td className="px-4 py-2"><code>/api/v1/alerts/{'{id}'}/escalation/acknowledge</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Acknowledge at level</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* === Section: Audit Trail === */}
+          <section id="audit">
+            <h2 className="text-2xl font-bold text-white mb-4">Audit Trail</h2>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 mb-6">
+              <p className="text-gray-200 mb-4">
+                The Audit Trail logs every user action across the platform for compliance and forensics.
+                All acknowledges, resolves, chat messages, and scenario runs are tracked with timestamps and user info.
+              </p>
+              <h3 className="text-lg font-semibold text-white mb-2">Logged Actions</h3>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-800 text-white">
+                    <tr><th className="px-4 py-2">Action</th><th className="px-4 py-2">Source</th><th className="px-4 py-2">Description</th></tr>
+                  </thead>
+                  <tbody className="text-gray-200">
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>alert.acknowledge</code></td><td className="px-4 py-2">NOC Alerts</td><td className="px-4 py-2">Operator acknowledged an alert</td></tr>
+                    <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>alert.resolve</code></td><td className="px-4 py-2">NOC Alerts</td><td className="px-4 py-2">Alert resolved</td></tr>
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>chat.message</code></td><td className="px-4 py-2">Chatbot</td><td className="px-4 py-2">User sent a chat message</td></tr>
+                    <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>chat.approve</code></td><td className="px-4 py-2">Chatbot</td><td className="px-4 py-2">Tool execution approved</td></tr>
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>chat.reject</code></td><td className="px-4 py-2">Chatbot</td><td className="px-4 py-2">Tool execution rejected</td></tr>
+                    <tr><td className="px-4 py-2"><code>scenario.run</code></td><td className="px-4 py-2">NOC Alerts</td><td className="px-4 py-2">Alert simulation scenario triggered</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Key Features</h3>
+              <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+                <li><span className="text-blue-400 font-medium">Auto-Refresh:</span> Audit log page refreshes every 30 seconds</li>
+                <li><span className="text-blue-400 font-medium">Filtering:</span> Filter by user, action type, and resource type</li>
+                <li><span className="text-blue-400 font-medium">Stats Dashboard:</span> Top actions and top users at a glance</li>
+                <li><span className="text-blue-400 font-medium">Redis-Backed:</span> Fast writes and queries via Redis sorted sets</li>
+              </ul>
+              <h3 className="text-lg font-semibold text-white mb-2">API Endpoints</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-800 text-white">
+                    <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                  </thead>
+                  <tbody className="text-gray-200">
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/audit</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List audit logs with filters</td></tr>
+                    <tr><td className="px-4 py-2"><code>/api/v1/audit/stats</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Get audit statistics</td></tr>
                   </tbody>
                 </table>
               </div>

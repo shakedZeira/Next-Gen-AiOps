@@ -162,12 +162,48 @@ async def get_alert(alert_id: str):
 @router.post("/alerts/{alert_id}/acknowledge")
 async def acknowledge_alert(alert_id: str, data: AlertAcknowledge):
     success = await alert_store.acknowledge(alert_id, data.acknowledged_by)
+    if success:
+        try:
+            import json, uuid
+            from datetime import datetime
+            event = {
+                "id": str(uuid.uuid4()),
+                "timestamp": datetime.utcnow().isoformat(),
+                "user": data.acknowledged_by,
+                "action": "alert.acknowledge",
+                "resource_type": "alert",
+                "resource_id": alert_id,
+                "details": {"alert_id": alert_id},
+                "ip_address": "",
+            }
+            await alert_store.redis.hset("audit:logs", event["id"], json.dumps(event))
+            await alert_store.redis.zadd("audit:index", {event["id"]: datetime.utcnow().timestamp()})
+        except Exception:
+            pass
     return {"success": success}
 
 
 @router.post("/alerts/{alert_id}/resolve")
 async def resolve_alert(alert_id: str):
     success = await alert_store.resolve(alert_id)
+    if success:
+        try:
+            import json, uuid
+            from datetime import datetime
+            event = {
+                "id": str(uuid.uuid4()),
+                "timestamp": datetime.utcnow().isoformat(),
+                "user": "system",
+                "action": "alert.resolve",
+                "resource_type": "alert",
+                "resource_id": alert_id,
+                "details": {"alert_id": alert_id},
+                "ip_address": "",
+            }
+            await alert_store.redis.hset("audit:logs", event["id"], json.dumps(event))
+            await alert_store.redis.zadd("audit:index", {event["id"]: datetime.utcnow().timestamp()})
+        except Exception:
+            pass
     return {"success": success}
 
 
@@ -187,4 +223,21 @@ async def run_scenario(data: ScenarioRequest):
     from plugins.alert_noc.scenarios import ScenarioRunner
     runner = ScenarioRunner(alert_store)
     asyncio.create_task(runner.run(data.scenario))
+    try:
+        import json, uuid
+        from datetime import datetime
+        event = {
+            "id": str(uuid.uuid4()),
+            "timestamp": datetime.utcnow().isoformat(),
+            "user": "operator@aiops.local",
+            "action": "scenario.run",
+            "resource_type": "scenario",
+            "resource_id": data.scenario,
+            "details": {"scenario": data.scenario},
+            "ip_address": "",
+        }
+        await alert_store.redis.hset("audit:logs", event["id"], json.dumps(event))
+        await alert_store.redis.zadd("audit:index", {event["id"]: datetime.utcnow().timestamp()})
+    except Exception:
+        pass
     return {"status": "started", "scenario": data.scenario}

@@ -79,6 +79,19 @@ async def chat(req: ChatRequest):
     await r.rpush(thread_key, json.dumps({"role": "assistant", "content": response_text}))
     await r.expire(thread_key, cfg.CONVERSATION_TTL_S)
 
+    try:
+        from core_platform.audit import get_audit_logger
+        audit = await get_audit_logger()
+        await audit.log(
+            user="operator@aiops.local",
+            action="chat.message",
+            resource_type="chat",
+            resource_id=req.thread_id,
+            details={"thread_id": req.thread_id, "message_preview": req.message[:100]},
+        )
+    except Exception:
+        pass
+
     return ChatResponse(response=response_text, thread_id=req.thread_id)
 
 
@@ -94,6 +107,18 @@ async def decide_approval(request_id: str, decision: ApprovalDecision):
         success = await approval_manager.approve(request_id, decision.decided_by)
     else:
         success = await approval_manager.reject(request_id, decision.decided_by)
+    try:
+        from core_platform.audit import get_audit_logger
+        audit = await get_audit_logger()
+        await audit.log(
+            user=decision.decided_by,
+            action="chat.approve" if decision.approved else "chat.reject",
+            resource_type="approval",
+            resource_id=request_id,
+            details={"request_id": request_id, "approved": decision.approved},
+        )
+    except Exception:
+        pass
     return {"success": success, "status": "approved" if decision.approved else "rejected"}
 
 

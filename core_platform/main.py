@@ -6,6 +6,7 @@ from fastapi.responses import JSONResponse
 
 from aiops_shared.otel.instrumentation import init_tracer, instrument_fastapi
 from core_platform.auth.router import router as auth_router
+from core_platform.routers.audit import router as audit_router
 from core_platform.routers.cmdb import router as cmdb_router
 from core_platform.routers.changes import router as changes_router
 from core_platform.routers.health import router as health_router
@@ -55,6 +56,7 @@ app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(cmdb_router, prefix="/api/v1/cmdb", tags=["cmdb"])
 app.include_router(changes_router, prefix="/api/v1/changes", tags=["changes"])
 app.include_router(slo_router, prefix="/api/v1", tags=["slo"])
+app.include_router(audit_router, prefix="/api/v1", tags=["audit"])
 
 
 @app.api_route("/api/v1/alerts/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
