@@ -7,10 +7,29 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from plugins.alert_noc.router import router
 from plugins.alert_noc.store import ALERTS_CHANNEL, alert_store
 
+ESCALATION_CHECK_INTERVAL = 60
+
+
+async def escalation_background_task():
+    while True:
+        try:
+            await alert_store.escalation.run_background_check(
+                alert_store, alert_store._publish
+            )
+        except Exception as e:
+            pass
+        await asyncio.sleep(ESCALATION_CHECK_INTERVAL)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    task = asyncio.create_task(escalation_background_task())
     yield
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
 
 
 app = FastAPI(title="Alert NOC", lifespan=lifespan)

@@ -91,6 +91,12 @@ export const maintenanceAPI = {
   cleanup: () => api.post('/alerts/maintenance/cleanup'),
 };
 
+export const escalationAPI = {
+  rules: () => api.get('/alerts/escalation/rules'),
+  history: (alertId: string) => api.get(`/alerts/${alertId}/escalation`),
+  acknowledge: (alertId: string, level: number) => api.post(`/alerts/${alertId}/escalation/acknowledge`, null, { params: { level } }),
+};
+
 export const simulateAPI = {
   scenarios: () => api.get('/simulate/scenarios'),
   run: (scenario: string) => api.post('/simulate/scenario', { scenario }),

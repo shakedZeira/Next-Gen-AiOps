@@ -18,6 +18,7 @@ const SECTIONS = [
   { id: 'suppression', title: 'Alert Suppression' },
   { id: 'storm', title: 'Storm Management' },
   { id: 'maintenance', title: 'Maintenance Windows' },
+  { id: 'escalation', title: 'Alert Escalation' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -715,6 +716,51 @@ curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
                   <tr><td className="px-4 py-2"><code>/api/v1/alerts/maintenance/cleanup</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Clean up expired windows</td></tr>
                 </tbody>
               </table>
+            </div>
+          </section>
+
+          {/* === Section: Alert Escalation === */}
+          <section id="escalation">
+            <h2 className="text-2xl font-bold text-white mb-4">Alert Escalation</h2>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 mb-6">
+              <p className="text-gray-200 mb-4">
+                Alert Escalation automatically escalates unhandled alerts after configurable timeouts,
+                notifying the next tier of responders. A background task checks every 60 seconds.
+              </p>
+              <h3 className="text-lg font-semibold text-white mb-2">Escalation Levels</h3>
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-800 text-white">
+                    <tr><th className="px-4 py-2">Level</th><th className="px-4 py-2">Timeout</th><th className="px-4 py-2">Target</th><th className="px-4 py-2">Description</th></tr>
+                  </thead>
+                  <tbody className="text-gray-200">
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><span className="text-green-400 font-medium">L1</span></td><td className="px-4 py-2">0 min</td><td className="px-4 py-2">Team</td><td className="px-4 py-2">Initial alert fires, assigned team notified</td></tr>
+                    <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><span className="text-yellow-400 font-medium">L2</span></td><td className="px-4 py-2">15 min</td><td className="px-4 py-2">Team Lead</td><td className="px-4 py-2">Unacknowledged → escalate to team lead</td></tr>
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><span className="text-orange-400 font-medium">L3</span></td><td className="px-4 py-2">30 min</td><td className="px-4 py-2">On-Call Manager</td><td className="px-4 py-2">Still unacknowledged → escalate to manager</td></tr>
+                    <tr><td className="px-4 py-2"><span className="text-red-400 font-medium">L4</span></td><td className="px-4 py-2">60 min</td><td className="px-4 py-2">VP/CTO</td><td className="px-4 py-2">Critical escalation to executive leadership</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Key Behaviors</h3>
+              <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+                <li><span className="text-blue-400 font-medium">Auto-Escalate:</span> Background task checks every 60s for unacknowledged alerts past their timeout</li>
+                <li><span className="text-blue-400 font-medium">Acknowledge Stops Escalation:</span> Acknowledging at any level stops further escalation</li>
+                <li><span className="text-blue-400 font-medium">Timeline Tracking:</span> Full escalation history is recorded and displayed in the alert detail timeline</li>
+                <li><span className="text-blue-400 font-medium">Pipeline Priority:</span> Maintenance mute takes precedence over escalation (explicit operator intent)</li>
+              </ul>
+              <h3 className="text-lg font-semibold text-white mb-2">API Endpoints</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-800 text-white">
+                    <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                  </thead>
+                  <tbody className="text-gray-200">
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts/escalation/rules</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List escalation rules</td></tr>
+                    <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts/{'{id}'}/escalation</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Get escalation history</td></tr>
+                    <tr><td className="px-4 py-2"><code>/api/v1/alerts/{'{id}'}/escalation/acknowledge</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Acknowledge at level</td></tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 

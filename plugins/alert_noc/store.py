@@ -14,6 +14,7 @@ from plugins.alert_noc.models import AlertCreate, AlertResponse, AlertStatus
 from plugins.alert_noc.suppression import AlertSuppressor
 from plugins.alert_noc.storm import StormDetector
 from plugins.alert_noc.maintenance import MaintenanceStore
+from plugins.alert_noc.escalation import EscalationEngine
 
 ALERTS_CHANNEL = "alerts:events"
 
@@ -26,6 +27,7 @@ class AlertStore:
         self.suppressor = AlertSuppressor(self.redis)
         self.storm = StormDetector(self.redis)
         self.maintenance = MaintenanceStore(self.redis)
+        self.escalation = EscalationEngine(self.redis)
         self._ws_clients: set = set()
 
     async def _publish(self, event_type: str, alert: AlertResponse):

@@ -254,6 +254,18 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
             <span className="w-2 h-2 rounded-full bg-red-500" />
             <span>Alert created</span>
           </div>
+          {(alert.escalation_level ?? 1) > 1 && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gray-400 w-32">
+                {alert.escalated_at ? new Date(alert.escalated_at).toLocaleString() : '—'}
+              </span>
+              <span className={`w-2 h-2 rounded-full ${
+                alert.escalation_level === 2 ? 'bg-yellow-500' :
+                alert.escalation_level === 3 ? 'bg-orange-500' : 'bg-red-600'
+              }`} />
+              <span>Escalated to L{alert.escalation_level} — {alert.escalated_to || 'unknown'}</span>
+            </div>
+          )}
           {alert.acknowledged_at && (
             <div className="flex items-center gap-3">
               <span className="text-xs text-gray-400 w-32">

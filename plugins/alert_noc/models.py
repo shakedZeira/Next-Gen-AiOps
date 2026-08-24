@@ -48,6 +48,9 @@ class AlertResponse(AlertCreate):
     throttled: bool = False
     muted: bool = False
     muted_by: str | None = None
+    escalation_level: int = 1
+    escalated_at: str | None = None
+    escalated_to: str | None = None
 
 
 class AlertAcknowledge(BaseModel):

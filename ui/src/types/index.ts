@@ -29,6 +29,9 @@ export interface Alert {
   throttled?: boolean;
   muted?: boolean;
   muted_by?: string;
+  escalation_level?: number;
+  escalated_at?: string;
+  escalated_to?: string;
 }
 
 export interface AlertGroup {
@@ -59,6 +62,7 @@ export interface AlertStats {
   suppressed?: number;
   throttled?: number;
   muted?: number;
+  escalated?: number;
   storm_active?: boolean;
 }
 

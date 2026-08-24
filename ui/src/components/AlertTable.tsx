@@ -104,6 +104,15 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
                       MUTED
                     </span>
                   )}
+                  {(alert.escalation_level ?? 1) > 1 && (
+                    <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium border ${
+                      alert.escalation_level === 2 ? 'bg-yellow-100 text-yellow-700 border-yellow-200' :
+                      alert.escalation_level === 3 ? 'bg-orange-100 text-orange-700 border-orange-200' :
+                      'bg-red-100 text-red-700 border-red-200'
+                    }`} title={`Escalated to ${alert.escalated_to || 'unknown'} at L${alert.escalation_level}`}>
+                      L{alert.escalation_level}
+                    </span>
+                  )}
                   {alert.labels?.source === 'syslog' && (
                     <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200" title={`Syslog from ${alert.labels?.hostname || 'device'}`}>
                       SYSLOG

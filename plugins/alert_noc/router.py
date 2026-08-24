@@ -68,6 +68,8 @@ async def alert_stats():
     stats["suppressed"] = await alert_store.suppressor.get_suppressed_count()
     active_storm = await alert_store.storm.get_active_storm()
     stats["storm_active"] = active_storm is not None
+    alerts = await alert_store.list_alerts(status="active")
+    stats["escalated"] = sum(1 for a in alerts if (a.escalation_level or 1) > 1)
     return stats
 
 
@@ -129,6 +131,24 @@ async def cancel_maintenance_window(window_id: str):
 async def cleanup_expired_windows():
     removed = await alert_store.maintenance.cleanup_expired()
     return {"cleaned": removed}
+
+
+@router.get("/alerts/escalation/rules")
+async def get_escalation_rules():
+    from plugins.alert_noc.escalation import LEVELS
+    return [{"level": l.level, "timeout_seconds": l.timeout_seconds, "target": l.target, "label": l.label} for l in LEVELS]
+
+
+@router.get("/alerts/{alert_id}/escalation")
+async def get_alert_escalation(alert_id: str):
+    history = await alert_store.escalation.get_escalation_history(alert_id)
+    return {"alert_id": alert_id, "escalation_history": history}
+
+
+@router.post("/alerts/{alert_id}/escalation/acknowledge")
+async def acknowledge_at_level(alert_id: str, level: int = 2):
+    success = await alert_store.escalation.acknowledge_at_level(alert_id, level)
+    return {"success": success, "alert_id": alert_id, "level": level}
 
 
 @router.get("/alerts/{alert_id}")
