@@ -127,34 +127,34 @@ export default function DCExplorer() {
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <span className="text-gray-500">Type</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Type</span>
                     <p className="text-gray-300">{ROOM_TYPE_LABELS[room.room_type || ''] || room.room_type || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Tier</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Tier</span>
                     <p className="text-gray-300">{room.tier_rating ? `Tier ${room.tier_rating}` : '-'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Racks</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Racks</span>
                     <p className="text-gray-300">{room.total_racks}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Power</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Power</span>
                     <p className="text-gray-300">{room.power_capacity_kw ? `${room.power_capacity_kw} kW` : '-'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">Cooling</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Cooling</span>
                     <p className="text-gray-300">{COOLING_LABELS[room.cooling_type || ''] || room.cooling_type || '-'}</p>
                   </div>
                   <div>
-                    <span className="text-gray-500">PUE</span>
+                    <span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">PUE</span>
                     <p className="text-gray-300">{room.pue_target || '-'}</p>
                   </div>
                 </div>
               </button>
             ))}
             {rooms.length === 0 && (
-              <div className="col-span-full text-center text-gray-500 py-12">No rooms found for this site</div>
+              <div className="col-span-full text-center text-gray-500 dark:text-gray-400 dark:text-gray-400 py-12">No rooms found for this site</div>
             )}
           </div>
         )}
@@ -225,9 +225,9 @@ export default function DCExplorer() {
                             </div>
                           </div>
                           <span className="text-xs font-semibold text-white">{rack.name}</span>
-                          <span className="text-[10px] text-gray-500">{rack.u_height}U</span>
+                          <span className="text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-400">{rack.u_height}U</span>
                           {rack.current_temp_c && (
-                            <span className="text-[10px] text-gray-500">{rack.current_temp_c}°C</span>
+                            <span className="text-[10px] text-gray-500 dark:text-gray-400 dark:text-gray-400">{rack.current_temp_c}°C</span>
                           )}
                         </button>
                       );

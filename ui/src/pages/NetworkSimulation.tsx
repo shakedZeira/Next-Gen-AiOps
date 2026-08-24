@@ -113,8 +113,8 @@ export default function NetworkSimulation() {
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Network Simulation</h1>
-        <p className="text-gray-500 text-sm mt-1">Routing tables, ARP resolution, traceroute, and failure injection</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Network Simulation</h1>
+        <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Routing tables, ARP resolution, traceroute, and failure injection</p>
       </div>
 
       {error && (
@@ -128,9 +128,9 @@ export default function NetworkSimulation() {
       {!loading && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl border overflow-hidden">
-              <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-                <h2 className="font-semibold text-gray-900">Devices ({devices.length})</h2>
+            <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border overflow-hidden">
+              <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 flex items-center justify-between">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">Devices ({devices.length})</h2>
                 <button onClick={loadData} className="text-xs text-blue-600 hover:text-blue-800">Refresh</button>
               </div>
               <div className="divide-y max-h-[600px] overflow-y-auto">
@@ -145,14 +145,14 @@ export default function NetworkSimulation() {
                     <span className="text-xl">{deviceTypeIcons[dev.type] || '📡'}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
-                        <span className="font-medium text-gray-900 text-sm">{dev.name}</span>
+                        <span className="font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100 text-sm">{dev.name}</span>
                         <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${
                           dev.up ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                         }`}>
                           {dev.up ? 'UP' : 'DOWN'}
                         </span>
                       </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                         {dev.type} · {dev.site} · {dev.routes} routes · {dev.arp_entries} ARP
                       </div>
                     </div>
@@ -163,9 +163,9 @@ export default function NetworkSimulation() {
           </div>
 
           <div>
-            <div className="bg-white rounded-xl border overflow-hidden">
-              <div className="p-4 border-b bg-gray-50">
-                <h2 className="font-semibold text-gray-900">Events</h2>
+            <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border overflow-hidden">
+              <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
+                <h2 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">Events</h2>
               </div>
               <div className="divide-y max-h-[600px] overflow-y-auto">
                 {events.length === 0 && (
@@ -174,12 +174,12 @@ export default function NetworkSimulation() {
                 {events.map((ev, i) => (
                   <div key={i} className="p-3">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${eventColors[ev.event_type] || 'bg-gray-100 text-gray-700'}`}>
+                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium ${eventColors[ev.event_type] || 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-700 dark:text-gray-300'}`}>
                         {ev.event_type}
                       </span>
-                      <span className="text-xs text-gray-500">{ev.device}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{ev.device}</span>
                     </div>
-                    <p className="text-xs text-gray-600">{ev.detail}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400">{ev.detail}</p>
                   </div>
                 ))}
               </div>

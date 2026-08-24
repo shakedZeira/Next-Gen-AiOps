@@ -105,8 +105,8 @@ export default function SystemHealth() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">System Health</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">System Health</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
             Last refreshed: {lastRefresh.toLocaleTimeString()} (auto-refreshes every 30s)
           </p>
         </div>
@@ -122,26 +122,26 @@ export default function SystemHealth() {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Total Components</div>
-          <div className="text-2xl font-bold text-gray-900">{components.length}</div>
+        <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-4">
+          <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Total Components</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{components.length}</div>
         </div>
-        <div className="bg-white rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Healthy</div>
+        <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-4">
+          <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Healthy</div>
           <div className="text-2xl font-bold text-green-600">{healthyCount}</div>
         </div>
-        <div className="bg-white rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Degraded</div>
+        <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-4">
+          <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Degraded</div>
           <div className="text-2xl font-bold text-yellow-600">{degradedCount}</div>
         </div>
-        <div className="bg-white rounded-xl border p-4">
-          <div className="text-sm text-gray-500">Down</div>
+        <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-4">
+          <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Down</div>
           <div className="text-2xl font-bold text-red-600">{downCount}</div>
         </div>
       </div>
 
       {/* System Flow Diagram */}
-      <div className="bg-white rounded-xl border p-6">
+      <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
         <h2 className="text-lg font-semibold mb-4">System Architecture Flow</h2>
         <SystemFlowDiagram components={components} />
       </div>
@@ -151,16 +151,16 @@ export default function SystemHealth() {
         const categoryComponents = components.filter(c => c.category === category);
         if (categoryComponents.length === 0) return null;
         return (
-          <div key={category} className="bg-white rounded-xl border p-6">
+          <div key={category} className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <h2 className="text-lg font-semibold mb-4">{CATEGORY_LABELS[category]}</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {categoryComponents.map((comp) => (
-                <div key={comp.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div key={comp.id} className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg p-4 border border-gray-200 dark:border-gray-700 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="font-medium text-sm text-gray-900">{comp.name}</span>
+                    <span className="font-medium text-sm text-gray-900 dark:text-gray-100 dark:text-gray-100">{comp.name}</span>
                     <span className={`w-2.5 h-2.5 rounded-full ${STATUS_COLORS[comp.status]}`}></span>
                   </div>
-                  <p className="text-xs text-gray-500 mb-3">{comp.description}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400 mb-3">{comp.description}</p>
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div>
                       <span className="text-gray-400">Uptime</span>

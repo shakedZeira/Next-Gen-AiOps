@@ -229,7 +229,7 @@ export default function ChatBot({ user }: { user: any }) {
   return (
     <div className="flex gap-6 h-[calc(100vh-8rem)]">
       {/* Thread sidebar */}
-      <div className="w-64 flex flex-col bg-white rounded-xl border overflow-hidden shrink-0">
+      <div className="w-64 flex flex-col bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border overflow-hidden shrink-0">
         <div className="p-3 border-b">
           <button onClick={startNewChat} className="w-full px-3 py-2 bg-primary-600 text-white text-sm rounded-lg hover:bg-primary-700">
             + New Chat
@@ -240,8 +240,8 @@ export default function ChatBot({ user }: { user: any }) {
             <div
               key={thread.id}
               onClick={() => switchThread(thread.id)}
-              className={`group flex items-center justify-between w-full text-left px-3 py-2.5 text-sm border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer ${
-                thread.id === activeThreadId ? 'bg-primary-50 border-l-2 border-l-primary-600 text-primary-700 font-medium' : 'text-gray-700'
+              className={`group flex items-center justify-between w-full text-left px-3 py-2.5 text-sm border-b border-gray-100 __DM_HBG50__ transition-colors cursor-pointer ${
+                thread.id === activeThreadId ? 'bg-primary-50 border-l-2 border-l-primary-600 text-primary-700 font-medium' : 'text-gray-700 dark:text-gray-300 dark:text-gray-300'
               }`}
             >
               <div className="min-w-0 flex-1">
@@ -263,19 +263,19 @@ export default function ChatBot({ user }: { user: any }) {
       </div>
 
       {/* Chat area */}
-      <div className="flex-1 flex flex-col bg-white rounded-xl border overflow-hidden">
-        <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">AiOps Assistant</h2>
-          <button onClick={clearChat} className="text-sm text-gray-500 hover:text-red-600 transition-colors">
+      <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border overflow-hidden">
+        <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">AiOps Assistant</h2>
+          <button onClick={clearChat} className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 hover:text-red-600 transition-colors">
             Clear Chat
           </button>
         </div>
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[70%] rounded-xl px-4 py-2 ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-900'}`}>
+              <div className={`max-w-[70%] rounded-xl px-4 py-2 ${msg.role === 'user' ? 'bg-primary-600 text-white' : 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-900 dark:text-gray-100 dark:text-gray-100'}`}>
                 <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-primary-200' : 'text-gray-500'}`}>
+                <p className={`text-xs mt-1 ${msg.role === 'user' ? 'text-primary-200' : 'text-gray-500 dark:text-gray-400 dark:text-gray-400'}`}>
                   {msg.timestamp.toLocaleTimeString()}
                 </p>
               </div>
@@ -283,8 +283,8 @@ export default function ChatBot({ user }: { user: any }) {
           ))}
           {loading && (
             <div className="flex justify-start">
-              <div className="bg-gray-100 rounded-xl px-4 py-2">
-                <p className="text-sm text-gray-500 animate-pulse">Thinking...</p>
+              <div className="bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 rounded-xl px-4 py-2">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 animate-pulse">Thinking...</p>
               </div>
             </div>
           )}

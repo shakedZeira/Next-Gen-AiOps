@@ -15,7 +15,7 @@ const severityColors: Record<string, string> = {
   high: 'bg-orange-100 text-orange-800',
   medium: 'bg-yellow-100 text-yellow-800',
   low: 'bg-blue-100 text-blue-800',
-  info: 'bg-gray-100 text-gray-800',
+  info: 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-800',
 };
 
 const statusColors: Record<string, string> = {
@@ -33,20 +33,20 @@ const teamColors: Record<string, string> = {
   platform: 'bg-purple-100 text-purple-800',
   security: 'bg-red-100 text-red-800',
   sre: 'bg-indigo-100 text-indigo-800',
-  unassigned: 'bg-gray-100 text-gray-600',
+  unassigned: 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400',
 };
 
 export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertClick, showSuppressed, onToggleSuppressed, suppressedCount }: Props) {
   return (
     <div className="overflow-x-auto">
       {onToggleSuppressed && (
-        <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center gap-3">
+        <div className="px-4 py-2 bg-gray-50 dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 dark:border-gray-700 flex items-center gap-3">
           <button
             onClick={onToggleSuppressed}
             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
               showSuppressed
                 ? 'bg-violet-100 text-violet-700 border border-violet-300'
-                : 'bg-gray-100 text-gray-600 border border-gray-200 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 dark:border-gray-700 hover:bg-gray-200'
             }`}
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -61,19 +61,19 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
           </button>
         </div>
       )}
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
+      <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+        <thead className="bg-gray-50 dark:bg-gray-900">
           <tr>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Severity</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Alert</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Service</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Severity</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Alert</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Service</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Team</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Status</th>
+            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Time</th>
+            <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-200">
+        <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
           {alerts.map((alert) => (
             <tr key={alert.id}
               className={`border-l-4 ${statusColors[alert.status] || ''} ${
@@ -86,11 +86,11 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
                   {alert.severity}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm font-medium text-gray-900">
+              <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">
                 <span className="flex items-center gap-2">
                   {alert.name}
                   {alert.suppressed && (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-500 border border-gray-200" title={`Suppressed by alert ${alert.suppressed_by?.slice(0, 8) || 'unknown'}`}>
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 dark:border-gray-700" title={`Suppressed by alert ${alert.suppressed_by?.slice(0, 8) || 'unknown'}`}>
                       SUPPRESSED
                     </span>
                   )}
@@ -130,14 +130,14 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
                   )}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">{alert.service}</td>
+              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{alert.service}</td>
               <td className="px-4 py-3">
                 <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${teamColors[alert.team || 'unassigned'] || teamColors.unassigned}`}>
                   {alert.team || 'unassigned'}
                 </span>
               </td>
-              <td className="px-4 py-3 text-sm text-gray-600">{alert.status}</td>
-              <td className="px-4 py-3 text-sm text-gray-500">{new Date(alert.created_at).toLocaleTimeString()}</td>
+              <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">{alert.status}</td>
+              <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400">{new Date(alert.created_at).toLocaleTimeString()}</td>
               <td className="px-4 py-3 text-right space-x-2" onClick={(e) => e.stopPropagation()}>
                 {alert.status === 'active' && (
                   <button onClick={() => onAcknowledge(alert.id)} className="px-3 py-1 bg-yellow-500 text-white rounded-lg text-xs hover:bg-yellow-600">

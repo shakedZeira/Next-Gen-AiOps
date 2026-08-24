@@ -21,7 +21,7 @@ const severityColors: Record<string, string> = {
   high: 'bg-orange-100 text-orange-800 border-orange-300',
   medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   low: 'bg-blue-100 text-blue-800 border-blue-300',
-  info: 'bg-gray-100 text-gray-800 border-gray-300',
+  info: 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-800 border-gray-300 dark:border-gray-600 dark:border-gray-600',
 };
 
 export default function NOCAlerts({ user }: { user: any }) {
@@ -227,12 +227,12 @@ export default function NOCAlerts({ user }: { user: any }) {
 
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div className="flex items-center gap-4">
-          <h1 className="text-2xl font-bold text-gray-900">NOC Alert Console</h1>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">NOC Alert Console</h1>
           <span className={`w-2.5 h-2.5 rounded-full ${connected ? 'bg-green-500 animate-pulse' : 'bg-red-400'}`}
             title={connected ? 'WebSocket connected' : 'WebSocket disconnected'} />
           {stats && (
-            <div className="flex items-center gap-3 text-xs text-gray-500">
-              <span className="bg-gray-100 px-2 py-1 rounded">Created: {stats.total_created}</span>
+            <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+              <span className="bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 px-2 py-1 rounded">Created: {stats.total_created}</span>
               <span className="bg-green-100 text-green-700 px-2 py-1 rounded">Deduped: {stats.deduplicated}</span>
               {(stats.suppressed ?? 0) > 0 && (
                 <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded">Suppressed: {stats.suppressed}</span>
@@ -256,13 +256,13 @@ export default function NOCAlerts({ user }: { user: any }) {
         </div>
 
         <div className="flex gap-2 flex-wrap items-center">
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 rounded-lg p-1">
             {['all', 'active', 'acknowledged', 'resolved'].map((f) => (
               <button
                 key={f}
                 onClick={() => setFilter(f)}
                 className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                  filter === f ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'
+                  filter === f ? 'bg-primary-600 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-200'
                 }`}
               >
                 {f.charAt(0).toUpperCase() + f.slice(1)}
@@ -270,13 +270,13 @@ export default function NOCAlerts({ user }: { user: any }) {
             ))}
           </div>
 
-          <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+          <div className="flex gap-1 bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 rounded-lg p-1">
             {(['alerts', 'incidents'] as const).map((mode) => (
               <button
                 key={mode}
                 onClick={() => setViewMode(mode)}
                 className={`px-3 py-1 rounded-md text-sm transition-colors ${
-                  viewMode === mode ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'
+                  viewMode === mode ? 'bg-gray-800 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 dark:text-gray-400 hover:bg-gray-200'
                 }`}
               >
                 {mode.charAt(0).toUpperCase() + mode.slice(1)}
@@ -285,11 +285,11 @@ export default function NOCAlerts({ user }: { user: any }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500">Team:</label>
+            <label className="text-sm text-gray-500 dark:text-gray-400">Team:</label>
             <select
               value={teamFilter}
               onChange={(e) => setTeamFilter(e.target.value)}
-              className="px-3 py-1 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Teams</option>
               {teams.map((t) => (
@@ -299,11 +299,11 @@ export default function NOCAlerts({ user }: { user: any }) {
           </div>
 
           <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-500">Source:</label>
+            <label className="text-sm text-gray-500 dark:text-gray-400">Source:</label>
             <select
               value={sourceFilter}
               onChange={(e) => setSourceFilter(e.target.value)}
-              className="px-3 py-1 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-primary-500"
             >
               <option value="all">All Sources</option>
               <option value="snmp-trap">SNMP Traps</option>
@@ -318,7 +318,7 @@ export default function NOCAlerts({ user }: { user: any }) {
             <select
               value={selectedScenario}
               onChange={(e) => setSelectedScenario(e.target.value)}
-              className="px-3 py-1 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-red-500"
+              className="px-3 py-1 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-red-500"
             >
               <option value="">Simulate scenario...</option>
               {scenarios.map((s) => (
@@ -354,7 +354,7 @@ export default function NOCAlerts({ user }: { user: any }) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border overflow-hidden">
         {selectedAlert ? (
           <AlertDetail
             alert={selectedAlert}
@@ -383,27 +383,27 @@ export default function NOCAlerts({ user }: { user: any }) {
             />
           </>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {incidents.length === 0 ? (
-              <div className="p-8 text-center text-gray-500">No incidents found</div>
+              <div className="p-8 text-center text-gray-500 dark:text-gray-400">No incidents found</div>
             ) : (
               incidents.map((inc) => (
                 <div
                   key={inc.incident_id}
                   onClick={() => setSelectedIncidentId(inc.incident_id)}
-                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="p-4 cursor-pointer __DM_HBG50__ transition-colors"
                 >
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium border ${severityColors[inc.severity] || ''}`}>
                         {inc.severity}
                       </span>
-                      <span className="font-medium text-gray-900 text-sm">{inc.title}</span>
-                      <span className="text-xs text-gray-500">{inc.service}</span>
+                      <span className="font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100 text-sm">{inc.title}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{inc.service}</span>
                       <span className="text-xs text-gray-400">→</span>
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                      <span className="bg-gray-100 px-2 py-0.5 rounded">{inc.alert_count} alerts</span>
+                    <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                      <span className="bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 px-2 py-0.5 rounded">{inc.alert_count} alerts</span>
                       {inc.first_seen && <span>First: {new Date(inc.first_seen).toLocaleTimeString()}</span>}
                       {inc.last_seen && <span>Last: {new Date(inc.last_seen).toLocaleTimeString()}</span>}
                       <button
@@ -422,7 +422,7 @@ export default function NOCAlerts({ user }: { user: any }) {
                         <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${severityColors[a.severity] || ''}`}>
                           {a.severity}
                         </span>
-                        <span className="text-gray-700">{a.name}</span>
+                        <span className="text-gray-700 dark:text-gray-300 dark:text-gray-300">{a.name}</span>
                         {(a.repeat_count ?? 1) > 1 && (
                           <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
                             x{a.repeat_count}
@@ -444,10 +444,10 @@ export default function NOCAlerts({ user }: { user: any }) {
 
       {showResolveIp && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-gray-900">Resolve IP Address</h3>
-              <button onClick={() => setShowResolveIp(false)} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+              <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Resolve IP Address</h3>
+              <button onClick={() => setShowResolveIp(false)} className="text-gray-400 __DM_HTX600__ text-xl">&times;</button>
             </div>
             <div className="flex gap-2 mb-4">
               <input
@@ -456,7 +456,7 @@ export default function NOCAlerts({ user }: { user: any }) {
                 onChange={(e) => setResolveIpInput(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleResolveIp()}
                 placeholder="e.g. 10.0.1.5"
-                className="flex-1 px-3 py-2 rounded-lg border border-gray-300 font-mono text-sm focus:ring-2 focus:ring-cyan-500"
+                className="flex-1 px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 font-mono text-sm focus:ring-2 focus:ring-cyan-500"
               />
               <button
                 onClick={handleResolveIp}
@@ -472,14 +472,14 @@ export default function NOCAlerts({ user }: { user: any }) {
               ) : (
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                   <div className="text-sm font-medium text-green-800 mb-1">Found CI</div>
-                  <div className="text-sm text-gray-700">
+                  <div className="text-sm text-gray-700 dark:text-gray-300 dark:text-gray-300">
                     <span className="font-semibold">{resolveIpResult.ci?.name}</span>
                     <span className="text-gray-400 mx-1">&middot;</span>
                     <span>{resolveIpResult.ci?.type}</span>
                     <span className="text-gray-400 mx-1">&middot;</span>
                     <span>{resolveIpResult.ci?.site}</span>
                   </div>
-                  <div className="text-xs text-gray-500 mt-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     Match: {resolveIpResult.match_type}
                     {resolveIpResult.ci?.management_ip && <span className="ml-2">Mgmt: {resolveIpResult.ci.management_ip}</span>}
                   </div>

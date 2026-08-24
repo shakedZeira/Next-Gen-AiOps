@@ -1,4 +1,4 @@
-﻿import { NavLink } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: 'M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6' },
@@ -22,8 +22,8 @@ type NavItem = {
 
 export default function Sidebar() {
   return (
-    <aside className="w-64 bg-gray-900 text-white flex flex-col">
-      <div className="p-4 border-b border-gray-700">
+    <aside className="w-64 bg-gray-900 dark:bg-gray-950 text-white flex flex-col border-r border-gray-800">
+      <div className="p-4 border-b border-gray-700 dark:border-gray-800">
         <h1 className="text-xl font-bold">AiOps Platform</h1>
         <p className="text-xs text-gray-400">Next-Gen Monitoring</p>
       </div>
@@ -34,7 +34,7 @@ export default function Sidebar() {
             to={item.to}
             end={item.to === '/'}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-gray-800'}`
+              `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition-colors ${isActive ? 'bg-primary-600 text-white' : 'text-gray-300 hover:bg-gray-800 dark:hover:bg-gray-900'}`
             }
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -44,8 +44,8 @@ export default function Sidebar() {
           </NavLink>
         ))}
       </nav>
-      <div className="p-4 border-t border-gray-700 text-xs text-gray-500">
-        v0.1.0 ג€” Demo
+      <div className="p-4 border-t border-gray-700 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
+        v0.1.0 � Demo
       </div>
     </aside>
   );

@@ -5,7 +5,7 @@ import { ServiceSLO } from '../types';
 
 const tierColors: Record<string, string> = {
   gold: 'bg-amber-100 text-amber-800 border-amber-300',
-  silver: 'bg-gray-100 text-gray-700 border-gray-300',
+  silver: 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 dark:border-gray-600',
   bronze: 'bg-orange-100 text-orange-800 border-orange-300',
 };
 
@@ -32,7 +32,7 @@ function SLIGauge({ sli }: { sli: { name: string; value: number; target: number;
 
   return (
     <div className="text-center">
-      <p className="text-xs text-gray-500 mb-1">{sli.name}</p>
+      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{sli.name}</p>
       <div className="relative w-16 h-16 mx-auto mb-1">
         <svg className="w-16 h-16 -rotate-90" viewBox="0 0 36 36">
           <path
@@ -50,7 +50,7 @@ function SLIGauge({ sli }: { sli: { name: string; value: number; target: number;
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-bold text-gray-900">
+          <span className="text-xs font-bold text-gray-900 dark:text-gray-100">
             {sli.unit === 'ms' ? `${Math.round(sli.value)}` : sli.value.toFixed(sli.unit === '%' && sli.name === 'Error Rate' ? 2 : 1)}
           </span>
         </div>
@@ -66,11 +66,11 @@ function ServiceSLOCard({ slo, highlighted }: { slo: ServiceSLO; highlighted: bo
   const budget = slo.error_budget;
   return (
     <div className={`p-5 rounded-xl border-2 transition-all hover:shadow-lg ${
-      highlighted ? 'border-primary-400 ring-2 ring-primary-200' : 'border-gray-200'
+      highlighted ? 'border-primary-400 ring-2 ring-primary-200' : 'border-gray-200 dark:border-gray-700 dark:border-gray-700'
     } ${budgetBg[budget.status]}`}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <h3 className="font-semibold text-gray-900">{slo.service}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">{slo.service}</h3>
           <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium border ${tierColors[slo.tier] || ''}`}>
             {slo.tier}
           </span>
@@ -90,8 +90,8 @@ function ServiceSLOCard({ slo, highlighted }: { slo: ServiceSLO; highlighted: bo
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-gray-500">Error Budget</span>
-          <span className="font-medium text-gray-700">
+          <span className="text-gray-500 dark:text-gray-400">Error Budget</span>
+          <span className="font-medium text-gray-700 dark:text-gray-300">
             {Math.round(budget.remaining_minutes)}m / {Math.round(budget.total_minutes)}m
           </span>
         </div>
@@ -147,8 +147,8 @@ export default function SLODashboard() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">SLI / SLO Dashboard</h1>
-          <p className="text-sm text-gray-500 mt-1">Service Level Indicators and Error Budget tracking</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">SLI / SLO Dashboard</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Service Level Indicators and Error Budget tracking</p>
         </div>
         <div className="flex gap-3 text-xs">
           <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-green-50 border border-green-200">
@@ -179,7 +179,7 @@ export default function SLODashboard() {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="h-56 bg-white rounded-xl border animate-pulse" />
+            <div key={i} className="h-56 bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border animate-pulse" />
           ))}
         </div>
       ) : (
@@ -190,19 +190,19 @@ export default function SLODashboard() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border p-5">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">SLI Definitions</h2>
-        <div className="grid grid-cols-3 gap-4 text-xs text-gray-600">
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="font-medium text-gray-900 mb-1">Availability</p>
+      <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-5">
+        <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">SLI Definitions</h2>
+        <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 dark:text-gray-400">
+          <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+            <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">Availability</p>
             <p>Uptime percentage over 30-day window. Measured as 1 - (downtime minutes / total minutes).</p>
           </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="font-medium text-gray-900 mb-1">Latency P99</p>
+          <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+            <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">Latency P99</p>
             <p>99th percentile request latency. Lower is better. Target varies by SLA tier.</p>
           </div>
-          <div className="p-3 bg-gray-50 rounded-lg">
-            <p className="font-medium text-gray-900 mb-1">Error Rate</p>
+          <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+            <p className="font-medium text-gray-900 dark:text-gray-100 mb-1">Error Rate</p>
             <p>Percentage of failed requests. Calculated from active alerts affecting the service.</p>
           </div>
         </div>

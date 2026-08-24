@@ -46,7 +46,7 @@ export default function StormSummary({ onClear }: Props) {
     <div className="bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-xl p-4 mb-4 shadow-lg">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 bg-white/20 rounded-lg">
+          <div className="flex items-center justify-center w-10 h-10 bg-white dark:bg-gray-900/20 rounded-lg">
             <svg className="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
@@ -65,7 +65,7 @@ export default function StormSummary({ onClear }: Props) {
             <p className="text-xs text-white/60">Affected Services</p>
             <div className="flex flex-wrap gap-1 mt-1 justify-end">
               {storm.affected_services.map((svc) => (
-                <span key={svc} className="px-2 py-0.5 bg-white/20 rounded text-xs font-medium">
+                <span key={svc} className="px-2 py-0.5 bg-white dark:bg-gray-900/20 rounded text-xs font-medium">
                   {svc}
                 </span>
               ))}
@@ -75,7 +75,7 @@ export default function StormSummary({ onClear }: Props) {
           <button
             onClick={handleClear}
             disabled={clearing}
-            className="px-3 py-1.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+            className="px-3 py-1.5 bg-white dark:bg-gray-900/20 hover:bg-white dark:bg-gray-900/30 rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
           >
             {clearing ? 'Clearing...' : 'Clear Storm'}
           </button>

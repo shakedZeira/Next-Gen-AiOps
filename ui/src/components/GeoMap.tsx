@@ -374,27 +374,27 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
       <div ref={mapRef} className={`w-full ${height} rounded-xl border border-gray-700`} />
 
       {focusedSite && (
-        <div className="absolute top-4 left-4 z-[1000] bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden transition-opacity duration-500">
+        <div className="absolute top-4 left-4 z-[1000] bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-700 overflow-hidden transition-opacity duration-500">
           {loadingSite ? (
             <div className="p-4 flex items-center gap-3">
               <div className="animate-spin w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full"></div>
-              <span className="text-sm text-gray-500">Loading {focusedSite}...</span>
+              <span className="text-sm text-gray-500 dark:text-gray-400">Loading {focusedSite}...</span>
             </div>
           ) : siteOverview ? (
             <div className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                  <h3 className="font-bold text-gray-900 text-sm">{siteOverview.site_name}</h3>
-                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                  <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm">{siteOverview.site_name}</h3>
+                  <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300">
                     {siteOverview.topology_type.replace(/_/g, ' ')}
                   </span>
                 </div>
-                <button onClick={resetToGlobal} className="text-gray-400 hover:text-gray-600 text-lg leading-none" title="Back to Global">×</button>
+                <button onClick={resetToGlobal} className="text-gray-400 hover:text-gray-600 dark:text-gray-400 text-lg leading-none" title="Back to Global">×</button>
               </div>
-              <div className="flex items-center gap-3 text-xs text-gray-500 mb-2">
-                <span><strong className="text-gray-900">{siteOverview.device_count}</strong> devices</span>
-                <span><strong className="text-gray-900">{siteOverview.room_count}</strong> rooms</span>
-                <span><strong className="text-gray-900">{siteOverview.total_racks}</strong> racks</span>
+              <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400 mb-2">
+                <span><strong className="text-gray-900 dark:text-gray-100">{siteOverview.device_count}</strong> devices</span>
+                <span><strong className="text-gray-900 dark:text-gray-100">{siteOverview.room_count}</strong> rooms</span>
+                <span><strong className="text-gray-900 dark:text-gray-100">{siteOverview.total_racks}</strong> racks</span>
               </div>
               <div className="flex flex-wrap gap-1.5 mb-3">
                 {Object.entries(siteOverview.device_types)
@@ -406,7 +406,7 @@ export default function GeoMap({ sites, connections = [], flows, height = 'h-[50
                     </span>
                   ))}
               </div>
-              <button onClick={resetToGlobal} className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors">
+              <button onClick={resetToGlobal} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-200 transition-colors">
                 ← Global
               </button>
             </div>

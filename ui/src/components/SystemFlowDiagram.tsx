@@ -62,14 +62,14 @@ export default function SystemFlowDiagram({ components }: Props) {
                     style={{ backgroundColor: STATUS_COLORS[stageStatus] }}
                   />
                 </div>
-                <span className="text-sm font-semibold text-gray-900 text-center">{stage.label}</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100 text-center">{stage.label}</span>
                 
                 {/* Component Count */}
                 <div className="mt-2 text-center">
                   <div className="text-lg font-bold" style={{ color: stage.color }}>
                     {stageComps.length}
                   </div>
-                  <div className="text-xs text-gray-500">components</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">components</div>
                 </div>
 
                 {/* Mini Component List */}
@@ -80,7 +80,7 @@ export default function SystemFlowDiagram({ components }: Props) {
                         className="w-2 h-2 rounded-full flex-shrink-0"
                         style={{ backgroundColor: STATUS_COLORS[comp.status] }}
                       />
-                      <span className="text-gray-600 truncate max-w-[100px]">{comp.name}</span>
+                      <span className="text-gray-600 dark:text-gray-400 truncate max-w-[100px]">{comp.name}</span>
                     </div>
                   ))}
                   {stageComps.length > 3 && (
@@ -112,7 +112,7 @@ export default function SystemFlowDiagram({ components }: Props) {
       </div>
 
       {/* Data Flow Stats */}
-      <div className="mt-6 pt-4 border-t border-gray-200">
+      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="grid grid-cols-5 gap-4 text-center">
           {FLOW_STAGES.map((stage) => {
             const stageComps = getStageComponents(stage.id);
@@ -123,7 +123,7 @@ export default function SystemFlowDiagram({ components }: Props) {
             return (
               <div key={stage.id}>
                 <div className="text-xs text-gray-400 uppercase tracking-wide">Avg Latency</div>
-                <div className="text-sm font-semibold text-gray-900">{avgLatency.toFixed(0)}ms</div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">{avgLatency.toFixed(0)}ms</div>
               </div>
             );
           })}

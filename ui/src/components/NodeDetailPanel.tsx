@@ -511,7 +511,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                               <div className="text-sm text-white font-medium truncate">{n.name || n.id}</div>
                               <div className="text-xs text-gray-400 flex items-center gap-2 mt-0.5">
                                 <span className={DIRECTION_COLORS[n.direction] || 'text-gray-400'}>{n.direction}</span>
-                                <span className="text-gray-500">·</span>
+                                <span className="text-gray-500 dark:text-gray-400">·</span>
                                 <span>{n.relationship}</span>
                               </div>
                             </div>
@@ -533,7 +533,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                           </div>
                         ))
                       ) : (
-                        <p className="text-xs text-gray-500">No active alerts for this CI</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">No active alerts for this CI</p>
                       )}
                     </div>
                   </div>
@@ -590,7 +590,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                       </table>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">{routesLoading ? 'Loading...' : 'No routes'}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{routesLoading ? 'Loading...' : 'No routes'}</p>
                     )}
                   </div>
 
@@ -628,7 +628,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                         </table>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">{arpLoading ? 'Loading...' : 'No ARP entries'}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{arpLoading ? 'Loading...' : 'No ARP entries'}</p>
                     )}
                   </div>
 
@@ -662,7 +662,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                         </table>
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">{macLoading ? 'Loading...' : 'No MAC entries'}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{macLoading ? 'Loading...' : 'No MAC entries'}</p>
                     )}
                   </div>
                 </div>
@@ -703,7 +703,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                         </div>
                         {pingResult.hops.map((h: { hop: number; ip: string; hostname: string; rtt_ms: number | null }, i: number) => (
                           <div key={i} className="flex items-center gap-3 text-gray-300">
-                            <span className="text-gray-500 w-4">{h.hop}</span>
+                            <span className="text-gray-500 dark:text-gray-400 w-4">{h.hop}</span>
                             <span className="font-mono text-cyan-400">{h.ip}</span>
                             <span className="text-gray-400">{h.hostname}</span>
                             {h.rtt_ms != null && <span className="text-gray-400">{Number(h.rtt_ms).toFixed(1)}ms</span>}
@@ -743,10 +743,10 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                         </div>
                         {traceResult.hops.map((h: { hop: number; ip: string; hostname: string; rtt_ms: number | null; interface: string }, i: number) => (
                           <div key={i} className="flex items-center gap-3 text-gray-300">
-                            <span className="text-gray-500 w-4">{h.hop}</span>
+                            <span className="text-gray-500 dark:text-gray-400 w-4">{h.hop}</span>
                             <span className="font-mono text-cyan-400">{h.ip}</span>
                             <span className="text-gray-400">{h.hostname}</span>
-                            <span className="text-gray-500 text-[10px]">{h.interface}</span>
+                            <span className="text-gray-500 dark:text-gray-400 text-[10px]">{h.interface}</span>
                             {h.rtt_ms != null && <span className="text-gray-400 ml-auto">{Number(h.rtt_ms).toFixed(1)}ms</span>}
                           </div>
                         ))}
@@ -780,8 +780,8 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                     ) : syslogMessages.length === 0 ? (
                       <div className="text-center py-6">
                         <div className="text-2xl mb-2">📭</div>
-                        <p className="text-xs text-gray-500">No syslog messages for this device</p>
-                        <p className="text-[10px] text-gray-600 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">No syslog messages for this device</p>
+                        <p className="text-[10px] text-gray-600 dark:text-gray-400 mt-1">
                           Send: <code className="bg-gray-700 px-1 rounded">echo "&lt;13&gt;..." | nc -u localhost 1514</code>
                         </p>
                       </div>
@@ -797,7 +797,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                             }`}
                           >
                             <div className="flex items-start gap-2">
-                              <span className="text-gray-500 shrink-0 w-16">
+                              <span className="text-gray-500 dark:text-gray-400 shrink-0 w-16">
                                 {new Date(msg.timestamp).toLocaleTimeString()}
                               </span>
                               <span className={`px-1 py-0.5 rounded text-[10px] font-medium shrink-0 ${
@@ -846,7 +846,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                             className="accent-red-500"
                           />
                           <span className="text-yellow-400 font-medium">All Interfaces</span>
-                          <span className="text-gray-500">({interfaces.length})</span>
+                          <span className="text-gray-500 dark:text-gray-400">({interfaces.length})</span>
                         </label>
                         {interfaces.map((iface) => (
                           <label key={iface.name} className="flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer hover:bg-gray-700">
@@ -860,13 +860,13 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
                               disabled={!iface.up}
                             />
                             <span className="font-mono text-cyan-400">{iface.name}</span>
-                            <span className="text-gray-500">{iface.ip}</span>
+                            <span className="text-gray-500 dark:text-gray-400">{iface.ip}</span>
                             {!iface.up && <span className="text-red-400 text-[10px]">DOWN</span>}
                           </label>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-gray-500">No interfaces available</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">No interfaces available</p>
                     )}
                   </div>
 
@@ -908,7 +908,7 @@ export default function NodeDetailPanel({ ciId, onClose, onViewConnections, onTr
 
                   <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
                     <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Impact Analysis</h4>
-                    <p className="text-xs text-gray-500 mb-3">Highlight downstream CIs affected if this device fails.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Highlight downstream CIs affected if this device fails.</p>
                     <button
                       onClick={handleShowImpact}
                       disabled={impactLoading}

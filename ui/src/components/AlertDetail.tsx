@@ -9,7 +9,7 @@ const severityColors: Record<string, string> = {
   high: 'bg-orange-100 text-orange-800 border-orange-300',
   medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   low: 'bg-blue-100 text-blue-800 border-blue-300',
-  info: 'bg-gray-100 text-gray-800 border-gray-300',
+  info: 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-800 border-gray-300 dark:border-gray-600 dark:border-gray-600',
 };
 
 const statusColors: Record<string, string> = {
@@ -56,12 +56,12 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
   };
 
   return (
-    <div className="bg-white rounded-xl border p-6">
+    <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg">←</button>
-          <h2 className="text-lg font-semibold text-gray-900">Alert Details</h2>
+          <button onClick={onClose} className="text-gray-400 __DM_HTX600__ text-lg">←</button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Alert Details</h2>
           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${severityColors[alert.severity] || ''}`}>
             {alert.severity}
           </span>
@@ -96,28 +96,28 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
 
       {/* Metadata grid */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Alert Name</p>
-          <p className="text-sm font-medium text-gray-900">{alert.name}</p>
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Alert Name</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.name}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Service</p>
-          <p className="text-sm font-medium text-gray-900">{alert.service}</p>
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Service</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.service}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Team</p>
-          <p className="text-sm font-medium text-gray-900">{alert.team || 'unassigned'}</p>
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Team</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.team || 'unassigned'}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">First Seen</p>
-          <p className="text-sm font-medium text-gray-900">
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">First Seen</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {alert.first_seen ? new Date(alert.first_seen).toLocaleString() :
              alert.created_at ? new Date(alert.created_at).toLocaleString() : '—'}
           </p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Last Seen</p>
-          <p className="text-sm font-medium text-gray-900">
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Last Seen</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {alert.last_seen ? new Date(alert.last_seen).toLocaleString() : '—'}
           </p>
         </div>
@@ -125,19 +125,19 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
 
       {/* Description */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Description</h3>
-        <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{alert.description || 'No description provided.'}</p>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Description</h3>
+        <p className="text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 p-3 rounded-lg">{alert.description || 'No description provided.'}</p>
       </div>
 
       {/* Source Details (SNMP/Syslog) */}
       {(alert.labels?.source === 'snmp-trap' || alert.labels?.source === 'syslog') && (
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Source Details</h3>
-          <div className="bg-gray-50 p-3 rounded-lg">
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Source Details</h3>
+          <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 p-3 rounded-lg">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div>
-                <p className="text-xs text-gray-500">Source Type</p>
-                <p className="text-sm font-medium text-gray-900 flex items-center gap-2">
+                <p className="text-xs text-gray-500 dark:text-gray-400">Source Type</p>
+                <p className="text-sm font-medium text-gray-900 dark:text-gray-100 flex items-center gap-2">
                   {alert.labels?.source === 'snmp-trap' ? (
                     <>
                       <span className="w-2 h-2 rounded-full bg-violet-500" />
@@ -153,38 +153,38 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
               </div>
               {alert.labels?.['source.ip'] && (
                 <div>
-                  <p className="text-xs text-gray-500">Source IP</p>
-                  <p className="text-sm font-medium text-gray-900 font-mono">{alert.labels['source.ip']}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Source IP</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono">{alert.labels['source.ip']}</p>
                 </div>
               )}
               {alert.labels?.oid && (
                 <div>
-                  <p className="text-xs text-gray-500">Trap OID</p>
-                  <p className="text-sm font-medium text-gray-900 font-mono truncate" title={alert.labels.oid}>{alert.labels.oid}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Trap OID</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100 font-mono truncate" title={alert.labels.oid}>{alert.labels.oid}</p>
                 </div>
               )}
               {alert.labels?.hostname && (
                 <div>
-                  <p className="text-xs text-gray-500">Hostname</p>
-                  <p className="text-sm font-medium text-gray-900">{alert.labels.hostname}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Hostname</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.labels.hostname}</p>
                 </div>
               )}
               {alert.labels?.['device.name'] && (
                 <div>
-                  <p className="text-xs text-gray-500">Device</p>
-                  <p className="text-sm font-medium text-gray-900">{alert.labels['device.name']}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Device</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.labels['device.name']}</p>
                 </div>
               )}
               {alert.labels?.['device.type'] && (
                 <div>
-                  <p className="text-xs text-gray-500">Device Type</p>
-                  <p className="text-sm font-medium text-gray-900">{alert.labels['device.type']}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Device Type</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.labels['device.type']}</p>
                 </div>
               )}
               {alert.labels?.['alert.trigger'] && (
                 <div>
-                  <p className="text-xs text-gray-500">Trigger</p>
-                  <p className="text-sm font-medium text-gray-900">{alert.labels['alert.trigger']}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Trigger</p>
+                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.labels['alert.trigger']}</p>
                 </div>
               )}
             </div>
@@ -194,40 +194,40 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
 
       {/* Recent Changes */}
       <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Change Correlation</h3>
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Change Correlation</h3>
         <RecentChanges service={alert.service} />
       </div>
 
       {/* SNMP Trap History */}
       {alert.labels?.source === 'snmp-trap' && (
         <div className="mb-6">
-          <h3 className="text-sm font-semibold text-gray-900 mb-2">Recent Traps from This Source</h3>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Recent Traps from This Source</h3>
           {loadingTraps ? (
-            <div className="text-sm text-gray-500">Loading trap history...</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">Loading trap history...</div>
           ) : snmpTraps.length === 0 ? (
-            <div className="text-sm text-gray-500">No recent traps from this source IP</div>
+            <div className="text-sm text-gray-500 dark:text-gray-400">No recent traps from this source IP</div>
           ) : (
-            <div className="bg-gray-50 rounded-lg overflow-hidden">
+            <div className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg overflow-hidden">
               <table className="min-w-full text-sm">
-                <thead className="bg-gray-100">
+                <thead className="bg-gray-100 dark:bg-gray-800 dark:bg-gray-800">
                   <tr>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Time</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Trap</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Severity</th>
-                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500">Version</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Time</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Trap</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Severity</th>
+                    <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Version</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {snmpTraps.map((trap, idx) => (
-                    <tr key={idx} className="hover:bg-gray-100">
-                      <td className="px-3 py-2 text-gray-600">{new Date(trap.timestamp).toLocaleTimeString()}</td>
-                      <td className="px-3 py-2 font-medium text-gray-900">{trap.trap_name}</td>
+                    <tr key={idx} className="__DM_HBG100__">
+                      <td className="px-3 py-2 text-gray-600 dark:text-gray-400">{new Date(trap.timestamp).toLocaleTimeString()}</td>
+                      <td className="px-3 py-2 font-medium text-gray-900 dark:text-gray-100">{trap.trap_name}</td>
                       <td className="px-3 py-2">
                         <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${severityColors[trap.severity] || ''}`}>
                           {trap.severity}
                         </span>
                       </td>
-                      <td className="px-3 py-2 text-gray-500 font-mono text-xs">{trap.snmp_version}</td>
+                      <td className="px-3 py-2 text-gray-500 dark:text-gray-400 font-mono text-xs">{trap.snmp_version}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -245,8 +245,8 @@ export default function AlertDetail({ alert, onClose, onAcknowledge, onResolve }
 
       {/* Timeline */}
       <div>
-        <h3 className="text-sm font-semibold text-gray-900 mb-2">Timeline</h3>
-        <div className="space-y-2 text-sm text-gray-600">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Timeline</h3>
+        <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
           <div className="flex items-center gap-3">
             <span className="text-xs text-gray-400 w-32">
               {alert.created_at ? new Date(alert.created_at).toLocaleString() : '—'}

@@ -20,6 +20,7 @@ const SECTIONS = [
   { id: 'maintenance', title: 'Maintenance Windows' },
   { id: 'escalation', title: 'Alert Escalation' },
   { id: 'audit', title: 'Audit Trail' },
+  { id: 'dark-mode', title: 'Dark Mode' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -805,6 +806,39 @@ curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
                   <tbody className="text-gray-200">
                     <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/audit</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List audit logs with filters</td></tr>
                     <tr><td className="px-4 py-2"><code>/api/v1/audit/stats</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Get audit statistics</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          {/* === Section: Dark Mode === */}
+          <section id="dark-mode">
+            <h2 className="text-2xl font-bold text-white mb-4">Dark Mode</h2>
+            <div className="bg-gray-800/50 border border-gray-700 rounded-lg p-6 mb-6">
+              <p className="text-gray-200 mb-4">
+                Dark Mode provides a low-light theme optimized for NOC environments (24/7 operations rooms).
+                Toggle between light and dark themes using the sun/moon icon in the header.
+              </p>
+              <h3 className="text-lg font-semibold text-white mb-2">Features</h3>
+              <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+                <li><span className="text-blue-400 font-medium">Toggle:</span> Click the sun/moon icon in the header bar</li>
+                <li><span className="text-blue-400 font-medium">Persistent:</span> Theme choice saved in localStorage across sessions</li>
+                <li><span className="text-blue-400 font-medium">System Preference:</span> Respects prefers-color-scheme on first visit</li>
+                <li><span className="text-blue-400 font-medium">Full Coverage:</span> All pages, components, and modals support dark mode</li>
+              </ul>
+              <h3 className="text-lg font-semibold text-white mb-2">Color Mapping</h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-800 text-white">
+                    <tr><th className="px-4 py-2">Element</th><th className="px-4 py-2">Light</th><th className="px-4 py-2">Dark</th></tr>
+                  </thead>
+                  <tbody className="text-gray-200">
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2">Background</td><td className="px-4 py-2">bg-gray-50</td><td className="px-4 py-2">bg-gray-950</td></tr>
+                    <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2">Card/Surface</td><td className="px-4 py-2">bg-white</td><td className="px-4 py-2">bg-gray-900</td></tr>
+                    <tr className="border-b border-gray-800"><td className="px-4 py-2">Border</td><td className="px-4 py-2">border-gray-200</td><td className="px-4 py-2">border-gray-700</td></tr>
+                    <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2">Text primary</td><td className="px-4 py-2">text-gray-900</td><td className="px-4 py-2">text-gray-100</td></tr>
+                    <tr><td className="px-4 py-2">Text secondary</td><td className="px-4 py-2">text-gray-500</td><td className="px-4 py-2">text-gray-400</td></tr>
                   </tbody>
                 </table>
               </div>

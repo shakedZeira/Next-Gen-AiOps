@@ -2,6 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    @apply bg-gray-50 text-gray-900;
+  }
+  html.dark {
+    @apply bg-gray-950 text-gray-100;
+  }
+}
+
 .flow-animated-line {
   animation: flowDash 1s linear infinite;
 }

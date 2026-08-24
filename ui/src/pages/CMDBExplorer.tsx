@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import TopologyGraph from '../components/TopologyGraph';
 import NodeDetailPanel from '../components/NodeDetailPanel';
@@ -16,24 +16,24 @@ const TEAM_BADGE_COLORS: Record<string, string> = {
   security: 'bg-red-100 text-red-800',
   sre: 'bg-indigo-100 text-indigo-800',
   network: 'bg-teal-100 text-teal-800',
-  unassigned: 'bg-gray-100 text-gray-600',
+  unassigned: 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400',
 };
 
 const TYPE_ICONS: Record<string, string> = {
-  load_balancer: '⚡',
-  host: '💻',
-  api_gateway: '🔓',
-  microservice: '⚙️',
-  database: '🗄️',
-  cache: '⚡',
-  message_queue: '📨',
-  storage: '📁',
-  switch: '🔗',
-  router: '🔌',
-  firewall: '🛡️',
-  physical_server: '🖥️',
-  container: '📦',
-  pod: '📦',
+  load_balancer: '?',
+  host: '??',
+  api_gateway: '??',
+  microservice: '??',
+  database: '???',
+  cache: '?',
+  message_queue: '??',
+  storage: '??',
+  switch: '??',
+  router: '??',
+  firewall: '???',
+  physical_server: '???',
+  container: '??',
+  pod: '??',
 };
 
 const SITE_BADGE_COLORS: Record<string, string> = {
@@ -183,14 +183,14 @@ export default function CMDBExplorer() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">CMDB Explorer</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">CMDB Explorer</h1>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Site:</label>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">Site:</label>
             <select
               value={selectedSite}
               onChange={(e) => setSelectedSite(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-primary-500"
             >
               {siteOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label} ({opt.count})</option>
@@ -206,7 +206,7 @@ export default function CMDBExplorer() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search CIs..."
-              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500 w-48"
+              className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-primary-500 w-48"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -218,15 +218,15 @@ export default function CMDBExplorer() {
               value={ipSearch}
               onChange={(e) => setIpSearch(e.target.value)}
               placeholder="Search by IP..."
-              className="px-3 py-1.5 rounded-lg border border-cyan-300 bg-white text-sm focus:ring-2 focus:ring-cyan-500 w-40 font-mono"
+              className="px-3 py-1.5 rounded-lg border border-cyan-300 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-cyan-500 w-40 font-mono"
             />
           </div>
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">Flow:</label>
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">Flow:</label>
             <select
               value={selectedFlow}
               onChange={(e) => setSelectedFlow(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+              className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-primary-500"
             >
               {flowOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -235,11 +235,11 @@ export default function CMDBExplorer() {
           </div>
           {selectedSite !== 'all' && siteServices.length > 0 && (
             <div className="flex items-center gap-2">
-              <label className="text-sm font-medium text-gray-600">Service:</label>
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">Service:</label>
               <select
                 value={selectedService}
                 onChange={(e) => setSelectedService(e.target.value)}
-                className="px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-sm focus:ring-2 focus:ring-primary-500"
+                className="px-3 py-1.5 rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 bg-white dark:bg-gray-900 dark:bg-gray-900 text-sm focus:ring-2 focus:ring-primary-500"
               >
                 <option value="all">All Services ({siteServices.reduce((sum, s) => sum + s.ci_count, 0)} CIs)</option>
                 {siteServices.map((s) => (
@@ -249,12 +249,12 @@ export default function CMDBExplorer() {
             </div>
           )}
           <div className="flex items-center gap-2">
-            <label className="text-sm font-medium text-gray-600">View:</label>
-            <div className="flex rounded-lg border border-gray-300 overflow-hidden">
+            <label className="text-sm font-medium text-gray-600 dark:text-gray-400 dark:text-gray-400">View:</label>
+            <div className="flex rounded-lg border border-gray-300 dark:border-gray-600 dark:border-gray-600 overflow-hidden">
               <button
                 onClick={() => setViewMode('detailed')}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  viewMode === 'detailed' ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                  viewMode === 'detailed' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-900 dark:bg-gray-900 text-gray-600 dark:text-gray-400 dark:text-gray-400 __DM_HBG50__'
                 }`}
               >
                 Detailed
@@ -262,7 +262,7 @@ export default function CMDBExplorer() {
               <button
                 onClick={() => setViewMode('aggregated')}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  viewMode === 'aggregated' ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                  viewMode === 'aggregated' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-900 dark:bg-gray-900 text-gray-600 dark:text-gray-400 dark:text-gray-400 __DM_HBG50__'
                 }`}
               >
                 Site Overview
@@ -270,7 +270,7 @@ export default function CMDBExplorer() {
               <button
                 onClick={() => setViewMode('geo')}
                 className={`px-3 py-1.5 text-xs font-medium transition-colors ${
-                  viewMode === 'geo' ? 'bg-primary-600 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+                  viewMode === 'geo' ? 'bg-primary-600 text-white' : 'bg-white dark:bg-gray-900 dark:bg-gray-900 text-gray-600 dark:text-gray-400 dark:text-gray-400 __DM_HBG50__'
                 }`}
               >
                 Geo Map
@@ -295,15 +295,15 @@ export default function CMDBExplorer() {
               <div
                 key={site.name}
                 onClick={() => { setSelectedSite(site.name); setViewMode('aggregated'); }}
-                className="p-4 bg-white rounded-xl border cursor-pointer transition-all border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                className="p-4 bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border cursor-pointer transition-all border-gray-200 dark:border-gray-700 dark:border-gray-700 __DM_HBG50__ __DM_HBR300__"
               >
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-semibold text-gray-900">{site.name}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[site.name] || 'bg-gray-500 text-white'}`}>
+                  <span className="font-semibold text-gray-900 dark:text-gray-100 dark:text-gray-100">{site.name}</span>
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[site.name] || '__DM_BG500__ text-white'}`}>
                     {site.site_type || 'unknown'}
                   </span>
                 </div>
-                <div className="text-sm text-gray-500 space-y-1">
+                <div className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 space-y-1">
                   <p>{TOPOLOGY_LABELS[site.topology_type || ''] || site.topology_type || 'unknown'}</p>
                   <p>{site.device_count} devices</p>
                 </div>
@@ -313,7 +313,7 @@ export default function CMDBExplorer() {
         </div>
       ) : viewMode === 'aggregated' && selectedSite === 'all' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white rounded-xl border p-6">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Site Aggregate Topology</h2>
               <div className="flex gap-3 text-xs">
@@ -323,7 +323,7 @@ export default function CMDBExplorer() {
               </div>
             </div>
             {loading ? (
-              <div className="h-[500px] bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">Loading topology...</div>
+              <div className="h-[500px] bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-xl flex items-center justify-center text-gray-400">Loading topology...</div>
             ) : (
               <TopologyGraph
                 topology={siteAggregateTopo}
@@ -333,22 +333,22 @@ export default function CMDBExplorer() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border p-6">
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <h2 className="text-lg font-semibold mb-4">Sites ({sites.length})</h2>
             <div className="space-y-2 max-h-[660px] overflow-y-auto">
               {sites.map((site) => (
                 <div
                   key={site.name}
                   onClick={() => setSelectedSite(site.name)}
-                  className="p-3 rounded-lg border cursor-pointer transition-all border-gray-200 hover:bg-gray-50 hover:border-gray-300"
+                  className="p-3 rounded-lg border cursor-pointer transition-all border-gray-200 dark:border-gray-700 dark:border-gray-700 __DM_HBG50__ __DM_HBR300__"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-900">{site.name}</span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[site.name] || 'bg-gray-500 text-white'}`}>
+                    <span className="font-medium text-sm text-gray-900 dark:text-gray-100 dark:text-gray-100">{site.name}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[site.name] || '__DM_BG500__ text-white'}`}>
                       {site.site_type || 'unknown'}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs text-gray-500">
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">
                     <span>{TOPOLOGY_LABELS[site.topology_type || ''] || site.topology_type || 'unknown'}</span>
                     <span>&middot;</span>
                     <span>{site.device_count} devices</span>
@@ -360,16 +360,16 @@ export default function CMDBExplorer() {
         </div>
       ) : viewMode === 'aggregated' && selectedSite !== 'all' ? (
         <div className="space-y-6">
-          <div className="bg-white rounded-xl border p-6">
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <div className="flex items-center justify-between mb-6">
               <div>
                 <div className="flex items-center gap-3">
-                  <h2 className="text-2xl font-bold text-gray-900">{selectedSite}</h2>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${SITE_BADGE_COLORS[selectedSite] || 'bg-gray-500 text-white'}`}>
+                  <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{selectedSite}</h2>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${SITE_BADGE_COLORS[selectedSite] || '__DM_BG500__ text-white'}`}>
                     {sites.find((s) => s.name === selectedSite)?.site_type || 'unknown'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 mt-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400 mt-1">
                   {TOPOLOGY_LABELS[sites.find((s) => s.name === selectedSite)?.topology_type || ''] || sites.find((s) => s.name === selectedSite)?.topology_type || 'unknown'} topology
                 </p>
               </div>
@@ -382,16 +382,16 @@ export default function CMDBExplorer() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Devices</p>
-                <p className="text-2xl font-bold text-gray-900">{sites.find((s) => s.name === selectedSite)?.device_count || 0}</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Devices</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{sites.find((s) => s.name === selectedSite)?.device_count || 0}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Racks</p>
-                <p className="text-2xl font-bold text-gray-900">{siteRackCount !== null ? siteRackCount : '—'}</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Racks</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{siteRackCount !== null ? siteRackCount : '�'}</p>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">Teams</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">Teams</p>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {[...new Set(cis.filter((ci) => ci.site === selectedSite && ci.team).map((ci) => ci.team))].map((team) => (
                     <span key={team} className={`px-2 py-0.5 rounded-full text-xs font-medium ${TEAM_BADGE_COLORS[team || 'unassigned']}`}>
@@ -400,17 +400,17 @@ export default function CMDBExplorer() {
                   ))}
                 </div>
               </div>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm text-gray-500">CI Count</p>
-                <p className="text-2xl font-bold text-gray-900">{cis.filter((ci) => ci.site === selectedSite).length}</p>
+              <div className="p-4 bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-lg">
+                <p className="text-sm text-gray-500 dark:text-gray-400 dark:text-gray-400">CI Count</p>
+                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{cis.filter((ci) => ci.site === selectedSite).length}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border p-6">
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <h2 className="text-lg font-semibold mb-4">{selectedSite} Topology</h2>
             {loading ? (
-              <div className="h-[500px] bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">Loading topology...</div>
+              <div className="h-[500px] bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-xl flex items-center justify-center text-gray-400">Loading topology...</div>
             ) : (
               <TopologyGraph
                 topology={topology}
@@ -431,7 +431,7 @@ export default function CMDBExplorer() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-white rounded-xl border p-6">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">
                 {selectedSite === 'all' ? 'Global Topology' : `${selectedSite} Topology`}
@@ -444,7 +444,7 @@ export default function CMDBExplorer() {
               </div>
             </div>
             {loading ? (
-              <div className="h-[500px] bg-gray-50 rounded-xl flex items-center justify-center text-gray-400">Loading topology...</div>
+              <div className="h-[500px] bg-gray-50 dark:bg-gray-900 dark:bg-gray-900 rounded-xl flex items-center justify-center text-gray-400">Loading topology...</div>
             ) : (
               <TopologyGraph
                 topology={topology}
@@ -462,11 +462,11 @@ export default function CMDBExplorer() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl border p-6">
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
             <h2 className="text-lg font-semibold mb-4">
               Configuration Items {searchQuery ? `(${filteredCIs.length} of ${cis.filter((ci) => selectedSite === 'all' || ci.site === selectedSite).length})` : `(${filteredCIs.length})`}
               {selectedSite !== 'all' && (
-                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[selectedSite] || 'bg-gray-500 text-white'}`}>
+                <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[selectedSite] || '__DM_BG500__ text-white'}`}>
                   {selectedSite}
                 </span>
               )}
@@ -479,14 +479,14 @@ export default function CMDBExplorer() {
                   className={`p-3 rounded-lg border cursor-pointer transition-all ${
                     selectedCI?.id === ci.id
                       ? 'border-primary-500 bg-primary-50 ring-1 ring-primary-200'
-                      : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                      : 'border-gray-200 dark:border-gray-700 dark:border-gray-700 __DM_HBG50__ __DM_HBR300__'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-medium text-sm text-gray-900">
-                      {TYPE_ICONS[ci.type] || '❓'} {ci.name}
+                    <span className="font-medium text-sm text-gray-900 dark:text-gray-100 dark:text-gray-100">
+                      {TYPE_ICONS[ci.type] || '?'} {ci.name}
                     </span>
-                    <span className="text-xs text-gray-500">{ci.type}</span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 dark:text-gray-400">{ci.type}</span>
                   </div>
                   {(ci.management_ip || ci.loopback_ip) && (
                     <div className="text-xs font-mono text-cyan-600 mt-1">
@@ -502,12 +502,12 @@ export default function CMDBExplorer() {
                       </span>
                     )}
                     {ci.site && selectedSite === 'all' && (
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[ci.site] || 'bg-gray-500 text-white'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[ci.site] || '__DM_BG500__ text-white'}`}>
                         {ci.site}
                       </span>
                     )}
                     {ci.provider && (
-                      <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">{ci.provider}</span>
+                      <span className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 rounded text-xs">{ci.provider}</span>
                     )}
                   </div>
                 </div>
@@ -518,32 +518,32 @@ export default function CMDBExplorer() {
       )}
 
       {selectedCI && (
-        <div className="bg-white rounded-xl border p-6">
+        <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-xl border p-6">
           <h2 className="text-lg font-semibold mb-4">CI Details: {selectedCI.name}</h2>
           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
-            <div><span className="text-gray-500">Type:</span> <span className="font-medium">{selectedCI.type}</span></div>
-            <div><span className="text-gray-500">Provider:</span> <span className="font-medium">{selectedCI.provider || '-'}</span></div>
-            <div><span className="text-gray-500">Environment:</span> <span className="font-medium">{selectedCI.environment || '-'}</span></div>
-            <div><span className="text-gray-500">Site:</span>
-              <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[selectedCI.site || ''] || 'bg-gray-500 text-white'}`}>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Type:</span> <span className="font-medium">{selectedCI.type}</span></div>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Provider:</span> <span className="font-medium">{selectedCI.provider || '-'}</span></div>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Environment:</span> <span className="font-medium">{selectedCI.environment || '-'}</span></div>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Site:</span>
+              <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${SITE_BADGE_COLORS[selectedCI.site || ''] || '__DM_BG500__ text-white'}`}>
                 {selectedCI.site || 'unassigned'}
               </span>
             </div>
-            <div><span className="text-gray-500">Layer:</span> <span className="font-medium">{selectedCI.network_layer || '-'}</span></div>
-            <div><span className="text-gray-500">Topology:</span> <span className="font-medium">{TOPOLOGY_LABELS[selectedCI.topology_type || ''] || selectedCI.topology_type || '-'}</span></div>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Layer:</span> <span className="font-medium">{selectedCI.network_layer || '-'}</span></div>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Topology:</span> <span className="font-medium">{TOPOLOGY_LABELS[selectedCI.topology_type || ''] || selectedCI.topology_type || '-'}</span></div>
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mt-3">
-            <div><span className="text-gray-500">Team:</span>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">Team:</span>
               <span className={`ml-1 px-2 py-0.5 rounded-full text-xs font-medium ${TEAM_BADGE_COLORS[selectedCI.team || 'unassigned']}`}>
                 {selectedCI.team || 'unassigned'}
               </span>
             </div>
-            <div><span className="text-gray-500">ID:</span> <span className="font-mono text-xs">{selectedCI.id}</span></div>
+            <div><span className="text-gray-500 dark:text-gray-400 dark:text-gray-400">ID:</span> <span className="font-mono text-xs">{selectedCI.id}</span></div>
           </div>
           {Object.keys(selectedCI.labels).length > 0 && (
             <div className="mt-4 flex gap-1 flex-wrap">
               {Object.entries(selectedCI.labels).map(([k, v]) => (
-                <span key={k} className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs">{k}: {v}</span>
+                <span key={k} className="px-2 py-0.5 bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-600 dark:text-gray-400 dark:text-gray-400 rounded text-xs">{k}: {v}</span>
               ))}
             </div>
           )}

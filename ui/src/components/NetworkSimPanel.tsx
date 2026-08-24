@@ -48,13 +48,13 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
   ];
 
   return (
-    <div className="fixed right-0 top-0 h-full w-96 bg-white shadow-2xl border-l z-50 flex flex-col">
-      <div className="p-4 border-b bg-gray-50 flex items-center justify-between">
+    <div className="fixed right-0 top-0 h-full w-96 bg-white dark:bg-gray-900 shadow-2xl border-l z-50 flex flex-col">
+      <div className="p-4 border-b bg-gray-50 dark:bg-gray-900 flex items-center justify-between">
         <div>
-          <h3 className="font-bold text-gray-900">{deviceName || deviceId}</h3>
-          <p className="text-xs text-gray-500">Network Simulation</p>
+          <h3 className="font-bold text-gray-900 dark:text-gray-100">{deviceName || deviceId}</h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Network Simulation</p>
         </div>
-        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">&times;</button>
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400 text-xl">&times;</button>
       </div>
 
       <div className="flex border-b">
@@ -63,7 +63,7 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`flex-1 py-2 text-xs font-medium border-b-2 transition-colors ${
-              tab === t.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'
+              tab === t.key ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:text-gray-300'
             }`}
           >
             {t.label}
@@ -79,14 +79,14 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
           <div className="space-y-1">
             {routes.length === 0 && <p className="text-gray-400 text-sm">No routes</p>}
             {routes.map((r, i) => (
-              <div key={i} className="p-2 bg-gray-50 rounded text-xs font-mono">
+              <div key={i} className="p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs font-mono">
                 <div className="flex justify-between">
-                  <span className="text-gray-900">{r.prefix}</span>
+                  <span className="text-gray-900 dark:text-gray-100">{r.prefix}</span>
                   <span className={`px-1 rounded text-[10px] ${r.proto === 'connected' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                     {r.proto}
                   </span>
                 </div>
-                <div className="text-gray-500 mt-1">
+                <div className="text-gray-500 dark:text-gray-400 mt-1">
                   via {r.next_hop_ip} → {r.out_iface} (metric: {r.metric})
                 </div>
               </div>
@@ -98,9 +98,9 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
           <div className="space-y-1">
             {Object.keys(arp).length === 0 && <p className="text-gray-400 text-sm">No ARP entries</p>}
             {Object.entries(arp).map(([ip, data]: [string, any]) => (
-              <div key={ip} className="p-2 bg-gray-50 rounded text-xs flex justify-between">
-                <span className="font-mono text-gray-900">{ip}</span>
-                <span className="font-mono text-gray-500">{data.mac}</span>
+              <div key={ip} className="p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs flex justify-between">
+                <span className="font-mono text-gray-900 dark:text-gray-100">{ip}</span>
+                <span className="font-mono text-gray-500 dark:text-gray-400">{data.mac}</span>
               </div>
             ))}
           </div>
@@ -110,9 +110,9 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
           <div className="space-y-1">
             {Object.keys(macTable).length === 0 && <p className="text-gray-400 text-sm">No MAC entries</p>}
             {Object.entries(macTable).map(([mac, port]) => (
-              <div key={mac} className="p-2 bg-gray-50 rounded text-xs flex justify-between">
-                <span className="font-mono text-gray-900">{mac}</span>
-                <span className="text-gray-500">{port}</span>
+              <div key={mac} className="p-2 bg-gray-50 dark:bg-gray-900 rounded text-xs flex justify-between">
+                <span className="font-mono text-gray-900 dark:text-gray-100">{mac}</span>
+                <span className="text-gray-500 dark:text-gray-400">{port}</span>
               </div>
             ))}
           </div>
@@ -121,7 +121,7 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
         {tab === 'actions' && !loading && (
           <div className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Ping</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Ping</label>
               <div className="flex gap-2">
                 <input
                   value={pingDst}
@@ -138,7 +138,7 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
               </div>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Traceroute</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Traceroute</label>
               <div className="flex gap-2">
                 <input
                   value={traceDst}
@@ -156,7 +156,7 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
             </div>
             <hr />
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Failure Injection</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Failure Injection</label>
               <button
                 onClick={() => onInjectFailure(deviceId)}
                 className="w-full px-3 py-2 bg-red-500 text-white rounded text-xs hover:bg-red-600"
@@ -165,7 +165,7 @@ export default function NetworkSimPanel({ deviceId, onClose, onPing, onTracerout
               </button>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-700 mb-1">Recovery</label>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Recovery</label>
               <button
                 onClick={() => onRecover(deviceId)}
                 className="w-full px-3 py-2 bg-emerald-500 text-white rounded text-xs hover:bg-emerald-600"

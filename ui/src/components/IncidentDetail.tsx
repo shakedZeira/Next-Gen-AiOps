@@ -9,7 +9,7 @@ const severityColors: Record<string, string> = {
   high: 'bg-orange-100 text-orange-800 border-orange-300',
   medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
   low: 'bg-blue-100 text-blue-800 border-blue-300',
-  info: 'bg-gray-100 text-gray-800 border-gray-300',
+  info: 'bg-gray-100 dark:bg-gray-800 text-gray-800 border-gray-300 dark:border-gray-600',
 };
 
 const statusColors: Record<string, string> = {
@@ -105,10 +105,10 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Loading incident...</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Loading incident...</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400">✕</button>
         </div>
       </div>
     );
@@ -116,10 +116,10 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
 
   if (!incident) {
     return (
-      <div className="bg-white rounded-xl border p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-xl border p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Incident not found</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">✕</button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Incident not found</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400">✕</button>
         </div>
       </div>
     );
@@ -129,11 +129,11 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
   const hasActive = activeAlerts.length > 0;
 
   return (
-    <div className="bg-white rounded-xl border p-6">
+    <div className="bg-white dark:bg-gray-900 rounded-xl border p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-lg">←</button>
-          <h2 className="text-lg font-semibold text-gray-900">Incident Details</h2>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:text-gray-400 text-lg">←</button>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Incident Details</h2>
           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${severityColors[incident.severity] || ''}`}>
             {incident.severity}
           </span>
@@ -166,27 +166,27 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Service(s)</p>
-          <p className="text-sm font-medium text-gray-900">{(incident as any).services?.join(', ') || incident.service}</p>
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Service(s)</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{(incident as any).services?.join(', ') || incident.service}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Total Alerts</p>
-          <p className="text-sm font-medium text-gray-900">{incident.alert_count}</p>
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Total Alerts</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{incident.alert_count}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Teams</p>
-          <p className="text-sm font-medium text-gray-900">{(incident as any).teams?.join(', ') || '—'}</p>
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Teams</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{(incident as any).teams?.join(', ') || '—'}</p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">First Seen</p>
-          <p className="text-sm font-medium text-gray-900">
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">First Seen</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {incident.first_seen ? new Date(incident.first_seen).toLocaleString() : '—'}
           </p>
         </div>
-        <div className="p-3 bg-gray-50 rounded-lg">
-          <p className="text-xs text-gray-500">Last Seen</p>
-          <p className="text-sm font-medium text-gray-900">
+        <div className="p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Last Seen</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
             {incident.last_seen ? new Date(incident.last_seen).toLocaleString() : '—'}
           </p>
         </div>
@@ -194,7 +194,7 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
 
       <RecentChanges service={incident.service} />
 
-      <h3 className="text-sm font-semibold text-gray-900 mb-3 mt-4">Alert Timeline</h3>
+      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3 mt-4">Alert Timeline</h3>
       <div className="relative">
         <div className="absolute left-4 top-0 bottom-0 w-px bg-gray-200"></div>
         <div className="space-y-3">
@@ -205,13 +205,13 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
                 alert.status === 'acknowledged' ? 'bg-yellow-500 border-yellow-600' :
                 'bg-red-500 border-red-600'
               }`}></div>
-              <div className="flex-1 p-3 bg-gray-50 rounded-lg">
+              <div className="flex-1 p-3 bg-gray-50 dark:bg-gray-900 rounded-lg">
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${severityColors[alert.severity] || ''}`}>
                       {alert.severity}
                     </span>
-                    <span className="text-sm font-medium text-gray-900">{alert.name}</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{alert.name}</span>
                     {(alert.repeat_count ?? 1) > 1 && (
                       <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white">
                         x{alert.repeat_count}
@@ -240,7 +240,7 @@ export default function IncidentDetail({ incidentId, onClose, onAcknowledge, onR
                     )}
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 mb-1">{alert.description}</p>
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-1">{alert.description}</p>
                 <div className="flex items-center gap-3 text-xs text-gray-400">
                   <span>{new Date(alert.created_at).toLocaleString()}</span>
                   {alert.acknowledged_at && <span>Acked: {new Date(alert.acknowledged_at).toLocaleString()}</span>}

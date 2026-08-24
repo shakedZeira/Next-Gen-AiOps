@@ -81,7 +81,7 @@ export default function RackVisualization({ rack, equipment, onBack }: Props) {
         <div className="flex gap-0">
           <div className="flex flex-col" style={{ width: 36 }}>
             {uPositions.map(u => (
-              <div key={u} className="flex items-center justify-end pr-1 text-[10px] text-gray-500 font-mono" style={{ height: 20 }}>
+              <div key={u} className="flex items-center justify-end pr-1 text-[10px] text-gray-500 dark:text-gray-400 font-mono" style={{ height: 20 }}>
                 {u}
               </div>
             ))}

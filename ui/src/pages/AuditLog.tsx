@@ -73,10 +73,10 @@ export default function AuditLog() {
     <div className="p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Audit Trail</h1>
-          <p className="text-sm text-gray-500">Track all user actions across the platform</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">Audit Trail</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Track all user actions across the platform</p>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-gray-500 dark:text-gray-400">
           {total.toLocaleString()} events
         </div>
       </div>
@@ -84,25 +84,25 @@ export default function AuditLog() {
       {/* Stats Cards */}
       {stats && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg border p-4">
-            <p className="text-sm text-gray-500">Total Events</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.total.toLocaleString()}</p>
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-lg border p-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400">Total Events</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 dark:text-gray-100">{stats.total.toLocaleString()}</p>
           </div>
-          <div className="bg-white rounded-lg border p-4">
-            <p className="text-sm text-gray-500 mb-2">Top Actions</p>
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-lg border p-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Top Actions</p>
             {stats.top_actions.slice(0, 3).map((a) => (
               <div key={a.action} className="flex justify-between text-sm">
-                <span className="text-gray-700">{a.action}</span>
-                <span className="font-medium text-gray-900">{a.count}</span>
+                <span className="text-gray-700 dark:text-gray-300">{a.action}</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{a.count}</span>
               </div>
             ))}
           </div>
-          <div className="bg-white rounded-lg border p-4">
-            <p className="text-sm text-gray-500 mb-2">Top Users</p>
+          <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-lg border p-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-2">Top Users</p>
             {stats.top_users.slice(0, 3).map((u) => (
               <div key={u.user} className="flex justify-between text-sm">
-                <span className="text-gray-700">{u.user}</span>
-                <span className="font-medium text-gray-900">{u.count}</span>
+                <span className="text-gray-700 dark:text-gray-300">{u.user}</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{u.count}</span>
               </div>
             ))}
           </div>
@@ -110,10 +110,10 @@ export default function AuditLog() {
       )}
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border p-4 mb-6">
+      <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-lg border p-4 mb-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">User</label>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">User</label>
             <input
               type="text"
               value={userFilter}
@@ -123,7 +123,7 @@ export default function AuditLog() {
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Action</label>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Action</label>
             <select
               value={actionFilter}
               onChange={(e) => { setActionFilter(e.target.value); setPage(0); }}
@@ -139,7 +139,7 @@ export default function AuditLog() {
             </select>
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-500 mb-1">Resource</label>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Resource</label>
             <select
               value={resourceFilter}
               onChange={(e) => { setResourceFilter(e.target.value); setPage(0); }}
@@ -156,7 +156,7 @@ export default function AuditLog() {
           <div className="flex items-end">
             <button
               onClick={() => { setUserFilter(''); setActionFilter(''); setResourceFilter(''); setPage(0); }}
-              className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900"
+              className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 __DM_HTX900__"
             >
               Clear Filters
             </button>
@@ -165,35 +165,35 @@ export default function AuditLog() {
       </div>
 
       {/* Table */}
-      <div className="bg-white rounded-lg border overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 dark:bg-gray-900 rounded-lg border overflow-hidden">
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading...</div>
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">Loading...</div>
         ) : events.length === 0 ? (
-          <div className="p-8 text-center text-gray-500">No audit events found</div>
+          <div className="p-8 text-center text-gray-500 dark:text-gray-400">No audit events found</div>
         ) : (
           <table className="min-w-full">
-            <thead className="bg-gray-50">
+            <thead className="bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Timestamp</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">User</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Action</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Resource</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Details</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Timestamp</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">User</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Action</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Resource</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {events.map((event) => (
-                <tr key={event.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                <tr key={event.id} className="__DM_HBG50__">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {new Date(event.timestamp).toLocaleString()}
                   </td>
-                  <td className="px-4 py-3 text-sm font-medium text-gray-900">{event.user}</td>
+                  <td className="px-4 py-3 text-sm font-medium text-gray-900 dark:text-gray-100 dark:text-gray-100">{event.user}</td>
                   <td className="px-4 py-3">
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${actionColors[event.action] || 'bg-gray-100 text-gray-800'}`}>
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${actionColors[event.action] || 'bg-gray-100 dark:bg-gray-800 dark:bg-gray-800 text-gray-800'}`}>
                       {event.action}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-600">
+                  <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
                     {event.resource_type}
                     {event.resource_id && (
                       <span className="ml-1 text-gray-400 font-mono text-xs">
@@ -201,7 +201,7 @@ export default function AuditLog() {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-sm text-gray-500 max-w-xs truncate">
+                  <td className="px-4 py-3 text-sm text-gray-500 dark:text-gray-400 max-w-xs truncate">
                     {JSON.stringify(event.details)}
                   </td>
                 </tr>
@@ -212,7 +212,7 @@ export default function AuditLog() {
 
         {/* Pagination */}
         {total > limit && (
-          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
+          <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50 dark:bg-gray-900 dark:bg-gray-900">
             <button
               onClick={() => setPage(Math.max(0, page - 1))}
               disabled={page === 0}
@@ -220,7 +220,7 @@ export default function AuditLog() {
             >
               Previous
             </button>
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 dark:text-gray-400">
               Page {page + 1} of {Math.ceil(total / limit)}
             </span>
             <button

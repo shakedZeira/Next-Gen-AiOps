@@ -8,8 +8,8 @@ interface Props {
 
 export default function ApprovalQueue({ approvals, onApprove, onReject }: Props) {
   return (
-    <div className="bg-white border rounded-xl p-4 h-full flex flex-col">
-      <h3 className="font-semibold text-gray-900 mb-3">Pending Approvals</h3>
+    <div className="bg-white dark:bg-gray-900 border rounded-xl p-4 h-full flex flex-col">
+      <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-3">Pending Approvals</h3>
       {approvals.length === 0 ? (
         <div className="flex-1 flex items-center justify-center text-sm text-gray-400">
           No pending approvals
@@ -17,15 +17,15 @@ export default function ApprovalQueue({ approvals, onApprove, onReject }: Props)
       ) : (
         <div className="flex-1 overflow-y-auto space-y-3">
           {approvals.map(req => (
-            <div key={req.id} className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+            <div key={req.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 border border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-semibold text-gray-900">{req.tool_name}</span>
+                <span className="text-sm font-semibold text-gray-900 dark:text-gray-100">{req.tool_name}</span>
                 <span className="px-2 py-0.5 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full">
                   Pending
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mb-2">{req.context}</p>
-              <pre className="text-xs bg-white rounded border border-gray-200 p-2 mb-2 overflow-x-auto text-gray-700 max-h-32 overflow-y-auto">
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">{req.context}</p>
+              <pre className="text-xs bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700 p-2 mb-2 overflow-x-auto text-gray-700 dark:text-gray-300 max-h-32 overflow-y-auto">
                 {JSON.stringify(req.arguments, null, 2)}
               </pre>
               <p className="text-xs text-gray-400 mb-2">
