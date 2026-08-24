@@ -27,6 +27,8 @@ export interface Alert {
   suppressed_at?: string;
   storm_id?: string;
   throttled?: boolean;
+  muted?: boolean;
+  muted_by?: string;
 }
 
 export interface AlertGroup {
@@ -56,6 +58,7 @@ export interface AlertStats {
   incidents_formed: number;
   suppressed?: number;
   throttled?: number;
+  muted?: number;
   storm_active?: boolean;
 }
 
@@ -102,6 +105,18 @@ export interface StormEvent {
   root_cause_alert_id: string;
   status: 'active' | 'cleared';
   throttled: boolean;
+}
+
+export interface MaintenanceWindow {
+  id: string;
+  name: string;
+  service: string;
+  start_time: string;
+  end_time: string;
+  created_by: string;
+  reason: string;
+  status: 'active' | 'expired' | 'cancelled';
+  created_at: string;
 }
 
 export interface CI {

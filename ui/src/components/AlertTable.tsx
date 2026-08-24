@@ -99,6 +99,11 @@ export default function AlertTable({ alerts, onAcknowledge, onResolve, onAlertCl
                       THROTTLED
                     </span>
                   )}
+                  {alert.muted && (
+                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 border border-amber-200" title="Muted during maintenance window">
+                      MUTED
+                    </span>
+                  )}
                   {alert.labels?.source === 'syslog' && (
                     <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-700 border border-teal-200" title={`Syslog from ${alert.labels?.hostname || 'device'}`}>
                       SYSLOG

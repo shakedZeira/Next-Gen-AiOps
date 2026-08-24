@@ -83,4 +83,5 @@ class AlertDeduplicator:
             "deduplicated": int(stats.get(b"deduplicated", 0)),
             "incidents_formed": int(stats.get(b"incidents_formed", 0)),
             "throttled": int(stats.get(b"throttled", 0)),
+            "muted": int(stats.get(b"muted", 0)),
         }

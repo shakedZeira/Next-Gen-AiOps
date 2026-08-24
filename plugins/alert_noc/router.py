@@ -11,6 +11,15 @@ class ScenarioRequest(BaseModel):
     scenario: str
 
 
+class MaintenanceCreateRequest(BaseModel):
+    name: str
+    service: str
+    start_time: str
+    end_time: str
+    created_by: str = "admin@aiops.local"
+    reason: str = ""
+
+
 @router.post("/alerts", response_model=dict)
 async def create_alert(data: AlertCreate):
     alert = await alert_store.create_alert(data)
@@ -18,8 +27,8 @@ async def create_alert(data: AlertCreate):
 
 
 @router.get("/alerts", response_model=list[dict])
-async def list_alerts(status: str | None = None, team: str | None = None, suppressed: bool | None = None, throttled: bool | None = None):
-    alerts = await alert_store.list_alerts(status, team, suppressed, throttled)
+async def list_alerts(status: str | None = None, team: str | None = None, suppressed: bool | None = None, throttled: bool | None = None, muted: bool | None = None):
+    alerts = await alert_store.list_alerts(status, team, suppressed, throttled, muted)
     return [a.model_dump() for a in alerts]
 
 
@@ -59,7 +68,6 @@ async def alert_stats():
     stats["suppressed"] = await alert_store.suppressor.get_suppressed_count()
     active_storm = await alert_store.storm.get_active_storm()
     stats["storm_active"] = active_storm is not None
-    stats["throttled"] = (await alert_store.dedup.get_stats()).get("throttled", 0)
     return stats
 
 
@@ -82,6 +90,45 @@ async def clear_storm(storm_id: str):
     if not storm:
         return {"error": "Storm not found or already cleared"}
     return storm.to_dict()
+
+
+@router.get("/alerts/maintenance")
+async def list_maintenance_windows(status: str | None = None):
+    windows = await alert_store.maintenance.list_windows(status)
+    return [w.to_dict() for w in windows]
+
+
+@router.get("/alerts/maintenance/active")
+async def list_active_maintenance():
+    windows = await alert_store.maintenance.get_active_windows()
+    return [w.to_dict() for w in windows]
+
+
+@router.post("/alerts/maintenance")
+async def create_maintenance_window(data: MaintenanceCreateRequest):
+    window = await alert_store.maintenance.create_window(
+        name=data.name,
+        service=data.service,
+        start_time=data.start_time,
+        end_time=data.end_time,
+        created_by=data.created_by,
+        reason=data.reason,
+    )
+    return window.to_dict()
+
+
+@router.delete("/alerts/maintenance/{window_id}")
+async def cancel_maintenance_window(window_id: str):
+    window = await alert_store.maintenance.cancel_window(window_id)
+    if not window:
+        return {"error": "Window not found"}
+    return window.to_dict()
+
+
+@router.post("/alerts/maintenance/cleanup")
+async def cleanup_expired_windows():
+    removed = await alert_store.maintenance.cleanup_expired()
+    return {"cleaned": removed}
 
 
 @router.get("/alerts/{alert_id}")

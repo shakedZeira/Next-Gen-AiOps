@@ -82,6 +82,15 @@ export const stormAPI = {
   clear: (id: string) => api.post(`/alerts/storms/${id}/clear`),
 };
 
+export const maintenanceAPI = {
+  list: (status?: string) => api.get('/alerts/maintenance', { params: status ? { status } : {} }),
+  active: () => api.get('/alerts/maintenance/active'),
+  create: (data: { name: string; service: string; start_time: string; end_time: string; created_by?: string; reason?: string }) =>
+    api.post('/alerts/maintenance', data),
+  cancel: (id: string) => api.delete(`/alerts/maintenance/${id}`),
+  cleanup: () => api.post('/alerts/maintenance/cleanup'),
+};
+
 export const simulateAPI = {
   scenarios: () => api.get('/simulate/scenarios'),
   run: (scenario: string) => api.post('/simulate/scenario', { scenario }),

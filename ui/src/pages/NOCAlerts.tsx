@@ -4,6 +4,7 @@ import AlertTable from '../components/AlertTable';
 import AlertDetail from '../components/AlertDetail';
 import IncidentDetail from '../components/IncidentDetail';
 import StormSummary from '../components/StormSummary';
+import MaintenancePanel from '../components/MaintenancePanel';
 import { alertsAPI, simulateAPI, cmdbAPI } from '../api/client';
 import { useAlertsWebSocket } from '../hooks/useAlertsWebSocket';
 import { Alert, IncidentGroup, Scenario } from '../types';
@@ -30,12 +31,13 @@ export default function NOCAlerts({ user }: { user: any }) {
   const [teamFilter, setTeamFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [showSuppressed, setShowSuppressed] = useState(false);
+  const [showMaintenance, setShowMaintenance] = useState(false);
   const [teams, setTeams] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   const [viewMode, setViewMode] = useState<'alerts' | 'incidents'>('alerts');
   const [incidents, setIncidents] = useState<IncidentGroup[]>([]);
-  const [stats, setStats] = useState<{ total_created: number; deduplicated: number; suppressed?: number; throttled?: number; storm_active?: boolean } | null>(null);
+  const [stats, setStats] = useState<{ total_created: number; deduplicated: number; suppressed?: number; throttled?: number; muted?: number; storm_active?: boolean } | null>(null);
 
   const [scenarios, setScenarios] = useState<Scenario[]>([]);
   const [selectedScenario, setSelectedScenario] = useState<string>('');
@@ -238,12 +240,15 @@ export default function NOCAlerts({ user }: { user: any }) {
               {(stats.throttled ?? 0) > 0 && (
                 <span className="bg-red-100 text-red-700 px-2 py-1 rounded">Throttled: {stats.throttled}</span>
               )}
+              {(stats.muted ?? 0) > 0 && (
+                <span className="bg-amber-100 text-amber-700 px-2 py-1 rounded">Muted: {stats.muted}</span>
+              )}
               {stats.storm_active && (
                 <span className="bg-red-500 text-white px-2 py-1 rounded animate-pulse">STORM ACTIVE</span>
               )}
               {stats.total_created > 0 && (
                 <span className="bg-blue-100 text-blue-700 px-2 py-1 rounded">
-                  {Math.round(((stats.deduplicated + (stats.suppressed ?? 0) + (stats.throttled ?? 0)) / stats.total_created) * 100)}% reduced
+                  {Math.round(((stats.deduplicated + (stats.suppressed ?? 0) + (stats.throttled ?? 0) + (stats.muted ?? 0)) / stats.total_created) * 100)}% reduced
                 </span>
               )}
             </div>
@@ -338,6 +343,13 @@ export default function NOCAlerts({ user }: { user: any }) {
             className="px-3 py-1.5 rounded-lg text-sm font-medium bg-cyan-600 text-white hover:bg-cyan-700 transition-colors"
           >
             Resolve IP
+          </button>
+
+          <button
+            onClick={() => setShowMaintenance(true)}
+            className="px-3 py-1.5 rounded-lg text-sm font-medium bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+          >
+            Maintenance
           </button>
         </div>
       </div>
@@ -485,6 +497,10 @@ export default function NOCAlerts({ user }: { user: any }) {
             )}
           </div>
         </div>
+      )}
+
+      {showMaintenance && (
+        <MaintenancePanel onClose={() => { setShowMaintenance(false); fetchStats(); }} />
       )}
     </div>
   );

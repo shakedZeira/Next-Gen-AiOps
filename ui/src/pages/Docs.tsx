@@ -17,6 +17,7 @@ const SECTIONS = [
   { id: 'snmp', title: 'SNMP Collection' },
   { id: 'suppression', title: 'Alert Suppression' },
   { id: 'storm', title: 'Storm Management' },
+  { id: 'maintenance', title: 'Maintenance Windows' },
   { id: 'architecture', title: 'Architecture' },
   { id: 'api-reference', title: 'API Reference' },
   { id: 'deployment', title: 'Deployment' },
@@ -680,6 +681,38 @@ curl -X POST http://localhost:8016/trap -H "Content-Type: application/json" \\
                   <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts/storms/active</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">Current active storm (or null)</td></tr>
                   <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts/storms</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List recent storms (last 7 days)</td></tr>
                   <tr><td className="px-4 py-2"><code>/api/v1/alerts/storms/{'{id}'}/clear</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Manually clear a storm</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* === Section: Maintenance Windows === */}
+          <section id="maintenance">
+            <h2 className="text-2xl font-bold text-white mb-4">Maintenance Windows</h2>
+            <p className="text-gray-300 mb-4">
+              Maintenance Windows allow you to mute alerts during planned maintenance, preventing
+              alert fatigue from expected downtime. Alerts created during an active window are stored
+              but hidden from the default NOC view.
+            </p>
+            <h3 className="text-lg font-semibold text-white mb-2">How It Works</h3>
+            <ul className="text-gray-200 space-y-2 list-disc list-inside mb-4">
+              <li><span className="text-blue-400 font-medium">Create Window:</span> Specify service, start/end time, and reason</li>
+              <li><span className="text-blue-400 font-medium">Auto-Mute:</span> Alerts matching the service during the window are automatically muted</li>
+              <li><span className="text-blue-400 font-medium">Auto-Expire:</span> Windows automatically expire after end_time, muted alerts reappear</li>
+              <li><span className="text-blue-400 font-medium">Cancel:</span> Manually cancel a window to immediately unmute alerts</li>
+            </ul>
+            <h3 className="text-lg font-semibold text-white mb-2">REST API</h3>
+            <div className="overflow-x-auto mb-4">
+              <table className="w-full text-sm text-left">
+                <thead className="bg-gray-800 text-white">
+                  <tr><th className="px-4 py-2">Endpoint</th><th className="px-4 py-2">Method</th><th className="px-4 py-2">Description</th></tr>
+                </thead>
+                <tbody className="text-gray-200">
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts/maintenance</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List all windows</td></tr>
+                  <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts/maintenance/active</code></td><td className="px-4 py-2">GET</td><td className="px-4 py-2">List active windows</td></tr>
+                  <tr className="border-b border-gray-800"><td className="px-4 py-2"><code>/api/v1/alerts/maintenance</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Create a window</td></tr>
+                  <tr className="border-b border-gray-800 bg-gray-900/50"><td className="px-4 py-2"><code>/api/v1/alerts/maintenance/{'{id}'}</code></td><td className="px-4 py-2">DELETE</td><td className="px-4 py-2">Cancel a window</td></tr>
+                  <tr><td className="px-4 py-2"><code>/api/v1/alerts/maintenance/cleanup</code></td><td className="px-4 py-2">POST</td><td className="px-4 py-2">Clean up expired windows</td></tr>
                 </tbody>
               </table>
             </div>
